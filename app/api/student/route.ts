@@ -64,7 +64,7 @@ export async function POST(req: Request) {
             throw Object.assign(new Error("Veri akisi cok hizli. Biraz bekle pilot."), { code: 429 });
           }
           const newXp = Math.max(0, (data.xp || 0) + xpDelta);
-          const newLevel = Math.floor(newXp / 100) + 1;
+          const newLevel = Math.floor(Math.sqrt(newXp / 62)) + 1;
           tx.update(userRef, {
             xp: newXp,
             level: newLevel,

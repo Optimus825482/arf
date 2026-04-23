@@ -91,7 +91,7 @@ export async function POST(req: Request) {
     if (missionBonusXp > 0) {
       const currentXp = userData.xp || 0;
       const newXp = currentXp + missionBonusXp;
-      const newLevel = Math.floor(newXp / 100) + 1;
+      const newLevel = Math.floor(Math.sqrt(newXp / 62)) + 1;
       updates.xp = newXp;
       updates.level = newLevel;
       updates.updatedAt = FieldValue.serverTimestamp();
