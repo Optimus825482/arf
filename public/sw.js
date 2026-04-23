@@ -28,7 +28,17 @@ self.addEventListener('fetch', (event) => {
           caches.open(VERSION).then((c) => c.put(request, copy)).catch(() => null);
           return res;
         })
-        .catch(() => caches.match(request).then((r) => r || caches.match('/')))
+        .catch(async () => {
+          const exact = await caches.match(request);
+          if (exact) return exact;
+          const home = await caches.match('/');
+          if (home) return home;
+          return new Response('Offline', {
+            status: 503,
+            statusText: 'Service Unavailable',
+            headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+          });
+        })
     );
     return;
   }
@@ -42,7 +52,7 @@ self.addEventListener('fetch', (event) => {
         const copy = res.clone();
         caches.open(VERSION).then((c) => c.put(request, copy)).catch(() => null);
         return res;
-      }).catch(() => cached);
+      }).catch(() => cached || Response.error());
     })
   );
 });

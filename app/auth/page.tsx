@@ -9,6 +9,7 @@ import { toast } from 'sonner';
 import { auth, db } from '@/lib/firebase';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import type { User } from 'firebase/auth';
+import { FirebaseError } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -130,6 +131,10 @@ export default function AuthPage() {
         setIsRegistering(true);
       }
     } catch (err: unknown) {
+      if (err instanceof FirebaseError && err.code === 'auth/popup-closed-by-user') {
+        toast.error('Google giris penceresi kapatildi.');
+        return;
+      }
       handleSystemError(err, { title: 'Google Giriş Hatası', action: 'Lütfen Google hesabınızı kontrol edin.' });
     } finally {
       setLoading(false);
