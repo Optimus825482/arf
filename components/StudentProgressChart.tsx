@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Loader2, TrendingUp } from 'lucide-react';
+import { TrendingUp } from 'lucide-react';
+import AppLoader from '@/components/AppLoader';
 
 interface ChartProps {
   userId: string;
@@ -46,9 +47,14 @@ export default function StudentProgressChart({ userId }: ChartProps) {
   }, [userId]);
 
   if (loading) return (
-    <div className="h-64 flex items-center justify-center bg-slate-900/20 rounded-2xl border border-white/5">
-      <Loader2 className="w-8 h-8 animate-spin text-purple-400" />
-    </div>
+    <AppLoader
+      variant="panel"
+      accent="purple"
+      title="Telemetri grafigi yukleniyor"
+      subtitle="Kayitlar son 30 gun icin getiriliyor"
+      messages={['Gozlem verileri okunuyor...']}
+      className="h-64 min-h-[16rem]"
+    />
   );
 
   if (data.length < 2) return (

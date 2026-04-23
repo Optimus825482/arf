@@ -19,6 +19,7 @@ import MissionLaunchModal from '@/components/MissionLaunchModal';
 import LoreLoader from '@/components/LoreLoader';
 import type { DailyMissionPack, MissionCard } from '@/lib/missions';
 import type { UserData } from '@/lib/types';
+import AppLoader from '@/components/AppLoader';
 
 export default function OgrenciDashboard() {
   const router = useRouter();
@@ -450,9 +451,17 @@ export default function OgrenciDashboard() {
 
           <div className="grid grid-cols-1 gap-4">
             {missionLoading && (
-              <div className="glass-panel p-8 text-center font-mono text-slate-400">
-                AI gorev paketi yukleniyor...
-              </div>
+              <AppLoader
+                variant="panel"
+                accent="cyan"
+                title="Gunluk AI paketi yukleniyor"
+                subtitle="Gorev zinciri ve briefing dosyalari hazirlaniyor"
+                messages={[
+                  'Komuta notu derleniyor...',
+                  'Gorev kartlari siralaniyor...',
+                  'Motivasyon paketi hazirlaniyor...',
+                ]}
+              />
             )}
 
             {!missionLoading && missionPack?.missions?.map((mission, index) => (

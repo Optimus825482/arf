@@ -4,13 +4,14 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Rocket, Satellite, Trophy } from 'lucide-react';
+import { Rocket, Satellite, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { playSound } from '@/lib/audio';
 import { getRankName } from '@/lib/ranks';
 import { toast } from 'sonner';
 import { authFetch } from '@/lib/apiClient';
 import { useAuth } from '@/components/AuthProvider';
+import AppLoader from '@/components/AppLoader';
 
 export default function SabitKalibrasyon() {
   const router = useRouter();
@@ -202,14 +203,17 @@ export default function SabitKalibrasyon() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center p-4 relative z-10 space-y-6">
-         <div className="relative">
-           <Satellite className="w-20 h-20 text-purple-400 animate-pulse drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
-           <div className="absolute inset-0 border-2 border-t-cyan-400 border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin" style={{animationDuration: '2s'}}></div>
-         </div>
-         <h2 className="text-xl font-mono uppercase tracking-widest text-cyan-400">TELEMETRİ ANALİZ EDİLİYOR...</h2>
-         <p className="font-mono text-slate-500 text-sm">Uzay gemisi rütbesi atanıyor</p>
-      </div>
+      <AppLoader
+        variant="fullscreen"
+        accent="amber"
+        title="Telemetri analiz ediliyor"
+        subtitle="Rutbe ve gorev profili hesaplanıyor"
+        messages={[
+          'Kalibrasyon sonuclari isleniyor...',
+          'Matematik refleksleri olculuyor...',
+          'Pilot sinifi ataniyor...',
+        ]}
+      />
     );
   }
 

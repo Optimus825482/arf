@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'motion/react';
-import { BrainCircuit, Loader2, Sparkles, AlertTriangle, Lightbulb, ArrowRight } from 'lucide-react';
+import { BrainCircuit, Sparkles, AlertTriangle, Lightbulb, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Link from 'next/link';
 import { playSound } from '@/lib/audio';
@@ -15,6 +15,7 @@ import HelpButton from '@/components/HelpButton';
 import { authFetch } from '@/lib/apiClient';
 import { completeMission } from '@/lib/missionProgress';
 import type { MissionCard } from '@/lib/missions';
+import AppLoader from '@/components/AppLoader';
 
 function UzayGoreviContent() {
   const router = useRouter();
@@ -41,7 +42,6 @@ function UzayGoreviContent() {
   const [missionSaved, setMissionSaved] = useState(false);
   const [missionReward, setMissionReward] = useState<{ bonusXp: number; allCompleted: boolean } | null>(null);
   const [nextMission, setNextMission] = useState<Pick<MissionCard, 'id' | 'route'> | null>(null);
-  const [finalXpData, setFinalXpData] = useState<{currentXp: number, level: number, earnedXp: number} | null>(null);
 
   useEffect(() => {
     if (!user || !missionId) return;
@@ -123,9 +123,7 @@ function UzayGoreviContent() {
       confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
       
       if (user) {
-         const xpResult = await addXpAndBadge(user.uid, 50, {id:'uzay_operasyon_generali', name: 'Uzay Operasyon Generali'}, question?.category || 'boss_deepseek', true);
-         
-         let totalEarned = 50;
+         await addXpAndBadge(user.uid, 50, {id:'uzay_operasyon_generali', name: 'Uzay Operasyon Generali'}, question?.category || 'boss_deepseek', true);
 
          if (missionId && !missionSaved) {
            const missionData = await completeMission(missionId, {
@@ -135,7 +133,6 @@ function UzayGoreviContent() {
              success: true,
            });
            const bonus = missionData.missionBonusXp || 0;
-           totalEarned += bonus;
            setMissionReward({
              bonusXp: bonus,
              allCompleted: !!missionData.allCompleted,
@@ -143,20 +140,13 @@ function UzayGoreviContent() {
            setMissionSaved(true);
          }
 
-         setFinalXpData({
-           currentXp: xpResult.currentXp,
-           level: xpResult.newLevel,
-           earnedXp: totalEarned
-         });
       }
       toast.success("Görev başarıyla tamamlandı!");
     } else {
       playSound('incorrect');
       setIsCorrect(false);
       if (user) {
-         const xpResult = await addXpAndBadge(user.uid, 0, null, question?.category || 'boss_deepseek', false);
-         
-         let totalEarned = 0;
+         await addXpAndBadge(user.uid, 0, null, question?.category || 'boss_deepseek', false);
 
          if (missionId && !missionSaved) {
            const missionData = await completeMission(missionId, {
@@ -166,7 +156,6 @@ function UzayGoreviContent() {
              success: false,
            });
            const bonus = missionData.missionBonusXp || 0;
-           totalEarned += bonus;
            setMissionReward({
              bonusXp: bonus,
              allCompleted: !!missionData.allCompleted,
@@ -174,11 +163,6 @@ function UzayGoreviContent() {
            setMissionSaved(true);
          }
 
-         setFinalXpData({
-           currentXp: xpResult.currentXp,
-           level: xpResult.newLevel,
-           earnedXp: totalEarned
-         });
       }
     }
 
@@ -226,16 +210,18 @@ function UzayGoreviContent() {
 
       <AnimatePresence mode="wait">
         {loading ? (
-          <motion.div 
-            key="loader"
-            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="glass-panel p-12 rounded-3xl flex flex-col items-center justify-center text-center py-24"
-          >
-            <div className="relative">
-               <Loader2 className="w-16 h-16 animate-spin text-purple-400 mb-6 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]" />
-               <div className="absolute inset-0 border-4 border-t-purple-500 border-r-cyan-500 border-b-transparent border-l-transparent rounded-full animate-spin" style={{ animationDuration: '3s' }}></div>
-            </div>
-            <p className="hud-badge text-purple-400 animate-pulse mt-4">Sinyal Aranıyor...</p>
+          <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+            <AppLoader
+              variant="panel"
+              accent="purple"
+              title="Yapay zeka sinyali araniyor"
+              subtitle="Derin uzay problemi uretiliyor"
+              messages={[
+                'Deepseek paketi baglanti kuruyor...',
+                'Gorev senaryosu sifreleniyor...',
+                'Sinyal netlestiriliyor...',
+              ]}
+            />
           </motion.div>
         ) : question ? (
           <motion.div 
@@ -347,7 +333,17 @@ function UzayGoreviContent() {
 
 export default function UzayGorevi() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-screen relative z-10"><Loader2 className="w-12 h-12 animate-spin text-purple-400" /></div>}>
+    <Suspense
+      fallback={
+        <AppLoader
+          variant="fullscreen"
+          accent="purple"
+          title="AI gorev modulu yukleniyor"
+          subtitle="Derin uzay senaryosu aciliyor"
+          messages={['Komuta zekasi problem alanini kuruyor...']}
+        />
+      }
+    >
       <UzayGoreviContent />
     </Suspense>
   );

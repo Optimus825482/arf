@@ -15,6 +15,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { handleSystemError } from '@/lib/errors';
 import { useAuth } from '@/components/AuthProvider';
+import AppLoader from '@/components/AppLoader';
 
 export default function AuthPage() {
   const router = useRouter();
@@ -48,6 +49,22 @@ export default function AuthPage() {
   const [tempUser, setTempUser] = useState<User | null>(null);
   const [parentFirstName, setParentFirstName] = useState('');
   const [parentLastName, setParentLastName] = useState('');
+
+  if (authLoading && !isRegistering) {
+    return (
+      <AppLoader
+        variant="fullscreen"
+        accent="purple"
+        title="Kimlik dogrulama baslatiliyor"
+        subtitle="Google baglantisi kontrol ediliyor"
+        messages={[
+          'Giris protokolleri aciliyor...',
+          'Kimlik zinciri dogrulaniyor...',
+          'Pilot oturumu hazirlaniyor...',
+        ]}
+      />
+    );
+  }
 
   const generatePairingCode = async () => {
     let code = '';

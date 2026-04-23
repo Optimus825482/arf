@@ -17,9 +17,22 @@ import { db } from '@/lib/firebase';
 import dynamic from 'next/dynamic';
 import { authFetch } from '@/lib/apiClient';
 import ParentOnboarding from '@/components/ParentOnboarding';
+import AppLoader from '@/components/AppLoader';
 
 const SHOW_API_KEY_INPUT = false;
-const StudentProgressChart = dynamic(() => import('@/components/StudentProgressChart'), { ssr: false, loading: () => <div className="text-slate-400 text-sm">Grafik yükleniyor...</div> });
+const StudentProgressChart = dynamic(() => import('@/components/StudentProgressChart'), {
+  ssr: false,
+  loading: () => (
+    <AppLoader
+      variant="panel"
+      accent="purple"
+      title="Telemetri grafikleri cagriliyor"
+      subtitle="Son 30 gunluk veri hatti aciliyor"
+      messages={['Performans sinyalleri cozuluyor...']}
+      className="mt-6"
+    />
+  ),
+});
 
 function VeliMessageForm({ studentId, studentName }: { studentId: string; studentName: string }) {
   const [msg, setMsg] = useState('');
@@ -414,7 +427,21 @@ export default function VeliDashboard() {
     });
   };
 
-  if (authLoading || loading) return <div className="flex justify-center items-center h-screen relative z-10"><Loader2 className="w-12 h-12 animate-spin text-purple-400" /></div>;
+  if (authLoading || loading) {
+    return (
+      <AppLoader
+        variant="fullscreen"
+        accent="purple"
+        title="Gozcu merkezi hazirlaniyor"
+        subtitle="Veli telemetrisi baglaniyor"
+        messages={[
+          'Bagli pilotlar listeleniyor...',
+          'Stratejik plan dosyalari aciliyor...',
+          'Komuta paneli yukleniyor...',
+        ]}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen p-4 md:p-8 max-w-5xl mx-auto space-y-6 relative z-10">

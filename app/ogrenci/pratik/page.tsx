@@ -4,7 +4,7 @@
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Rocket, Trophy, Clock, Zap, Loader2, Lightbulb, ArrowRight } from 'lucide-react';
+import { Rocket, Trophy, Clock, Zap, Lightbulb, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Link from 'next/link';
 import { playSound } from '@/lib/audio';
@@ -17,6 +17,7 @@ import { getLoreQuestion } from '@/lib/lore';
 import { authFetch } from '@/lib/apiClient';
 import type { StudentMetrics } from '@/lib/types';
 import type { MissionCard } from '@/lib/missions';
+import AppLoader from '@/components/AppLoader';
 
 function PratikOyunuContent() {
   const router = useRouter();
@@ -95,12 +96,13 @@ function PratikOyunuContent() {
 
   const generateQuestion = useCallback(() => {
     const m = metrics || { addSubScore: 50, mulDivScore: 50, speedScore: 50, level: 1 };
+    const level = m.level ?? 1;
     
     // Dynamic Difficulty weights based on performance and level
-    const addSubWeight = Math.max(10, 100 - (m.addSubScore || 50) + (m.level * 2)); 
-    const mulDivWeight = Math.max(10, 100 - (m.mulDivScore || 50) + (m.level * 5));
+    const addSubWeight = Math.max(10, 100 - (m.addSubScore || 50) + (level * 2)); 
+    const mulDivWeight = Math.max(10, 100 - (m.mulDivScore || 50) + (level * 5));
     // Mixed operations weight grows with level
-    const mixedWeight = m.level > 3 ? (m.level * 10) : 0;
+    const mixedWeight = level > 3 ? (level * 10) : 0;
     
     const totalW = addSubWeight + mulDivWeight + mixedWeight;
     const r = Math.random() * totalW;
@@ -110,14 +112,14 @@ function PratikOyunuContent() {
     if (r < addSubWeight) {
       category = '+';
       op = Math.random() < 0.5 ? '+' : '-';
-      const maxNum = Math.min(1000, Math.floor(20 + (m.level * 15) + ((m.addSubScore || 50) / 2)));
+      const maxNum = Math.min(1000, Math.floor(20 + (level * 15) + ((m.addSubScore || 50) / 2)));
       n1 = Math.floor(Math.random() * maxNum) + 1;
       n2 = Math.floor(Math.random() * maxNum) + 1;
       if (op === '-' && n2 > n1) [n1, n2] = [n2, n1];
     } else if (r < addSubWeight + mulDivWeight) {
       category = 'x';
       op = Math.random() < 0.5 ? 'x' : '÷';
-      const maxMult = Math.min(30, Math.floor(5 + (m.level) + ((m.mulDivScore || 50) / 10)));
+      const maxMult = Math.min(30, Math.floor(5 + level + ((m.mulDivScore || 50) / 10)));
       n1 = Math.floor(Math.random() * maxMult) + 1;
       n2 = Math.floor(Math.random() * maxMult) + 1;
       if (op === '÷') n1 = n2 * (Math.floor(Math.random() * maxMult) + 1);
@@ -152,7 +154,7 @@ function PratikOyunuContent() {
     let options = new Set<number>();
     options.add(a);
     // Number of options scales with level up to 6
-    const optionCount = Math.min(6, 4 + Math.floor(m.level / 5));
+    const optionCount = Math.min(6, 4 + Math.floor(level / 5));
     
     while(options.size < optionCount) {
        const spread = Math.max(10, Math.floor(a / 5));
@@ -293,12 +295,28 @@ function PratikOyunuContent() {
 
   const getBriefing = () => {
     const m = metrics || { addSubScore: 50, mulDivScore: 50, speedScore: 50 };
-    if (m.speedScore < 40) return { title: "Düşük Reaksiyon", text: "Sinyaller yavaş geliyor pilot. Şıklardan hızlıca eleme yaparak zaman kazan!" };
-    if (m.mulDivScore < 40) return { title: "Motor Isınması", text: "Çarpma ve bölme işlemlerinde iticiler tekliyor. Ritmik sayma tekniklerini hatırla." };
+    const speedScore = m.speedScore ?? 50;
+    const mulDivScore = m.mulDivScore ?? 50;
+    if (speedScore < 40) return { title: "Düşük Reaksiyon", text: "Sinyaller yavaş geliyor pilot. Şıklardan hızlıca eleme yaparak zaman kazan!" };
+    if (mulDivScore < 40) return { title: "Motor Isınması", text: "Çarpma ve bölme işlemlerinde iticiler tekliyor. Ritmik sayma tekniklerini hatırla." };
     return { title: "Stratejik Hazırlık", text: "Hız ve doğruluk arasındaki dengeyi kur. Yanlış cevaplar kalkanlarını (zamanını) eritir!" };
   };
 
-  if (initialLoading) return <div className="flex justify-center items-center h-screen relative z-10"><Loader2 className="w-12 h-12 animate-spin text-cyan-400" /></div>;
+  if (initialLoading) {
+    return (
+      <AppLoader
+        variant="fullscreen"
+        accent="cyan"
+        title="Pratik modulu hazirlaniyor"
+        subtitle="Egitim sorulari derleniyor"
+        messages={[
+          'Aritmetik cekirdegi kalibre ediliyor...',
+          'Simulasyon tahtasi hazirlaniyor...',
+          'Pratik koridoru aciliyor...',
+        ]}
+      />
+    );
+  }
 
   if (gameState === 'start') {
     const briefing = getBriefing();
@@ -492,7 +510,17 @@ function PratikOyunuContent() {
 
 export default function PratikOyunu() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-screen relative z-10"><Loader2 className="w-12 h-12 animate-spin text-cyan-400" /></div>}>
+    <Suspense
+      fallback={
+        <AppLoader
+          variant="fullscreen"
+          accent="cyan"
+          title="Pratik modulu yukleniyor"
+          subtitle="Koridor arayuzu derleniyor"
+          messages={['Saha egitimi ortami kuruluyor...']}
+        />
+      }
+    >
       <PratikOyunuContent />
     </Suspense>
   );

@@ -3,7 +3,7 @@
 import { Suspense, useState, useEffect, useCallback } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
-import { Zap, Heart, ShieldAlert, Loader2, Trophy, ArrowRight } from 'lucide-react';
+import { Zap, Heart, ShieldAlert, Trophy, ArrowRight } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import Link from 'next/link';
 import { playSound } from '@/lib/audio';
@@ -16,6 +16,7 @@ import { getLoreQuestion } from '@/lib/lore';
 import { authFetch } from '@/lib/apiClient';
 import type { StudentMetrics } from '@/lib/types';
 import type { MissionCard } from '@/lib/missions';
+import AppLoader from '@/components/AppLoader';
 
 function YildirimModuContent() {
   const router = useRouter();
@@ -152,7 +153,7 @@ function YildirimModuContent() {
     setQuestion({ q: displayQuestion, options: shuffledOptions, a, category });
   }, [metrics]);
 
-  const endGame = async () => {
+  const endGame = useCallback(async () => {
     playSound('incorrect');
     setGameState('end');
     setSaving(true);
@@ -199,7 +200,7 @@ function YildirimModuContent() {
     setPendingResults([]);
     setSaving(false);
     if (score >= 10) confetti({ particleCount: score * 5, spread: 80, origin: { y: 0.6 } });
-  };
+  }, [missionId, missionSaved, pendingResults, score, user]);
 
   const startGame = () => {
     playSound('click');
@@ -280,7 +281,21 @@ function YildirimModuContent() {
     }
   };
 
-  if (initialLoading) return <div className="flex justify-center items-center h-screen relative z-10"><Loader2 className="w-12 h-12 animate-spin text-purple-400" /></div>;
+  if (initialLoading) {
+    return (
+      <AppLoader
+        variant="fullscreen"
+        accent="purple"
+        title="Yildirim harekati hazirlaniyor"
+        subtitle="Refleks koridoru basinclaniyor"
+        messages={[
+          'Yuksek hiz senaryolari cagriliyor...',
+          'Sure protokolleri ayarlaniyor...',
+          'Yildirim rotasi aciliyor...',
+        ]}
+      />
+    );
+  }
 
   if (gameState === 'start') {
     return (
@@ -453,7 +468,17 @@ function YildirimModuContent() {
 
 export default function YildirimModu() {
   return (
-    <Suspense fallback={<div className="flex justify-center items-center h-screen relative z-10"><Loader2 className="w-12 h-12 animate-spin text-purple-400" /></div>}>
+    <Suspense
+      fallback={
+        <AppLoader
+          variant="fullscreen"
+          accent="purple"
+          title="Yildirim modulu yukleniyor"
+          subtitle="Savunma refleksleri devreye aliniyor"
+          messages={['Yildirim koridoru senkronize ediliyor...']}
+        />
+      }
+    >
       <YildirimModuContent />
     </Suspense>
   );

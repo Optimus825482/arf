@@ -11,6 +11,7 @@ import { playSound } from '@/lib/audio';
 import { useAuth } from '@/components/AuthProvider';
 import { db } from '@/lib/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import AppLoader from '@/components/AppLoader';
 
 export default function Home() {
   const router = useRouter();
@@ -34,6 +35,22 @@ export default function Home() {
       checkRole();
     }
   }, [user, loading, router]);
+
+  if (loading) {
+    return (
+      <AppLoader
+        variant="fullscreen"
+        accent="cyan"
+        title="Ana us aciliyor"
+        subtitle="Pilot kimligi dogrulaniyor"
+        messages={[
+          'Komuta kaydi taraniyor...',
+          'Murettebat profili araniyor...',
+          'Yildiz hatti aciliyor...',
+        ]}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col flex-1 min-h-screen items-center justify-center p-4 relative z-10">

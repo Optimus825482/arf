@@ -11,6 +11,7 @@ import { collection, getDocs } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import { toast } from 'sonner';
 import { playSound } from '@/lib/audio';
+import AppLoader from '@/components/AppLoader';
 
 export default function MadalyaOdasi() {
   const router = useRouter();
@@ -150,7 +151,21 @@ export default function MadalyaOdasi() {
     fetchBadges();
   }, [user, authLoading, router]);
 
-  if (authLoading || loading) return <div className="flex justify-center items-center h-screen relative z-10"><Loader2 className="w-12 h-12 animate-spin text-cyan-400" /></div>;
+  if (authLoading || loading) {
+    return (
+      <AppLoader
+        variant="fullscreen"
+        accent="amber"
+        title="Madalya odasi aciliyor"
+        subtitle="Unvan kayitlari cozuluyor"
+        messages={[
+          'Rozet envanteri taraniyor...',
+          'Basari dosyalari siralaniyor...',
+          'Onur panosu isleniyor...',
+        ]}
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-screen p-4 md:p-8 max-w-5xl mx-auto space-y-8 relative z-10 w-full">
