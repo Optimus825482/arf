@@ -189,38 +189,50 @@ Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver. Başka hiçbir açıklama metni 
             if (response.ok) {
               const data = await response.json();
               let content = data.choices[0].message.content.trim();
-              if (content.startsWith("\`\`\`json")) {
+              if (content.startsWith("```json")) {
                 content = content
-                  .replace(/^\`\`\`json/, "")
-                  .replace(/\`\`\`$/, "")
+                  .replace(/^```json/, "")
+                  .replace(/```$/, "")
                   .trim();
-              } else if (content.startsWith("\`\`\`")) {
+              } else if (content.startsWith("```")) {
                 content = content
-                  .replace(/^\`\`\`/, "")
-                  .replace(/\`\`\`$/, "")
+                  .replace(/^```/, "")
+                  .replace(/```$/, "")
                   .trim();
               }
-              const parsed = JSON.parse(content);
-              level = parsed.recommendedLevel || 1;
-              actionPlan = parsed.actionPlan || "";
-              learningPath = parsed.learningPath || "";
+              
+              try {
+                const parsed = JSON.parse(content);
+                level = parsed.recommendedLevel || 1;
+                actionPlan = parsed.actionPlan || "";
+                learningPath = parsed.learningPath || "";
+              } catch (parseErr) {
+                aiError = true;
+                logger.error("DeepSeek JSON Parse Hatası (Placement)", parseErr, { content });
+              }
             } else {
               aiError = true;
-              logger.error("DeepSeek API Hatası (HTTP)", undefined, { status: response.status, body: await response.text() });
+              const errorText = await response.text();
+              logger.error("DeepSeek API Hatası (HTTP)", undefined, { status: response.status, body: errorText });
             }
           } else {
             aiError = true;
+            logger.warn("DeepSeek API Key bulunamadı (Placement)");
           }
         } catch (e) {
           aiError = true;
-          logger.error("DeepSeek API Hatası (Placement, undefined):", e);
+          logger.error("DeepSeek API Çağrı Hatası (Placement):", e);
         }
 
         if (!actionPlan) {
-          // Fallback
+          // Fallback logic
           if (accuracy >= 90 && mulDivScore >= 80) level = 4;
           else if (accuracy >= 80 && mulDivScore >= 60) level = 3;
           else if (accuracy >= 50) level = 2;
+          else level = 1;
+          
+          actionPlan = "Temel işlemlerde hız ve doğruluk üzerine çalışmaya devam etmelisin.";
+          learningPath = "Toplama/Çıkarma -> Çarpma Tablosu -> Bölme Temelleri";
         }
 
         await userRef.set(
@@ -318,12 +330,19 @@ Bu bilgilere göre, öğrencinin SON döneminde gelişen/gerileyen alanları tes
             },
           );
           if (response.ok) {
-            const data = await response.json();
-            const parsed = JSON.parse(data.choices[0].message.content || "{}");
-            if (parsed.actionPlan) newActionPlan = parsed.actionPlan;
-            if (parsed.learningPath) newLearningPath = parsed.learningPath;
+            try {
+              const data = await response.json();
+              const parsed = JSON.parse(data.choices[0].message.content || "{}");
+              if (parsed.actionPlan) newActionPlan = parsed.actionPlan;
+              if (parsed.learningPath) newLearningPath = parsed.learningPath;
+            } catch (parseErr) {
+              aiError = true;
+              logger.error("DeepSeek JSON Parse Hatası (Reassess)", parseErr);
+            }
           } else {
             aiError = true;
+            const errorText = await response.text();
+            logger.error("DeepSeek API Hatası (Reassess HTTP)", undefined, { status: response.status, body: errorText });
           }
         } else {
           aiError = true;
@@ -366,7 +385,11 @@ Bu bilgilere göre, öğrencinin SON döneminde gelişen/gerileyen alanları tes
 
     return NextResponse.json({ error: "Unknown action" }, { status: 400 });
   } catch (error) {
+    const msg = error instanceof Error ? error.message : "Failed to update";
     logger.error("Student route error", error);
-    return NextResponse.json({ error: "Failed to update" }, { status: 500 });
+    return NextResponse.json({ 
+      error: "Sunucu hatası oluştu", 
+      details: process.env.NODE_ENV === "development" ? msg : undefined 
+    }, { status: 500 });
   }
 }
