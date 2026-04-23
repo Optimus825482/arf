@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, JetBrains_Mono, Space_Grotesk } from 'next/font/google';
+import Link from 'next/link';
 import './globals.css';
 import StarsBackground from '@/components/StarsBackground';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -68,8 +69,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <main className="flex-1">
                 {children}
               </main>
-              <footer className="px-4 pb-6 pt-2 text-center">
-                <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500/80 font-mono">
+              <footer className="px-4 pb-6 pt-3 text-center">
+                <div className="flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em] text-slate-500/90 font-mono flex-wrap">
+                  <Link href="/privacy" className="hover:text-cyan-300 transition-colors">
+                    Gizlilik Bildirimi
+                  </Link>
+                  <span className="text-slate-700">|</span>
+                  <Link href="/terms" className="hover:text-cyan-300 transition-colors">
+                    Kullanim Kosullari
+                  </Link>
+                </div>
+                <p className="mt-3 text-[10px] uppercase tracking-[0.25em] text-slate-500/80 font-mono">
                   Code By Erkan Erdem @ 2026
                 </p>
               </footer>

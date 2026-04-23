@@ -76,9 +76,9 @@ service cloud.firestore {
     match /parents/{parentId} {
       allow read: if isSignedIn() && request.auth.uid == parentId;
       allow create: if isSignedIn() && request.auth.uid == parentId && incoming().role == 'parent';
-      allow update: if isSignedIn() && request.auth.uid == parentId && 
-                    incoming().diff(existing()).affectedKeys().hasOnly(['linkedPilots']) &&
-                    incoming().linkedPilots.size() <= 5;
+      allow update: if isSignedIn() && request.auth.uid == parentId &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['linkedPilots', 'onboardingSeen', 'parentName']) &&
+                    (!incoming().keys().hasAny(['linkedPilots']) || incoming().linkedPilots.size() <= 5);
     }
 
     // ──── PAIRING CODES ────
