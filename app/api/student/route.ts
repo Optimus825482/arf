@@ -132,7 +132,7 @@ export async function POST(req: Request) {
           mentalMathAccuracy * 0.6 + Math.min(100, mmSpeedBonus) * 0.4,
         );
         const accuracy = Math.round(
-          ((addSubC + mulDivC) / results.length) * 100,
+          ((addSubC + mulDivC + mmC) / results.length) * 100,
         );
         const avgTimeMs = timeT / results.length;
 
