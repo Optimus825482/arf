@@ -4,6 +4,9 @@ export interface StudentMetrics {
   speedScore?: number;
   mentalMathScore?: number;
   accuracy?: number;
+  perceptionScore?: number;
+  concentrationScore?: number;
+  fatigueRatio?: number;
   level?: number;
   xp?: number;
   username?: string;
