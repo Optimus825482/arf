@@ -15,13 +15,15 @@ import HelpButton from '@/components/HelpButton';
 import { completeMission } from '@/lib/missionProgress';
 import { getLoreQuestion } from '@/lib/lore';
 import { authFetch } from '@/lib/apiClient';
+import type { StudentMetrics } from '@/lib/types';
+import type { MissionCard } from '@/lib/missions';
 
 function PratikOyunuContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: authLoading } = useAuth();
   const missionId = searchParams.get('mission');
-  const [metrics, setMetrics] = useState<any>(null);
+  const [metrics, setMetrics] = useState<StudentMetrics | null>(null);
   const [timeLeft, setTimeLeft] = useState(60);
   const [score, setScore] = useState(0);
   const [question, setQuestion] = useState({ q: '', options: [] as number[], a: 0, category: '' });
@@ -34,7 +36,7 @@ function PratikOyunuContent() {
   const [showFastBonus, setShowFastBonus] = useState(false);
   const [missionSaved, setMissionSaved] = useState(false);
   const [missionReward, setMissionReward] = useState<{ bonusXp: number; allCompleted: boolean } | null>(null);
-  const [nextMission, setNextMission] = useState<any | null>(null);
+  const [nextMission, setNextMission] = useState<Pick<MissionCard, 'id' | 'route'> | null>(null);
   const [finalXpData, setFinalXpData] = useState<{currentXp: number, level: number, earnedXp: number} | null>(null);
   // Batch: collect answers locally, write to Firestore once at end
   const [pendingResults, setPendingResults] = useState<Array<{category: string; correct: boolean}>>([]); 
@@ -46,13 +48,15 @@ function PratikOyunuContent() {
         const res = await authFetch('/api/missions');
         const data = await res.json();
         if (res.ok && data.missions) {
-          const currentIndex = data.missions.findIndex((m: any) => m.id === missionId);
+          const currentIndex = data.missions.findIndex((m: MissionCard) => m.id === missionId);
           if (currentIndex !== -1 && currentIndex < data.missions.length - 1) {
             setNextMission(data.missions[currentIndex + 1]);
           }
         }
       } catch (e) {
-        console.error("Next mission check failed", e);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error("Next mission check failed", e);
+        }
       }
     };
     fetchNextMission();
@@ -324,7 +328,7 @@ function PratikOyunuContent() {
           </div>
           <p className="text-slate-500 mb-6 font-mono text-xs uppercase tracking-widest text-center">Hedef 60s. Yanlış = -5s.</p>
           <button onClick={startGame} className="w-full neon-btn-blue py-5 text-xl tracking-widest font-bold">MOTÖRÜ ATEŞLE</button>
-          <Link href="/ogrenci" className="mt-6 inline-block font-mono text-xs uppercase text-slate-500 hover:text-red-400 transition tracking-widest">Geri Dön</Link>
+          <Link href="/ogrenci" prefetch={false} className="mt-6 inline-block font-mono text-xs uppercase text-slate-500 hover:text-red-400 transition tracking-widest">Geri Dön</Link>
         </div>
       </div>
     );
@@ -389,7 +393,7 @@ function PratikOyunuContent() {
               </button>
             )}
             <button onClick={startGame} disabled={saving} className="w-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-950/30 py-4 text-sm tracking-widest font-bold rounded-2xl transition">TEKRAR UÇ</button>
-            <Link href="/ogrenci" className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-2xl py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
+            <Link href="/ogrenci" prefetch={false} className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-2xl py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
           </div>
         </div>
       </div>

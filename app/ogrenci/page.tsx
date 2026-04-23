@@ -16,7 +16,6 @@ import Onboarding from '@/components/Onboarding';
 import { authFetch } from '@/lib/apiClient';
 import { getCommanderProgress, getDifficultyProfile } from '@/lib/commander';
 import MissionLaunchModal from '@/components/MissionLaunchModal';
-import LevelUpModal from '@/components/LevelUpModal';
 import LoreLoader from '@/components/LoreLoader';
 import type { DailyMissionPack, MissionCard } from '@/lib/missions';
 import type { UserData } from '@/lib/types';
@@ -33,15 +32,13 @@ export default function OgrenciDashboard() {
   const [selectedMission, setSelectedMission] = useState<MissionCard | null>(null);
   const [resetCountdown, setResetCountdown] = useState('');
   const [clearingMessage, setClearingMessage] = useState(false);
-  const [showLevelUp, setShowLevelUp] = useState(false);
-  const [leveledUpTo, setLeveledUpTo] = useState<number | null>(null);
 
   const handleReadMessage = async () => {
     if (!user || !studentData) return;
     playSound('click');
     setClearingMessage(true);
     try {
-      const updates: any = {};
+      const updates: Record<string, unknown> = {};
       
       // Commander message read logic
       if (studentData.commanderMessage && !studentData.commanderMessage.read) {
@@ -68,7 +65,9 @@ export default function OgrenciDashboard() {
         setStudentData(prev => prev ? { ...prev, ...updates } : prev);
       }
     } catch (e) {
-      console.error(e);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error(e);
+      }
       toast.error("Mesaj güncellenemedi.");
     } finally {
       setClearingMessage(false);
@@ -150,7 +149,9 @@ export default function OgrenciDashboard() {
         if (!res.ok) throw new Error(data.error || 'Gorev paketi alinamadi');
         setMissionPack(data);
       } catch (error) {
-        console.error(error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error(error);
+        }
         toast.error('Gorev merkezi baglantisi kurulamadi.');
       } finally {
         setMissionLoading(false);
@@ -186,7 +187,9 @@ export default function OgrenciDashboard() {
         });
         localStorage.setItem(`onboarding_seen_${user.uid}`, 'true');
       } catch (error) {
-        console.error("Error updating onboarding status", error);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error("Error updating onboarding status", error);
+        }
       }
     }
   };
@@ -238,12 +241,6 @@ export default function OgrenciDashboard() {
 
   return (
     <div className="flex flex-col min-h-screen p-4 md:p-8 max-w-5xl mx-auto space-y-6 relative z-10 w-full">
-      {showLevelUp && leveledUpTo !== null && (
-        <LevelUpModal 
-          level={leveledUpTo} 
-          onClose={() => setShowLevelUp(false)} 
-        />
-      )}
       <MissionLaunchModal
         mission={selectedMission}
         locked={
@@ -356,7 +353,7 @@ export default function OgrenciDashboard() {
                           <span className="text-[10px] font-mono font-bold uppercase tracking-widest">AI Stratejik Rota</span>
                         </div>
                         <p className="text-sm font-mono text-slate-300 leading-relaxed italic border-l-2 border-cyan-500/30 pl-3">
-                          "{studentData.actionPlan}"
+                          &quot;{studentData.actionPlan}&quot;
                         </p>
                       </div>
                     )}
@@ -649,13 +646,13 @@ export default function OgrenciDashboard() {
                <Award className="w-4 h-4 mr-2 text-yellow-500" /> ÜNVAN & SİSTEMLER
              </h3>
              <div className="space-y-3">
-               <Link href="/ogrenci/madalyalar" className="w-full block" onClick={() => playSound('click')}>
+               <Link href="/ogrenci/madalyalar" prefetch={false} className="w-full block" onClick={() => playSound('click')}>
                  <button className="w-full py-4 rounded-xl border border-yellow-500/30 bg-yellow-900/10 hover:bg-yellow-900/30 flex items-center justify-center gap-3 transition">
                    <Star className="w-5 h-5 text-yellow-500 animate-pulse" />
                    <span className="font-mono text-[10px] tracking-widest text-yellow-400 font-bold uppercase">Madalya Odası</span>
                  </button>
                </Link>
-               <Link href="/ogrenci/el-kitabi" className="w-full block" onClick={() => playSound('click')}>
+               <Link href="/ogrenci/el-kitabi" prefetch={false} className="w-full block" onClick={() => playSound('click')}>
                  <button className="w-full py-4 rounded-xl border border-cyan-500/30 bg-cyan-900/10 hover:bg-cyan-900/30 flex items-center justify-center gap-3 transition">
                    <BookOpen className="w-5 h-5 text-cyan-400" />
                    <span className="font-mono text-[10px] tracking-widest text-cyan-400 font-bold uppercase">Pilot El Kitabı</span>

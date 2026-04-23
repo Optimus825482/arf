@@ -2,8 +2,6 @@
  * Matematik işlemlerini uzay temalı hikaye metinlerine (Lore) dönüştüren yardımcı fonksiyonlar.
  */
 
-type Operation = '+' | '-' | '*' | '/';
-
 const loreTemplates: Record<string, string[]> = {
   '+': [
     "Kalkanlara %n1 birim güç verildi, %n2 birim daha eklenirse toplam kalkan gücü kaç olur?",

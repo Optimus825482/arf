@@ -13,6 +13,7 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://arf.erkanerdem.net';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  preload: false,
 });
 
 const jetbrainsMono = JetBrains_Mono({
@@ -73,11 +74,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
               <footer className="px-4 pb-6 pt-3 text-center">
                 <div className="flex items-center justify-center gap-3 text-[10px] uppercase tracking-[0.2em] text-slate-500/90 font-mono flex-wrap">
-                  <Link href="/privacy" className="hover:text-cyan-300 transition-colors">
+                  <Link href="/privacy" prefetch={false} className="hover:text-cyan-300 transition-colors">
                     Gizlilik Bildirimi
                   </Link>
                   <span className="text-slate-700">|</span>
-                  <Link href="/terms" className="hover:text-cyan-300 transition-colors">
+                  <Link href="/terms" prefetch={false} className="hover:text-cyan-300 transition-colors">
                     Kullanim Kosullari
                   </Link>
                 </div>

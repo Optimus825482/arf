@@ -14,6 +14,7 @@ import { handleSystemError } from '@/lib/errors';
 import HelpButton from '@/components/HelpButton';
 import { authFetch } from '@/lib/apiClient';
 import { completeMission } from '@/lib/missionProgress';
+import type { MissionCard } from '@/lib/missions';
 
 function UzayGoreviContent() {
   const router = useRouter();
@@ -39,9 +40,8 @@ function UzayGoreviContent() {
   const [errorMsg, setErrorMsg] = useState('');
   const [missionSaved, setMissionSaved] = useState(false);
   const [missionReward, setMissionReward] = useState<{ bonusXp: number; allCompleted: boolean } | null>(null);
-  const [nextMission, setNextMission] = useState<any | null>(null);
+  const [nextMission, setNextMission] = useState<Pick<MissionCard, 'id' | 'route'> | null>(null);
   const [finalXpData, setFinalXpData] = useState<{currentXp: number, level: number, earnedXp: number} | null>(null);
-  const [studentMetrics, setStudentMetrics] = useState<any>(null);
 
   useEffect(() => {
     if (!user || !missionId) return;
@@ -50,13 +50,15 @@ function UzayGoreviContent() {
         const res = await authFetch('/api/missions');
         const data = await res.json();
         if (res.ok && data.missions) {
-          const currentIndex = data.missions.findIndex((m: any) => m.id === missionId);
+          const currentIndex = data.missions.findIndex((m: MissionCard) => m.id === missionId);
           if (currentIndex !== -1 && currentIndex < data.missions.length - 1) {
             setNextMission(data.missions[currentIndex + 1]);
           }
         }
       } catch (e) {
-        console.error("Next mission check failed", e);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error("Next mission check failed", e);
+        }
       }
     };
     fetchNextMission();
@@ -192,7 +194,7 @@ function UzayGoreviContent() {
           <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
           <h2 className="text-xl font-mono text-white mb-2 uppercase tracking-wide">Görev İletişimi Koptu</h2>
           <p className="text-slate-400 mb-8 font-mono text-sm leading-relaxed">{errorMsg}</p>
-          <Link href="/ogrenci" className="neon-btn-purple px-8 py-4 inline-block tracking-widest text-sm w-full">ANA ÜSSE DÖN</Link>
+          <Link href="/ogrenci" prefetch={false} className="neon-btn-purple px-8 py-4 inline-block tracking-widest text-sm w-full">ANA ÜSSE DÖN</Link>
         </div>
       </div>
     );
@@ -201,7 +203,7 @@ function UzayGoreviContent() {
   return (
     <div className="flex flex-col min-h-screen p-4 max-w-4xl mx-auto justify-center relative z-10 w-full">
       <header className="flex items-center justify-between border-b border-purple-500/20 pb-4 mb-8">
-        <Link href="/ogrenci" className="hud-badge text-slate-500 hover:text-white transition">İptal Et</Link>
+        <Link href="/ogrenci" prefetch={false} className="hud-badge text-slate-500 hover:text-white transition">İptal Et</Link>
         <div className="flex items-center text-[10px] font-mono tracking-widest font-bold bg-purple-900/40 text-purple-400 border border-purple-500/30 px-4 py-2 rounded-full">
           <BrainCircuit className="w-4 h-4 mr-2" /> YAPAY ZEKA GÖREVİ
         </div>
@@ -329,7 +331,7 @@ function UzayGoreviContent() {
                           YENİ GÖREV İSTE
                         </button>
                      )}
-                     <Link href="/ogrenci" className="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition rounded-xl py-4 font-mono font-bold text-white tracking-widest text-xs border border-white/10 flex items-center justify-center">
+                     <Link href="/ogrenci" prefetch={false} className="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition rounded-xl py-4 font-mono font-bold text-white tracking-widest text-xs border border-white/10 flex items-center justify-center">
                        ANA ÜS
                      </Link>
                    </div>

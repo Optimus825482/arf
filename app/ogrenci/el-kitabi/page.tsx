@@ -48,7 +48,7 @@ export default function PilotElKitabi() {
   return (
     <div className="flex flex-col min-h-screen p-4 md:p-8 max-w-4xl mx-auto relative z-10 w-full">
       <header className="flex items-center justify-between mb-12">
-        <Link href="/ogrenci" onClick={() => playSound('click')} className="flex items-center gap-2 text-slate-400 hover:text-white transition group">
+        <Link href="/ogrenci" prefetch={false} onClick={() => playSound('click')} className="flex items-center gap-2 text-slate-400 hover:text-white transition group">
           <ArrowLeft className="w-5 h-5 group-hover:-translate-x-1 transition" />
           <span className="font-mono text-sm tracking-widest uppercase">Ana Üs</span>
         </Link>

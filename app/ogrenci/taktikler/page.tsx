@@ -15,7 +15,7 @@ const playSound = (type: 'correct' | 'wrong' | 'click' | 'success') => {
   try {
     const audio = new Audio(`/sounds/${type}.mp3`);
     audio.volume = 0.5;
-    audio.play().catch(e => console.log('Audio play blocked:', e));
+    audio.play().catch(() => undefined);
   } catch {
     // Ignore
   }

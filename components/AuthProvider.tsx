@@ -45,7 +45,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         window.location.replace('/');
       }
     } catch (error) {
-      console.error("Logout error", error);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error("Logout error", error);
+      }
     }
   };
 

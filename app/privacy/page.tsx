@@ -14,7 +14,7 @@ export default function PrivacyPage() {
           <h1 className="text-3xl md:text-4xl font-mono font-bold uppercase tracking-widest text-cyan-400">
             Gizlilik Bildirimi
           </h1>
-          <Link href="/" className="text-xs font-mono uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
+          <Link href="/" prefetch={false} className="text-xs font-mono uppercase tracking-widest text-slate-400 hover:text-white transition-colors">
             Ana Sayfaya Don
           </Link>
         </div>

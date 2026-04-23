@@ -35,7 +35,9 @@ export default function StudentProgressChart({ userId }: ChartProps) {
         
         setData(historyData);
       } catch (e) {
-        console.error("Chart data error:", e);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error("Chart data error:", e);
+        }
       } finally {
         setLoading(false);
       }

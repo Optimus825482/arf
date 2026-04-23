@@ -156,7 +156,7 @@ export default function MadalyaOdasi() {
     <div className="flex flex-col min-h-screen p-4 md:p-8 max-w-5xl mx-auto space-y-8 relative z-10 w-full">
       <header className="flex flex-col md:flex-row items-center justify-between bg-blue-900/10 backdrop-blur-md rounded-3xl p-6 border border-blue-500/20 mb-2 gap-4">
         <div className="flex items-center gap-4 w-full md:w-auto">
-          <Link href="/ogrenci">
+          <Link href="/ogrenci" prefetch={false}>
             <button className="flex items-center justify-center w-12 h-12 rounded-full bg-slate-800 border border-blue-400/50 p-2 hover:bg-slate-700 transition" onClick={() => playSound('click')}>
               <ArrowLeft className="w-full h-full text-cyan-400" />
             </button>

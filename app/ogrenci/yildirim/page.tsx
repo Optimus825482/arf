@@ -15,6 +15,7 @@ import { completeMission } from '@/lib/missionProgress';
 import { getLoreQuestion } from '@/lib/lore';
 import { authFetch } from '@/lib/apiClient';
 import type { StudentMetrics } from '@/lib/types';
+import type { MissionCard } from '@/lib/missions';
 
 function YildirimModuContent() {
   const router = useRouter();
@@ -35,7 +36,7 @@ function YildirimModuContent() {
   const [lastCorrect, setLastCorrect] = useState<boolean | null>(null);
   const [missionSaved, setMissionSaved] = useState(false);
   const [missionReward, setMissionReward] = useState<{ bonusXp: number; allCompleted: boolean } | null>(null);
-  const [nextMission, setNextMission] = useState<any | null>(null);
+  const [nextMission, setNextMission] = useState<Pick<MissionCard, 'id' | 'route'> | null>(null);
   const [finalXpData, setFinalXpData] = useState<{currentXp: number, level: number, earnedXp: number} | null>(null);
   
   // Batch collection for Firebase
@@ -48,13 +49,15 @@ function YildirimModuContent() {
         const res = await authFetch('/api/missions');
         const data = await res.json();
         if (res.ok && data.missions) {
-          const currentIndex = data.missions.findIndex((m: any) => m.id === missionId);
+          const currentIndex = data.missions.findIndex((m: MissionCard) => m.id === missionId);
           if (currentIndex !== -1 && currentIndex < data.missions.length - 1) {
             setNextMission(data.missions[currentIndex + 1]);
           }
         }
       } catch (e) {
-        console.error("Next mission check failed", e);
+        if (process.env.NODE_ENV !== 'production') {
+          console.error("Next mission check failed", e);
+        }
       }
     };
     fetchNextMission();
@@ -212,7 +215,7 @@ function YildirimModuContent() {
     setMissionReward(null);
   };
 
-  const handleWrongAnswer = (timeout: boolean = false) => {
+  const handleWrongAnswer = useCallback((timeout: boolean = false) => {
     playSound('incorrect');
     setCombo(0);
     setLastCorrect(false);
@@ -234,7 +237,7 @@ function YildirimModuContent() {
         setLastCorrect(null);
       }, 300);
     }
-  };
+  }, [endGame, generateQuestion, lives, question.category]);
 
   useEffect(() => {
     let t: ReturnType<typeof setInterval> | undefined;
@@ -244,7 +247,7 @@ function YildirimModuContent() {
       handleWrongAnswer(true);
     }
     return () => clearInterval(t);
-  }, [timeLeft, gameState, lives, question.category]);
+  }, [timeLeft, gameState, handleWrongAnswer]);
 
   const handleAnswer = (ans: number) => {
     if (gameState !== 'playing') return;
@@ -315,7 +318,7 @@ function YildirimModuContent() {
           </div>
 
           <button onClick={startGame} className="w-full neon-btn-outline border-purple-500 text-purple-300 hover:bg-purple-900/40 py-5 text-xl tracking-widest font-bold">YILDIRIMI ÇAĞIR</button>
-          <Link href="/ogrenci" className="mt-6 inline-block font-mono text-xs uppercase text-slate-500 hover:text-red-400 transition tracking-widest">Geri Dön</Link>
+          <Link href="/ogrenci" prefetch={false} className="mt-6 inline-block font-mono text-xs uppercase text-slate-500 hover:text-red-400 transition tracking-widest">Geri Dön</Link>
         </div>
       </div>
     );
@@ -379,7 +382,7 @@ function YildirimModuContent() {
               </button>
             )}
             <button onClick={startGame} disabled={saving} className="w-full border border-purple-500/50 text-purple-400 hover:bg-purple-950/30 py-4 text-sm tracking-widest font-bold rounded-2xl transition">TEKRAR DENE</button>
-            <Link href="/ogrenci" className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-2xl py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
+            <Link href="/ogrenci" prefetch={false} className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-2xl py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
           </div>
         </div>
       </div>

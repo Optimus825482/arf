@@ -420,7 +420,7 @@ export default function VeliDashboard() {
     <div className="flex flex-col min-h-screen p-4 md:p-8 max-w-5xl mx-auto space-y-6 relative z-10">
       <header className="flex items-center justify-between bg-purple-900/10 backdrop-blur-md rounded-2xl p-4 border border-purple-500/20 mb-2">
         <div className="flex items-center gap-4">
-          <Link href="/">
+          <Link href="/" prefetch={false}>
             <button className="flex items-center justify-center w-10 h-10 rounded-full bg-slate-800 border border-purple-400/50 p-2 hover:bg-slate-700 transition" onClick={() => playSound('click')}>
               <ArrowLeft className="w-full h-full text-purple-400" />
             </button>

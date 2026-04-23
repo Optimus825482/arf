@@ -7,7 +7,9 @@ interface ErrorOptions {
 }
 
 export function handleSystemError(error: unknown, options: ErrorOptions = {}) {
-  console.error("System Error Caught:", error);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error("System Error Caught:", error);
+  }
 
   let message = "Beklenmedik bir veri iletim hatası oluştu.";
   const errMsg = error instanceof Error ? error.message : (typeof error === 'object' && error && 'message' in error ? String((error as { message: unknown }).message) : '');

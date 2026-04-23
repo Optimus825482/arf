@@ -117,7 +117,9 @@ export default function SabitKalibrasyon() {
         toast.error('Seviye kaydedilemedi. Lütfen tekrar deneyin.');
       }
     } catch (e) {
-      console.error("Placement error:", e);
+      if (process.env.NODE_ENV !== 'production') {
+        console.error("Placement error:", e);
+      }
       toast.error('Bağlantı hatası. Sonuçlar kaydedilemedi.');
     }
     

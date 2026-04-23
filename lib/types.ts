@@ -36,7 +36,7 @@ export interface UserData {
   commanderMessage?: {
     text: string;
     bonusXp: number;
-    sentAt: any;
+    sentAt: unknown;
     read: boolean;
     fromName: string;
   };

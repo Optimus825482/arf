@@ -66,7 +66,7 @@ export default function Home() {
         </div>
 
         <div className="mt-8 pt-4 relative z-10">
-          <Link href="/auth" onClick={() => playSound('click')}>
+          <Link href="/auth" prefetch={false} onClick={() => playSound('click')}>
             <motion.button 
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -82,11 +82,11 @@ export default function Home() {
 
         <div className="pt-6 mt-2 border-t border-white/5 relative z-10 space-y-4">
           <div className="flex items-center justify-center gap-3 flex-wrap text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400">
-            <Link href="/privacy" className="hover:text-cyan-300 transition-colors">
+            <Link href="/privacy" prefetch={false} className="hover:text-cyan-300 transition-colors">
               Gizlilik Bildirimi
             </Link>
             <span className="text-slate-700">|</span>
-            <Link href="/terms" className="hover:text-cyan-300 transition-colors">
+            <Link href="/terms" prefetch={false} className="hover:text-cyan-300 transition-colors">
               Kullanim Kosullari
             </Link>
             <span className="text-slate-700">|</span>

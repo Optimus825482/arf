@@ -363,7 +363,7 @@ export default function AuthPage() {
           )}
 
           <div className="pt-4 border-t border-slate-800">
-             <Link href="/" className="text-xs text-slate-500 hover:text-white font-mono">← Ana Sayfa</Link>
+             <Link href="/" prefetch={false} className="text-xs text-slate-500 hover:text-white font-mono">← Ana Sayfa</Link>
           </div>
         </div>
       </motion.div>
