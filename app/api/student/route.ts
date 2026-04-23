@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminDb } from "@/lib/adminAuth";
+import { adminUnavailable, getAdminDb } from "@/lib/adminAuth";
 import { logger } from "@/lib/logger";
 import { FieldValue } from "firebase-admin/firestore";
 import { verifyRequest, unauthorized, forbidden } from "@/lib/adminAuth";
@@ -7,10 +7,16 @@ import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 
 export async function POST(req: Request) {
   try {
-    const db = getAdminDb();
-
     const authed = await verifyRequest(req);
     if (!authed) return unauthorized();
+
+    let db;
+    try {
+      db = getAdminDb();
+    } catch (error) {
+      logger.error("Student route admin init failed", error);
+      return adminUnavailable();
+    }
 
     const body = await req.json();
     const { uid, action } = body;

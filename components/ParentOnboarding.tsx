@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Radar, BarChart3, Target, ShieldCheck, Sparkles, X, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { Radar, BarChart3, Target, ShieldCheck, Sparkles, X, ChevronRight, ChevronLeft, Check, BrainCircuit, Activity } from 'lucide-react';
 
 interface ParentOnboardingProps {
   parentName?: string;
@@ -12,32 +12,38 @@ interface ParentOnboardingProps {
 
 const steps = [
   {
-    title: "Görev Gözlemcisi Paneline Hoş Geldin!",
-    description: "Selam Komutan! Bu panel, çocuğunuzun ARF uzay görevlerindeki ilerlemesini canlı olarak takip edebileceğin komuta merkezidir.",
+    title: "Görev Gözlem Merkezi",
+    description: "ARF Komuta Merkezine hoş geldiniz. Bu panel üzerinden pilotunuzun matematik görevlerindeki performansını anlık telemetri verileriyle takip edebilirsiniz.",
     icon: <Radar className="w-16 h-16 text-cyan-400" />,
     color: "from-cyan-500/20 to-blue-500/20",
   },
   {
-    title: "Performans Göstergeleri",
-    description: "Toplama/çıkarma, çarpma/bölme, hız ve doğruluk metriklerini kart ve grafiklerde görebilirsin. Hangi alanda güçlü, hangisinde desteğe ihtiyacı var — hepsi burada.",
-    icon: <BarChart3 className="w-16 h-16 text-emerald-400" />,
-    color: "from-emerald-500/20 to-teal-500/20",
-  },
-  {
-    title: "AI Destekli Brifing",
-    description: "Yapay zeka, çocuğunuzun son performansına göre sana özel aksiyon planı ve öğrenme yolu hazırlar. Evde birlikte hangi konuya odaklanmanız gerektiğini söyler.",
-    icon: <Sparkles className="w-16 h-16 text-purple-400" />,
+    title: "Bilişsel Analiz Laboratuvarı",
+    description: "Sadece doğru cevapları değil; işlem algı hızını, odaklanma kapasitesini ve zihinsel yorulma endeksini ölçüyoruz. Çocuğunuzun çalışma ritmini bilimsel verilerle keşfedin.",
+    icon: <BrainCircuit className="w-16 h-16 text-purple-400" />,
     color: "from-purple-500/20 to-indigo-500/20",
   },
   {
-    title: "Hedefler ve Rütbeler",
-    description: "Çocuğunuzun kazandığı madalyaları, günlük görevlerini ve rütbe ilerlemesini görebilirsin. Başarıları birlikte kutlayın!",
-    icon: <Target className="w-16 h-16 text-yellow-400" />,
+    title: "Stratejik Performans Verileri",
+    description: "Dinamik zorluk seviyeleri, isabet oranları ve işlem bazlı (T/Ç, Ç/B) yetkinlik analizleri. Pilotun hangi teknik sistemlerde uzmanlaştığını anlık görün.",
+    icon: <Activity className="w-16 h-16 text-emerald-400" />,
+    color: "from-emerald-500/20 to-teal-500/20",
+  },
+  {
+    title: "AI Destekli Gelişim Rotası",
+    description: "DeepSeek AI, pilotun zayıf noktalarını tespit ederek her hafta kişiselleştirilmiş bir stratejik plan ve öğrenme yolu oluşturur.",
+    icon: <Sparkles className="w-16 h-16 text-yellow-400" />,
     color: "from-yellow-500/20 to-orange-500/20",
   },
   {
-    title: "Güvenlik ve Gizlilik",
-    description: "Tüm veriler güvenli sunucularımızda saklanır. Sadece sizin hesabınıza bağlı pilotlar görüntülenir. Her şey hazır — görevler başlasın!",
+    title: "Hedef ve Motivasyon",
+    description: "Pilotunuza özel 'Komutan Talimatları' ve XP bonusları göndererek motivasyonunu artırabilir, kazandığı onur nişanlarını inceleyebilirsiniz.",
+    icon: <Target className="w-16 h-16 text-pink-400" />,
+    color: "from-pink-500/20 to-rose-500/20",
+  },
+  {
+    title: "Güvenli Veri Hattı",
+    description: "Tüm performans verileri uçtan uca şifrelenmiş olarak saklanır. Pilotunuzun eğitimi ve gelişimi için her şey hazır. Operasyon başlasın!",
     icon: <ShieldCheck className="w-16 h-16 text-sky-400" />,
     color: "from-sky-500/20 to-cyan-500/20",
   },

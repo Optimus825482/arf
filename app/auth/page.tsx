@@ -1,13 +1,13 @@
 "use client";
 
 import { motion } from 'motion/react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Key, Loader2, Rocket, Activity } from 'lucide-react';
 import TurkishFlag from '@/components/TurkishFlag';
 import { toast } from 'sonner';
 import { auth, db } from '@/lib/firebase';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, getRedirectResult, signInWithPopup, signInWithRedirect } from 'firebase/auth';
 import type { User } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { doc, setDoc, getDoc, serverTimestamp } from 'firebase/firestore';
@@ -49,6 +49,47 @@ export default function AuthPage() {
   const [tempUser, setTempUser] = useState<User | null>(null);
   const [parentFirstName, setParentFirstName] = useState('');
   const [parentLastName, setParentLastName] = useState('');
+
+  const finishLogin = useCallback(async (signedInUser: User) => {
+    const [studentSnap, parentSnap] = await Promise.all([
+      getDoc(doc(db, 'users', signedInUser.uid)),
+      getDoc(doc(db, 'parents', signedInUser.uid))
+    ]);
+
+    if (studentSnap.exists()) {
+      toast.success("ARF Gemisine Yeniden Hoş Geldin!");
+      router.push('/ogrenci');
+    } else if (parentSnap.exists()) {
+      toast.success("Gözcü Olarak Bağlanıldı.");
+      router.push('/veli');
+    } else {
+      setTempUser(signedInUser);
+      setIsRegistering(true);
+    }
+  }, [router]);
+
+  useEffect(() => {
+    let active = true;
+
+    const resolveRedirectLogin = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!active || !result?.user) return;
+        await finishLogin(result.user);
+      } catch (err: unknown) {
+        if (!active) return;
+        handleSystemError(err, { title: 'Google Giriş Hatası', action: 'Lütfen Google hesabınızı kontrol edin.' });
+      } finally {
+        if (active) setLoading(false);
+      }
+    };
+
+    void resolveRedirectLogin();
+
+    return () => {
+      active = false;
+    };
+  }, [finishLogin]);
 
   if (authLoading && !isRegistering) {
     return (
@@ -168,27 +209,19 @@ export default function AuthPage() {
   const handleGoogleLogin = async () => {
     setLoading(true);
     const provider = new GoogleAuthProvider();
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      
-      // Check if user exists as parent or student
-      const [studentSnap, parentSnap] = await Promise.all([
-        getDoc(doc(db, 'users', user.uid)),
-        getDoc(doc(db, 'parents', user.uid))
-      ]);
+    const ua = window.navigator.userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(ua);
+    const isSafari = /safari/.test(ua) && !/crios|fxios|edgios|chrome|android/.test(ua);
+    const isMobile = /android|iphone|ipad|ipod|mobile/.test(ua);
 
-      if (studentSnap.exists()) {
-        toast.success("ARF Gemisine Yeniden Hoş Geldin!");
-        router.push('/ogrenci');
-      } else if (parentSnap.exists()) {
-        toast.success("Gözcü Olarak Bağlanıldı.");
-        router.push('/veli');
-      } else {
-        // New Registration flow
-        setTempUser(user);
-        setIsRegistering(true);
+    try {
+      if (isIos || isSafari || isMobile) {
+        await signInWithRedirect(auth, provider);
+        return;
       }
+
+      const result = await signInWithPopup(auth, provider);
+      await finishLogin(result.user);
     } catch (err: unknown) {
       if (err instanceof FirebaseError && err.code === 'auth/popup-closed-by-user') {
         toast.error('Google giris penceresi kapatildi.');

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminDb, unauthorized, verifyRequest } from "@/lib/adminAuth";
+import { adminUnavailable, getAdminDb, unauthorized, verifyRequest } from "@/lib/adminAuth";
 import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import type { DailyMissionPack } from "@/lib/missions";
 import { FieldValue } from "firebase-admin/firestore";
@@ -21,7 +21,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "missionId is required" }, { status: 400 });
     }
 
-    const db = getAdminDb();
+    let db;
+    try {
+      db = getAdminDb();
+    } catch (error) {
+      console.error("Mission completion route admin init failed:", error);
+      return adminUnavailable();
+    }
     const userRef = db.doc(`users/${authed.uid}`);
     const userSnap = await userRef.get();
     if (!userSnap.exists) {

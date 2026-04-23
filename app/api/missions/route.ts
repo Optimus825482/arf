@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getAdminDb, unauthorized, verifyRequest } from "@/lib/adminAuth";
+import { adminUnavailable, getAdminDb, unauthorized, verifyRequest } from "@/lib/adminAuth";
 import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import {
   buildFallbackMissionPack,
@@ -83,7 +83,13 @@ export async function GET(req: Request) {
     });
     if (!rl.ok) return rateLimited(rl.retryAfter!);
 
-    const db = getAdminDb();
+    let db;
+    try {
+      db = getAdminDb();
+    } catch (error) {
+      console.error("Missions route admin init failed:", error);
+      return adminUnavailable();
+    }
     const userRef = db.doc(`users/${authed.uid}`);
     const userSnap = await userRef.get();
     if (!userSnap.exists) {

@@ -122,3 +122,10 @@ export function unauthorized() {
 export function forbidden() {
   return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 }
+
+export function adminUnavailable() {
+  return NextResponse.json(
+    { error: "Server auth/config is not ready. Firebase Admin credentials are missing." },
+    { status: 503 },
+  );
+}
