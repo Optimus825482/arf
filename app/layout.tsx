@@ -70,7 +70,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               </main>
               <footer className="px-4 pb-6 pt-2 text-center">
                 <p className="text-[10px] uppercase tracking-[0.25em] text-slate-500/80 font-mono">
-                  Uygulama Gelistiricisi Erkan Erdem @ 2026
+                  Code By Erkan Erdem @ 2026
                 </p>
               </footer>
             </AuthProvider>
