@@ -1,0 +1,89 @@
+import "server-only";
+import { cert, getApps, initializeApp, type App } from "firebase-admin/app";
+import { getAuth } from "firebase-admin/auth";
+import { getFirestore, type Firestore } from "firebase-admin/firestore";
+import { NextResponse } from "next/server";
+import { ensureEnv } from "./env";
+
+let _app: App | null = null;
+
+function getAdminApp(): App | null {
+  ensureEnv();
+  if (_app) return _app;
+  if (getApps().length > 0) {
+    _app = getApps()[0];
+    return _app;
+  }
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) return null;
+  try {
+    const creds = JSON.parse(raw);
+    _app = initializeApp({ credential: cert(creds) });
+    return _app;
+  } catch (e) {
+    console.error("Firebase Admin init failed:", e);
+    return null;
+  }
+}
+
+/** Admin Firestore instance — bypasses client-side security rules. */
+export function getAdminDb(): Firestore {
+  const app = getAdminApp();
+  if (!app)
+    throw new Error(
+      "Firebase Admin not initialised – FIREBASE_SERVICE_ACCOUNT missing",
+    );
+  return getFirestore(app);
+}
+
+export interface AuthedUser {
+  uid: string;
+  email?: string;
+  role?: "student" | "parent" | "admin";
+}
+
+export async function verifyRequest(req: Request): Promise<AuthedUser | null> {
+  const header =
+    req.headers.get("authorization") || req.headers.get("Authorization");
+  if (!header?.startsWith("Bearer ")) return null;
+  const token = header.slice(7).trim();
+  if (!token) return null;
+
+  const app = getAdminApp();
+  if (!app) {
+    // Dev / unconfigured env: fail closed unless explicitly opted in.
+    if (process.env.ALLOW_UNVERIFIED_AUTH === "true") {
+      if (process.env.NODE_ENV === "production") {
+        console.error(
+          "ALLOW_UNVERIFIED_AUTH must not be enabled in production. Ignoring.",
+        );
+        return null;
+      }
+      console.warn(
+        "Firebase Admin not configured; allowing unverified auth (dev only).",
+      );
+      return { uid: "unverified", email: "dev@local" };
+    }
+    return null;
+  }
+
+  try {
+    const decoded = await getAuth(app).verifyIdToken(token);
+    return {
+      uid: decoded.uid,
+      email: decoded.email,
+      role: decoded.role as AuthedUser["role"],
+    };
+  } catch (e) {
+    console.error("Token verify failed:", e);
+    return null;
+  }
+}
+
+export function unauthorized() {
+  return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+}
+
+export function forbidden() {
+  return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+}

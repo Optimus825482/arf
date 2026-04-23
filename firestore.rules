@@ -1,0 +1,97 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() > 0 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+
+    // ──── USERS (Students) ────
+    match /users/{userId} {
+      function isLinkedParent() {
+        let parentDoc = get(/databases/$(database)/documents/parents/$(request.auth.uid));
+        return parentDoc != null && userId in parentDoc.data.linkedPilots;
+      }
+
+      allow get: if isSignedIn() && (
+        (request.auth.uid == userId) || isLinkedParent()
+      );
+
+      allow list: if isSignedIn() && (
+        (request.auth.uid == userId) || isLinkedParent()
+      );
+
+      // Allow creation with required fields
+      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId &&
+                    incoming().keys().hasAll(['username', 'role', 'pairingCode', 'xp', 'level', 'shipColor', 'createdAt', 'updatedAt']) &&
+                    incoming().username is string && incoming().username.size() > 0 && incoming().username.size() <= 60 &&
+                    incoming().role == 'student' &&
+                    incoming().pairingCode is string && incoming().pairingCode.size() == 6 &&
+                    incoming().xp is number && incoming().xp >= 0 &&
+                    incoming().level is number && incoming().level >= 0 &&
+                    incoming().shipColor is string && incoming().shipColor.size() <= 60 &&
+                    incoming().createdAt == request.time &&
+                    incoming().updatedAt == request.time;
+      
+      // Allow updates only to safe visual/preference fields.
+      // XP, Level, Metrics and Action Plans must be updated via server-side API routes.
+      allow update: if isSignedIn() && isValidId(userId) && request.auth.uid == userId &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'shipColor', 'updatedAt', 'onboardingSeen'
+        ]) &&
+        incoming().updatedAt == request.time;
+
+      // Badges subcollection
+      match /badges/{badgeId} {
+        allow read: if isSignedIn() && ( (request.auth.uid == userId) || isLinkedParent() );
+        allow create: if false; // Should be earned via API
+        allow update: if false;
+      }
+
+      // Performance subcollection
+      match /performance/{perfId} {
+        allow read: if isSignedIn() && ( (request.auth.uid == userId) || isLinkedParent() );
+        allow create, update: if false; // Should be updated via API
+      }
+
+      // Daily Stats subcollection
+      match /daily_stats/{dateId} {
+        allow read: if isSignedIn() && ( (request.auth.uid == userId) || isLinkedParent() );
+        allow create, update: if false; // Server-side only
+      }
+
+      // Plan History subcollection
+      match /planHistory/{planId} {
+        allow read: if isSignedIn() && ( (request.auth.uid == userId) || isLinkedParent() );
+        allow create: if false; // Server-side only
+        allow update, delete: if false;
+      }
+    }
+
+    // ──── PARENTS ────
+    match /parents/{parentId} {
+      allow read: if isSignedIn() && request.auth.uid == parentId;
+      allow create: if isSignedIn() && request.auth.uid == parentId && incoming().role == 'parent';
+      allow update: if isSignedIn() && request.auth.uid == parentId && 
+                    incoming().diff(existing()).affectedKeys().hasOnly(['linkedPilots']) &&
+                    incoming().linkedPilots.size() <= 5;
+    }
+
+    // ──── PAIRING CODES ────
+    match /pairingCodes/{code} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow update, delete: if false;
+    }
+
+    // ──── SETTINGS (Admin) ────
+    match /settings/{settingId} {
+      allow read: if isSignedIn();
+      allow write: if false; // Restricted to Admin SDK only
+    }
+  }
+}

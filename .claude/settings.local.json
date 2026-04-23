@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(npx next *)",
+      "Bash(npm view *)",
+      "Bash(npm --prefix D:/arf ls next-pwa)",
+      "Bash(node -e ' *)",
+      "Bash(python -c ' *)",
+      "Bash(node -e \"const fs=require\\('fs'\\);const p='app/api/student/route.ts';const t=fs.readFileSync\\(p,'utf8'\\);const n=t.replace\\('if \\(Date.now\\(\\) - lastUpdate < 3000\\)','if \\(Date.now\\(\\) - lastUpdate < 5000\\)'\\);fs.writeFileSync\\(p,n\\);console.log\\(n!==t?'done':'unchanged'\\);\")"
+    ]
+  }
+}

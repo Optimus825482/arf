@@ -1,0 +1,85 @@
+{
+  "entities": {
+    "User": {
+      "title": "Mürettebat Profili",
+      "description": "Öğrenci (Pilot) kullanıcı profili",
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "role": { "type": "string", "enum": ["student"] },
+        "pairingCode": { "type": "string", "description": "Gözcü bağlamak için 6 haneli kod" },
+        "parentEmail": { "type": "string" },
+        "xp": { "type": "number" },
+        "level": { "type": "number" },
+        "shipColor": { "type": "string" },
+        "onboardingSeen": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["username", "role", "pairingCode", "xp", "level", "createdAt", "updatedAt"]
+    },
+    "Parent": {
+      "title": "Görev Gözcüsü",
+      "description": "Veli (Gözcü) profili",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "role": { "type": "string", "enum": ["parent"] },
+        "linkedPilots": { "type": "array", "items": { "type": "string" }, "description": "Bağlı pilotların ID listesi" }
+      },
+      "required": ["email", "role"]
+    },
+    "PairingCode": {
+      "title": "Eşleşme Kodu",
+      "description": "Kod-Kullanıcı eşleşmesi",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "username": { "type": "string" }
+      },
+      "required": ["userId"]
+    },
+    "Badge": {
+      "title": "Badge Item",
+      "type": "object",
+      "properties": {
+         "badgeId": { "type": "string" },
+         "name": { "type": "string" },
+         "earnedAt": { "type": "string" }
+      },
+      "required": ["badgeId", "name", "earnedAt"]
+    },
+    "Performance": {
+      "title": "Category Performance",
+      "type": "object",
+      "properties": {
+         "correctAttempts": { "type": "number" },
+         "totalAttempts": { "type": "number" },
+         "lastUpdated": { "type": "string" }
+      },
+      "required": ["correctAttempts", "totalAttempts", "lastUpdated"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "Mürettebat profilleri"
+    },
+    "parents/{parentId}": {
+      "schema": "Parent",
+      "description": "Görev Gözcüsü profilleri"
+    },
+    "pairingCodes/{code}": {
+      "schema": "PairingCode",
+      "description": "Kod eşleşme tablosu"
+    },
+    "users/{userId}/badges/{badgeId}": {
+      "schema": "Badge",
+      "description": "Kazanılan madalyalar"
+    },
+    "users/{userId}/performance/{categoryId}": {
+       "schema": "Performance",
+       "description": "Kategori bazlı performans"
+    }
+  }
+}

@@ -1,0 +1,68 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@theme {
+  --color-space-900: #05070A;
+  --color-space-800: #0B0E14;
+  --color-space-700: #0F172A;
+  --color-brand-blue: #3B82F6;
+  --color-brand-cyan: #22D3EE;
+  --color-brand-purple: #A855F7;
+  --color-brand-pink: #FF2A85;
+  --color-brand-yellow: #EAB308;
+  --font-sans: var(--font-inter);
+  --font-mono: var(--font-jetbrains-mono);
+  --font-display: var(--font-space-grotesk);
+}
+
+body {
+  background-color: var(--color-space-900);
+  color: #E0E6ED;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-space-700/80 backdrop-blur-md border border-cyan-500/20 shadow-[0_0_30px_rgba(6,182,212,0.1)] rounded-3xl;
+  }
+  .glass-panel-alt {
+    @apply bg-slate-900/40 border border-blue-900/30 rounded-3xl;
+  }
+  .neon-text-blue {
+    @apply text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 tracking-wider;
+  }
+  .neon-text-cyan {
+    @apply text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)];
+  }
+  .neon-btn-blue {
+    @apply bg-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.4)] border border-blue-400 rounded-2xl text-white font-mono transition-all duration-300 hover:bg-blue-500 hover:shadow-[0_0_40px_rgba(59,130,246,0.8)] hover:border-white hover:-translate-y-1;
+  }
+  .neon-btn-outline {
+    @apply bg-slate-800/40 hover:bg-cyan-900/40 border border-blue-500/30 rounded-2xl text-white font-mono transition-all duration-300 hover:shadow-[0_0_30px_rgba(34,211,238,0.6)] hover:border-cyan-400 hover:-translate-y-1;
+  }
+  .neon-btn-purple {
+    @apply text-white font-bold rounded-xl transition-all duration-300;
+    background: linear-gradient(135deg, #4c1d95, #581c87);
+    border: 1px solid rgba(168, 85, 247, 0.4);
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.3);
+  }
+  .neon-btn-purple:hover {
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.8);
+    border-color: #fff;
+    transform: translateY(-2px);
+  }
+  .hud-badge {
+    @apply text-[10px] font-mono text-slate-400 uppercase tracking-tighter;
+  }
+  .neon-btn-cyan {
+    @apply bg-cyan-600 shadow-[0_0_20px_rgba(34,211,238,0.4)] border border-cyan-400 rounded-2xl text-white font-mono transition-all duration-300 hover:bg-cyan-500 hover:shadow-[0_0_40px_rgba(34,211,238,0.8)] hover:border-white hover:-translate-y-1;
+  }
+  .neon-text-red {
+    @apply text-red-400 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)];
+  }
+  .neon-text-purple {
+    @apply text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)];
+  }
+}
+
