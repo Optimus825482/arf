@@ -11,6 +11,10 @@ export interface StudentMetrics {
 
 export interface UserData {
   username?: string;
+  firstName?: string;
+  lastName?: string;
+  nickname?: string;
+  gradeLevel?: string;
   role?: 'student' | 'parent';
   pairingCode?: string;
   level?: number;

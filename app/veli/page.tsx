@@ -427,7 +427,9 @@ export default function VeliDashboard() {
           </Link>
           <div>
             <h2 className="text-sm font-bold uppercase tracking-widest text-purple-400">GÖREV GÖZCÜSÜ</h2>
-            <p className="hud-badge text-slate-400">Mürettebat İzleme Paneli</p>
+            <p className="hud-badge text-slate-400">
+              {parentName ? `${parentName} · Mürettebat İzleme Paneli` : 'Mürettebat İzleme Paneli'}
+            </p>
           </div>
         </div>
         <div className="flex items-center gap-4">

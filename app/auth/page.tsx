@@ -21,6 +21,10 @@ export default function AuthPage() {
   const { user, loading: authLoading } = useAuth();
   const [loading, setLoading] = useState(false);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [gradeLevel, setGradeLevel] = useState('');
+  const [nickname, setNickname] = useState('');
   
   useEffect(() => {
     if (!authLoading && user && !isRegistering) {
@@ -42,6 +46,8 @@ export default function AuthPage() {
   const [role, setRole] = useState<'student' | 'parent'>('student');
   const [pairingCode, setPairingCode] = useState('');
   const [tempUser, setTempUser] = useState<User | null>(null);
+  const [parentFirstName, setParentFirstName] = useState('');
+  const [parentLastName, setParentLastName] = useState('');
 
   const generatePairingCode = async () => {
     let code = '';
@@ -59,10 +65,27 @@ export default function AuthPage() {
     setLoading(true);
     try {
       if (role === 'student') {
+        const cleanFirstName = firstName.trim();
+        const cleanLastName = lastName.trim();
+        const cleanGradeLevel = gradeLevel.trim();
+        const cleanNickname = nickname.trim();
+
+        if (!cleanFirstName || !cleanLastName || !cleanGradeLevel) {
+          toast.error("Lütfen ad, soyad ve sınıf bilgilerini doldurun.");
+          setLoading(false);
+          return;
+        }
+
         const studentRef = doc(db, 'users', tempUser.uid);
         const code = await generatePairingCode();
+        const displayUsername = cleanNickname || `${cleanFirstName} ${cleanLastName}`;
+
         await setDoc(studentRef, {
-          username: tempUser.displayName || 'İsimsiz Pilot',
+          username: displayUsername,
+          firstName: cleanFirstName,
+          lastName: cleanLastName,
+          nickname: cleanNickname || null,
+          gradeLevel: cleanGradeLevel,
           role: 'student',
           pairingCode: code,
           level: 0,
@@ -72,10 +95,26 @@ export default function AuthPage() {
           createdAt: serverTimestamp(),
           updatedAt: serverTimestamp()
         });
-        await setDoc(doc(db, 'pairingCodes', code), { userId: tempUser.uid, username: tempUser.displayName || 'İsimsiz Pilot' });
+        await setDoc(doc(db, 'pairingCodes', code), {
+          userId: tempUser.uid,
+          username: displayUsername,
+          firstName: cleanFirstName,
+          lastName: cleanLastName,
+          nickname: cleanNickname || null,
+          gradeLevel: cleanGradeLevel,
+        });
         toast.success(`Mürettebata Hoş Geldin! Gözcü Kodun: ${code}`);
         router.push('/ogrenci');
       } else {
+        const cleanParentFirstName = parentFirstName.trim();
+        const cleanParentLastName = parentLastName.trim();
+
+        if (!cleanParentFirstName || !cleanParentLastName) {
+          toast.error("Lütfen veli ad ve soyad bilgilerini doldurun.");
+          setLoading(false);
+          return;
+        }
+
         if (pairingCode.length !== 6) {
           toast.error("Lütfen 6 haneli geçerli bir kod girin.");
           setLoading(false);
@@ -93,6 +132,9 @@ export default function AuthPage() {
         const parentRef = doc(db, 'parents', tempUser.uid);
         await setDoc(parentRef, {
           email: tempUser.email,
+          firstName: cleanParentFirstName,
+          lastName: cleanParentLastName,
+          parentName: `${cleanParentFirstName} ${cleanParentLastName}`,
           role: 'parent',
           linkedPilots: [studentId]
         });
@@ -205,8 +247,90 @@ export default function AuthPage() {
                   </button>
                </div>
 
+               {role === 'student' && (
+                 <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="pt-2 text-left space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-mono text-slate-400 mb-1">AD</label>
+                        <input
+                          required={role === 'student'}
+                          type="text"
+                          value={firstName}
+                          onChange={e => setFirstName(e.target.value)}
+                          placeholder="Örn: Ahmet"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 text-white font-mono outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono text-slate-400 mb-1">SOYAD</label>
+                        <input
+                          required={role === 'student'}
+                          type="text"
+                          value={lastName}
+                          onChange={e => setLastName(e.target.value)}
+                          placeholder="Örn: Yılmaz"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 text-white font-mono outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-mono text-slate-400 mb-1">SINIF</label>
+                        <input
+                          required={role === 'student'}
+                          type="text"
+                          value={gradeLevel}
+                          onChange={e => setGradeLevel(e.target.value)}
+                          placeholder="Örn: 5. Sınıf"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 text-white font-mono outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono text-slate-400 mb-1">TAKMA AD (ISTEGE BAGLI)</label>
+                        <input
+                          type="text"
+                          value={nickname}
+                          onChange={e => setNickname(e.target.value)}
+                          placeholder="Örn: YildizPilot"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 text-white font-mono outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <p className="text-[9px] text-slate-500 font-mono uppercase italic">
+                      Oyun icinde takma ad varsa o gorunur. Bos birakirsan adin ve soyadin kullanilir.
+                    </p>
+                 </motion.div>
+               )}
+
                {role === 'parent' && (
                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} className="pt-2 text-left space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-mono text-slate-400 mb-1">VELI ADI</label>
+                        <input
+                          required={role === 'parent'}
+                          type="text"
+                          value={parentFirstName}
+                          onChange={e => setParentFirstName(e.target.value)}
+                          placeholder="Örn: Ayşe"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-purple-500 text-white font-mono outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-mono text-slate-400 mb-1">VELI SOYADI</label>
+                        <input
+                          required={role === 'parent'}
+                          type="text"
+                          value={parentLastName}
+                          onChange={e => setParentLastName(e.target.value)}
+                          placeholder="Örn: Yılmaz"
+                          className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 focus:border-purple-500 text-white font-mono outline-none"
+                        />
+                      </div>
+                    </div>
+
                     <label className="block text-[10px] font-mono text-slate-400 mb-1">MÜRETTEBAT KODU (6 HANELİ)</label>
                     <div className="relative">
                       <Key className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-purple-500/50" />
