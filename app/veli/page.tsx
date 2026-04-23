@@ -582,7 +582,7 @@ export default function VeliDashboard() {
 
               {/* Performans Kartı */}
               <motion.div initial={{opacity:0, scale:0.95}} animate={{opacity:1, scale:1}} transition={{delay:0.1}} className="md:col-span-2 glass-panel p-6 flex flex-col gap-6">
-                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-center flex-1">
+                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 items-center flex-1">
                     <div className="text-center">
                         <Target className="w-8 h-8 text-green-400 mx-auto mb-2" />
                         <div className="text-2xl font-mono font-bold text-white">%{accuracy}</div>
@@ -598,13 +598,36 @@ export default function VeliDashboard() {
                         <div className="text-2xl font-mono font-bold text-white">%{mulDiv}</div>
                         <div className="text-[8px] font-mono text-slate-500 uppercase">İTKİ (Ç/B)</div>
                     </div>
-                    {mentalMath !== null && (
-                      <div className="text-center">
-                          <BrainCircuit className="w-8 h-8 text-pink-400 mx-auto mb-2" />
-                          <div className="text-2xl font-mono font-bold text-white">%{mentalMath}</div>
-                          <div className="text-[8px] font-mono text-slate-500 uppercase">ZİHİNDEN HIZLI</div>
-                      </div>
-                    )}
+                    <div className="text-center">
+                        <BrainCircuit className="w-8 h-8 text-purple-400 mx-auto mb-2" />
+                        <div className="text-2xl font-mono font-bold text-white">%{student.metrics?.perceptionScore || 0}</div>
+                        <div className="text-[8px] font-mono text-slate-500 uppercase">ALGI GÜCÜ</div>
+                    </div>
+                 </div>
+
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-white/5 pt-4">
+                    <div className="bg-slate-900/40 p-3 rounded-lg border border-white/5">
+                       <div className="flex justify-between items-center mb-2">
+                          <span className="text-[9px] font-mono text-slate-400 uppercase">Konsantrasyon Kapasitesi</span>
+                          <span className="text-xs font-mono text-cyan-400 font-bold">%{student.metrics?.concentrationScore || 0}</span>
+                       </div>
+                       <div className="w-full bg-slate-800 h-1 rounded-full overflow-hidden">
+                          <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${student.metrics?.concentrationScore || 0}%` }}></div>
+                       </div>
+                    </div>
+                    <div className="bg-slate-900/40 p-3 rounded-lg border border-white/5">
+                       <div className="flex justify-between items-center mb-2">
+                          <span className="text-[9px] font-mono text-slate-400 uppercase">Yorulma Katsayısı</span>
+                          <span className={`text-xs font-mono font-bold ${Number(student.metrics?.fatigueRatio || 0) > 1.1 ? 'text-red-400' : 'text-emerald-400'}`}>
+                             {Number(student.metrics?.fatigueRatio || 0).toFixed(2)}x
+                          </span>
+                       </div>
+                       <p className="text-[8px] font-mono text-slate-500 leading-tight">
+                          {Number(student.metrics?.fatigueRatio || 0) > 1.1 
+                            ? "Pilot uzun görevlerde odak kaybı yaşıyor. Çalışma süreleri 15-20 dk ile sınırlanmalı." 
+                            : "Yüksek dayanıklılık seviyesi. Uzun ve karmaşık görevleri başarıyla tamamlayabilir."}
+                       </p>
+                    </div>
                  </div>
 
                  <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3 text-[10px] font-mono">

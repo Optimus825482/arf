@@ -560,6 +560,55 @@ export default function OgrenciDashboard() {
              </div>
            )}
 
+           <div className="glass-panel p-6 relative overflow-hidden border border-purple-500/20">
+              <div className="absolute top-0 left-0 w-32 h-32 bg-purple-500/5 rounded-full blur-3xl -ml-10 -mt-10"></div>
+              <h3 className="hud-badge mb-4 w-full flex items-center relative z-10"><Zap className="w-4 h-4 mr-2 text-purple-400"/> BİLİŞSEL ANALİZ ÜSSÜ</h3>
+              
+              <div className="space-y-5 relative z-10">
+                <div>
+                   <div className="flex justify-between items-center mb-1">
+                     <span className="text-[11px] font-mono text-slate-300">Algı ve Tepki Hızı</span>
+                     <span className="text-[11px] font-mono text-purple-400 font-bold">%{studentData?.metrics?.perceptionScore || 0}</span>
+                   </div>
+                   <div className="w-full bg-slate-900/80 border border-slate-700/50 h-2 rounded-full overflow-hidden">
+                     <motion.div 
+                       initial={{ width: 0 }} 
+                       animate={{ width: `${studentData?.metrics?.perceptionScore || 0}%` }} 
+                       className="bg-gradient-to-r from-purple-600 to-purple-400 h-full rounded-full shadow-[0_0_10px_rgba(168,85,247,0.5)]" 
+                     />
+                   </div>
+                </div>
+
+                <div>
+                   <div className="flex justify-between items-center mb-1">
+                     <span className="text-[11px] font-mono text-slate-300">Konsantrasyon Gücü</span>
+                     <span className="text-[11px] font-mono text-cyan-400 font-bold">%{studentData?.metrics?.concentrationScore || 0}</span>
+                   </div>
+                   <div className="w-full bg-slate-900/80 border border-slate-700/50 h-2 rounded-full overflow-hidden">
+                     <motion.div 
+                       initial={{ width: 0 }} 
+                       animate={{ width: `${studentData?.metrics?.concentrationScore || 0}%` }} 
+                       className="bg-gradient-to-r from-cyan-600 to-cyan-400 h-full rounded-full shadow-[0_0_10px_rgba(34,211,238,0.5)]" 
+                     />
+                   </div>
+                </div>
+
+                <div className="pt-2 border-t border-white/5">
+                   <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Yorulma Endeksi</span>
+                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded ${Number(studentData?.metrics?.fatigueRatio || 0) > 1.1 ? 'bg-red-500/20 text-red-400' : 'bg-emerald-500/20 text-emerald-400'}`}>
+                        {Number(studentData?.metrics?.fatigueRatio || 0).toFixed(2)}x
+                      </span>
+                   </div>
+                   <p className="text-[9px] text-slate-500 font-mono mt-2 leading-relaxed">
+                     {Number(studentData?.metrics?.fatigueRatio || 0) > 1.1 
+                       ? "Sona doğru yavaşlama tespit edildi. Kısa molalar vererek çalışmalısın." 
+                       : "Mükemmel stabilite! Uzun görevler için zihnin çok dayanıklı."}
+                   </p>
+                </div>
+              </div>
+           </div>
+
            <div className="glass-panel p-6 relative overflow-hidden border border-cyan-500/20">
               <div className="absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-cyan-500 via-blue-500 to-indigo-500"></div>
               <div className="flex items-start justify-between gap-4 mb-4">

@@ -140,12 +140,36 @@ export async function POST(req: Request) {
         if (speedScore > 100) speedScore = 100;
         if (speedScore < 0) speedScore = 0;
 
+        const firstHalf = results.slice(0, Math.ceil(results.length / 2));
+        const secondHalf = results.slice(Math.ceil(results.length / 2));
+        
+        type ResultItem = { correct: boolean; time: number };
+        const firstHalfAccuracy = (firstHalf.filter((r: ResultItem) => r.correct).length / firstHalf.length) * 100;
+        const secondHalfAccuracy = (secondHalf.filter((r: ResultItem) => r.correct).length / secondHalf.length) * 100;
+        const firstHalfSpeed = firstHalf.reduce((acc: number, r: ResultItem) => acc + r.time, 0) / firstHalf.length;
+        const secondHalfSpeed = secondHalf.reduce((acc: number, r: ResultItem) => acc + r.time, 0) / secondHalf.length;
+
+        // Konsantrasyon: Test sonuna doğru doğruluk veya hız düşüşü
+        const concentrationScore = Math.round(
+          (secondHalfAccuracy >= firstHalfAccuracy ? 100 : (secondHalfAccuracy / firstHalfAccuracy) * 100) * 0.7 +
+          (secondHalfSpeed <= firstHalfSpeed * 1.2 ? 30 : 0)
+        );
+
+        // İşlem Algılama: Ortalama hızın tutarlılığı
+        const times = results.map((r: ResultItem) => r.time);
+        const avgTime = timeT / results.length;
+        const variance = times.reduce((acc, t) => acc + Math.pow(t - avgTime, 2), 0) / times.length;
+        const perceptionScore = Math.max(0, Math.min(100, Math.round(100 - (Math.sqrt(variance) / 100))));
+
         const metrics = {
           accuracy,
           speedScore,
           addSubScore,
           mulDivScore,
           mentalMathScore,
+          concentrationScore,
+          perceptionScore,
+          fatigueRatio: secondHalfSpeed / firstHalfSpeed
         };
 
         try {
@@ -160,14 +184,24 @@ export async function POST(req: Request) {
 
           if (apiKey) {
             const prompt = `
-Öğrenci matematik seviye tespit testini bitirdi.
-Hız: ${speedScore}, İsabet Oranı: %${accuracy}, Toplama/Çıkarma: %${addSubScore}, Çarpma/Bölme: %${mulDivScore}, Zihinden Hızlı İşlem: %${mentalMathScore}
+Öğrenci matematik seviye tespit testini bitirdi. Veriler:
+- Genel Doğruluk: %${accuracy}
+- İşlem Hızı Puanı: ${speedScore}/100
+- Toplama/Çıkarma Hakimiyeti: %${addSubScore}
+- Çarpma/Bölme (Çarpım Tablosu): %${mulDivScore}
+- Zihinden İşlem Kapasitesi: %${mentalMathScore}
+- Konsantrasyon ve Odaklanma (Test sonu performansı): %${concentrationScore}
+- İşlem Algılama ve Tepki Hızı Tutarlılığı: %${perceptionScore}
+- Yorulma Endeksi: ${metrics.fatigueRatio.toFixed(2)}x (1'den büyükse sona doğru yavaşlamış)
 
-Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver. Başka hiçbir açıklama metni ekleme. Sadece JSON verisini dön.
+Bu verilere dayanarak öğrencinin öğrenme karakterini analiz et. 
+Örn: "Çarpım tablosunda hızlı ama test sonunda konsantrasyonu dağılıyor" veya "İşlem algılaması çok yüksek ama bölme işlemlerinde kararsız kalıyor."
+
+Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver.
 {
-  "recommendedLevel": (1 ile 5 arası bir tam sayı. 1: Başlangıç, 5: İleri),
-  "actionPlan": "Öğrenci için kısa çalışma planı ve tavsiyeler (1-2 cümle)",
-  "learningPath": "Öğrencinin ilerleyeceği konseptler (örn: Temel Toplama -> Çarpma Pratiği)"
+  "recommendedLevel": (1-5),
+  "actionPlan": "Öğrencinin bilişsel ve pratik durumuna özel 1-2 cümlelik tavsiye",
+  "learningPath": "Gelişim için izlemesi gereken sıralı kavramlar"
 }`;
 
             const response = await fetch(

@@ -25,24 +25,41 @@ export default function SabitKalibrasyon() {
   const [started, setStarted] = useState(false);
 
   useEffect(() => {
-    // 12 calibration questions across operations to measure metrics accurately
+    // Akıllı Soru Sekansı: Her grup farklı bir bilişsel metriği ölçer
     const initialQuestions = [
-      { q: "5 + 8", a: 13, type: '+' },
-      { q: "15 - 7", a: 8, type: '-' },
-      { q: "4 x 6", a: 24, type: 'x' },
-      { q: "12 ÷ 3", a: 4, type: '÷' },
-      { q: "24 + 19", a: 43, type: '+' },
-      { q: "45 - 28", a: 17, type: '-' },
-      { q: "7 x 8", a: 56, type: 'x' },
-      { q: "48 ÷ 6", a: 8, type: '÷' },
-      { q: "125 + 75", a: 200, type: '+' },
-      { q: "100 - 33", a: 67, type: '-' },
-      { q: "9 x 12", a: 108, type: 'x' },
-      { q: "72 ÷ 9", a: 8, type: '÷' },
-      // Zihinden hızlı işlem (mental math) — kısa süre, çarpım tablosu refleksi
-      { q: "6 x 7", a: 42, type: 'mm' },
-      { q: "8 x 9", a: 72, type: 'mm' },
-      { q: "56 ÷ 8", a: 7, type: 'mm' }
+      // GRUP 1: Baz Hız ve Isınma (Motor Reflex)
+      { q: "4 + 3", a: 7, type: '+' },
+      { q: "10 - 4", a: 6, type: '-' },
+      { q: "5 + 5", a: 10, type: '+' },
+      
+      // GRUP 2: İşlem Algılama ve Geçiş Hızı (Switching Cost)
+      // Burada aniden işlem tipi değiştirilerek beynin uyum hızı ölçülür
+      { q: "3 x 4", a: 12, type: 'x' },
+      { q: "15 + 6", a: 21, type: '+' },
+      { q: "20 ÷ 5", a: 4, type: '÷' },
+      { q: "18 - 9", a: 9, type: '-' },
+      
+      // GRUP 3: Çarpım Tablosu ve Otomatizasyon (Fluency)
+      { q: "6 x 7", a: 42, type: 'x' },
+      { q: "8 x 4", a: 32, type: 'x' },
+      { q: "54 ÷ 6", a: 9, type: '÷' },
+      
+      // GRUP 4: Bilişsel Yük ve Stres Altında Karar (Stress Test)
+      // Sayılar büyütülerek işlem hızı düşüşü ölçülür
+      { q: "24 + 37", a: 61, type: '+' },
+      { q: "100 - 45", a: 55, type: '-' },
+      { q: "12 x 5", a: 60, type: 'x' },
+      
+      // GRUP 5: Zihinden Hızlı Karar (Mental Math Refleks)
+      { q: "9 x 9", a: 81, type: 'mm' },
+      { q: "72 ÷ 8", a: 9, type: 'mm' },
+      { q: "13 + 14", a: 27, type: 'mm' },
+      
+      // GRUP 6: Konsantrasyon ve Dayanıklılık (Endurance)
+      // Test sonunda karma ve dikkat gerektiren sorular
+      { q: "150 - 25", a: 125, type: '-' },
+      { q: "7 x 11", a: 77, type: 'x' },
+      { q: "64 ÷ 4", a: 16, type: '÷' }
     ];
     setQuestions(initialQuestions);
   }, []);
