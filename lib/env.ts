@@ -15,16 +15,33 @@ export function validateEnv(): EnvReport {
   const missing: string[] = [];
   const warnings: string[] = [];
   const isProd = process.env.NODE_ENV === "production";
+  const hasServiceAccount = Boolean(process.env.FIREBASE_SERVICE_ACCOUNT);
+  const hasApplicationDefaultCreds = Boolean(
+    process.env.GOOGLE_APPLICATION_CREDENTIALS ||
+      process.env.GOOGLE_CLOUD_PROJECT ||
+      process.env.GCLOUD_PROJECT ||
+      process.env.GCP_PROJECT ||
+      process.env.K_SERVICE,
+  );
 
   // Firebase Admin is required for any API that uses getAdminDb()
-  if (!process.env.FIREBASE_SERVICE_ACCOUNT) {
-    if (isProd) missing.push("FIREBASE_SERVICE_ACCOUNT");
-    else warnings.push("FIREBASE_SERVICE_ACCOUNT missing (admin APIs disabled)");
+  if (!hasServiceAccount && !hasApplicationDefaultCreds) {
+    if (isProd) {
+      missing.push(
+        "Firebase Admin credentials (FIREBASE_SERVICE_ACCOUNT or platform ADC)",
+      );
+    } else {
+      warnings.push(
+        "Firebase Admin credentials missing (admin APIs disabled)",
+      );
+    }
   } else {
-    try {
-      JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT);
-    } catch {
-      missing.push("FIREBASE_SERVICE_ACCOUNT (invalid JSON)");
+    if (hasServiceAccount) {
+      try {
+        JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT!);
+      } catch {
+        missing.push("FIREBASE_SERVICE_ACCOUNT (invalid JSON)");
+      }
     }
   }
 

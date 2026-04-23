@@ -1,11 +1,20 @@
 import "server-only";
-import { cert, getApps, initializeApp, type App } from "firebase-admin/app";
+import { applicationDefault, cert, getApps, initializeApp, type App } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { ensureEnv } from "./env";
 
 let _app: App | null = null;
+
+function getProjectId() {
+  return (
+    process.env.FIREBASE_PROJECT_ID ||
+    process.env.GOOGLE_CLOUD_PROJECT ||
+    process.env.GCLOUD_PROJECT ||
+    process.env.GCP_PROJECT
+  );
+}
 
 function getAdminApp(): App | null {
   ensureEnv();
@@ -15,13 +24,28 @@ function getAdminApp(): App | null {
     return _app;
   }
   const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
-  if (!raw) return null;
+  if (raw) {
+    try {
+      const creds = JSON.parse(raw);
+      _app = initializeApp({
+        credential: cert(creds),
+        projectId: creds.project_id || getProjectId(),
+      });
+      return _app;
+    } catch (e) {
+      console.error("Firebase Admin init failed with FIREBASE_SERVICE_ACCOUNT:", e);
+      return null;
+    }
+  }
+
   try {
-    const creds = JSON.parse(raw);
-    _app = initializeApp({ credential: cert(creds) });
+    _app = initializeApp({
+      credential: applicationDefault(),
+      projectId: getProjectId(),
+    });
     return _app;
   } catch (e) {
-    console.error("Firebase Admin init failed:", e);
+    console.error("Firebase Admin init failed with application default credentials:", e);
     return null;
   }
 }
@@ -31,7 +55,7 @@ export function getAdminDb(): Firestore {
   const app = getAdminApp();
   if (!app)
     throw new Error(
-      "Firebase Admin not initialised – FIREBASE_SERVICE_ACCOUNT missing",
+      "Firebase Admin not initialised - configure FIREBASE_SERVICE_ACCOUNT or platform Google credentials",
     );
   return getFirestore(app);
 }

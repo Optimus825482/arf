@@ -12,7 +12,10 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "clean": "next clean"
+    "clean": "next clean",
+    "firebase:login": "firebase login",
+    "firebase:use": "firebase use gen-lang-client-0723449064",
+    "deploy:rules": "firebase deploy --only firestore:rules"
   },
   "dependencies": {
     "@google/genai": "^1.17.0",

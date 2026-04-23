@@ -27,12 +27,22 @@ service cloud.firestore {
 
       // Allow creation with required fields
       allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId &&
-                    incoming().keys().hasAll(['username', 'role', 'pairingCode', 'xp', 'level', 'shipColor', 'createdAt', 'updatedAt']) &&
+                    incoming().keys().hasAll(['username', 'firstName', 'lastName', 'gradeLevel', 'role', 'pairingCode', 'xp', 'level', 'shipColor', 'createdAt', 'updatedAt']) &&
+                    incoming().keys().hasOnly([
+                      'username', 'firstName', 'lastName', 'nickname', 'gradeLevel',
+                      'role', 'pairingCode', 'xp', 'level', 'placementDone',
+                      'shipColor', 'createdAt', 'updatedAt'
+                    ]) &&
                     incoming().username is string && incoming().username.size() > 0 && incoming().username.size() <= 60 &&
+                    incoming().firstName is string && incoming().firstName.size() > 0 && incoming().firstName.size() <= 60 &&
+                    incoming().lastName is string && incoming().lastName.size() > 0 && incoming().lastName.size() <= 60 &&
+                    (!incoming().keys().hasAny(['nickname']) || incoming().nickname == null || (incoming().nickname is string && incoming().nickname.size() <= 60)) &&
+                    incoming().gradeLevel is string && incoming().gradeLevel.size() > 0 && incoming().gradeLevel.size() <= 40 &&
                     incoming().role == 'student' &&
                     incoming().pairingCode is string && incoming().pairingCode.size() == 6 &&
                     incoming().xp is number && incoming().xp >= 0 &&
                     incoming().level is number && incoming().level >= 0 &&
+                    (!incoming().keys().hasAny(['placementDone']) || incoming().placementDone is bool) &&
                     incoming().shipColor is string && incoming().shipColor.size() <= 60 &&
                     incoming().createdAt == request.time &&
                     incoming().updatedAt == request.time;
@@ -75,16 +85,33 @@ service cloud.firestore {
     // ──── PARENTS ────
     match /parents/{parentId} {
       allow read: if isSignedIn() && request.auth.uid == parentId;
-      allow create: if isSignedIn() && request.auth.uid == parentId && incoming().role == 'parent';
+      allow create: if isSignedIn() && request.auth.uid == parentId &&
+                    incoming().keys().hasAll(['email', 'firstName', 'lastName', 'parentName', 'role', 'linkedPilots']) &&
+                    incoming().keys().hasOnly(['email', 'firstName', 'lastName', 'parentName', 'role', 'linkedPilots']) &&
+                    incoming().email is string &&
+                    incoming().firstName is string && incoming().firstName.size() > 0 && incoming().firstName.size() <= 60 &&
+                    incoming().lastName is string && incoming().lastName.size() > 0 && incoming().lastName.size() <= 60 &&
+                    incoming().parentName is string && incoming().parentName.size() > 0 && incoming().parentName.size() <= 140 &&
+                    incoming().role == 'parent' &&
+                    incoming().linkedPilots is list &&
+                    incoming().linkedPilots.size() <= 5;
       allow update: if isSignedIn() && request.auth.uid == parentId &&
-                    incoming().diff(existing()).affectedKeys().hasOnly(['linkedPilots', 'onboardingSeen', 'parentName']) &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['linkedPilots', 'onboardingSeen', 'parentName', 'firstName', 'lastName']) &&
                     (!incoming().keys().hasAny(['linkedPilots']) || incoming().linkedPilots.size() <= 5);
     }
 
     // ──── PAIRING CODES ────
     match /pairingCodes/{code} {
       allow read: if isSignedIn();
-      allow create: if isSignedIn() && incoming().userId == request.auth.uid;
+      allow create: if isSignedIn() &&
+                    incoming().userId == request.auth.uid &&
+                    incoming().keys().hasAll(['userId', 'username']) &&
+                    incoming().keys().hasOnly(['userId', 'username', 'firstName', 'lastName', 'nickname', 'gradeLevel']) &&
+                    incoming().username is string && incoming().username.size() > 0 && incoming().username.size() <= 60 &&
+                    (!incoming().keys().hasAny(['firstName']) || (incoming().firstName is string && incoming().firstName.size() <= 60)) &&
+                    (!incoming().keys().hasAny(['lastName']) || (incoming().lastName is string && incoming().lastName.size() <= 60)) &&
+                    (!incoming().keys().hasAny(['nickname']) || incoming().nickname == null || (incoming().nickname is string && incoming().nickname.size() <= 60)) &&
+                    (!incoming().keys().hasAny(['gradeLevel']) || (incoming().gradeLevel is string && incoming().gradeLevel.size() <= 40));
       allow update, delete: if false;
     }
 
