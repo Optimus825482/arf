@@ -79,6 +79,31 @@ export default function Home() {
           </Link>
           <p className="text-[10px] text-slate-500 font-mono mt-4 uppercase">Kayıtlı değilsen otomatik olarak kayıt işlemine yönlendirileceksin.</p>
         </div>
+
+        <div className="pt-6 mt-2 border-t border-white/5 relative z-10 space-y-4">
+          <div className="flex items-center justify-center gap-3 flex-wrap text-[11px] font-mono uppercase tracking-[0.2em] text-slate-400">
+            <Link href="/privacy" className="hover:text-cyan-300 transition-colors">
+              Gizlilik Bildirimi
+            </Link>
+            <span className="text-slate-700">|</span>
+            <Link href="/terms" className="hover:text-cyan-300 transition-colors">
+              Kullanim Kosullari
+            </Link>
+            <span className="text-slate-700">|</span>
+            <a href="mailto:ikinciyenikitap54@gmail.com" className="hover:text-cyan-300 transition-colors">
+              Iletisim
+            </a>
+          </div>
+
+          <div className="text-center space-y-1">
+            <p className="text-[11px] font-mono font-bold uppercase tracking-[0.3em] text-cyan-400">
+              ARF
+            </p>
+            <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-slate-500">
+              Turk Uzay Kuvvetleri Akademisi Matematik Platformu
+            </p>
+          </div>
+        </div>
       </motion.div>
     </div>
   );

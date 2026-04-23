@@ -59,6 +59,11 @@ export default function PrivacyPage() {
               kullanabilir. Bu servisler kendi teknik altyapilarina uygun sekilde veri isleyebilir. Kullanilan servislerin
               kendi politika ve kosullari da ayrica gecerlidir.
             </p>
+            <p>
+              Uygulama kapsaminda toplanan kullanici verileri, yasal zorunluluklar veya hizmetin teknik olarak calismasi
+              icin gerekli altyapi saglayicilari disinda, herhangi bir kisi, kurum veya ucuncu taraf ile ticari ya da
+              keyfi bicimde paylasilmaz.
+            </p>
           </section>
 
           <section className="space-y-3">
