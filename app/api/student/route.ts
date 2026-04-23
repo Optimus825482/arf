@@ -223,17 +223,20 @@ Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver. Başka hiçbir açıklama metni 
           else if (accuracy >= 50) level = 2;
         }
 
-        await userRef.update({
-          level,
-          xp: (level - 1) * 100 + 50,
-          metrics,
-          actionPlan,
-          learningPath,
-          planUpdatedAt: FieldValue.serverTimestamp(),
-          placementDone: true,
-          planVersion: 1,
-          updatedAt: FieldValue.serverTimestamp(),
-        });
+        await userRef.set(
+          {
+            level,
+            xp: (level - 1) * 100 + 50,
+            metrics,
+            actionPlan,
+            learningPath,
+            planUpdatedAt: FieldValue.serverTimestamp(),
+            placementDone: true,
+            planVersion: 1,
+            updatedAt: FieldValue.serverTimestamp(),
+          },
+          { merge: true },
+        );
       }
 
       return NextResponse.json({

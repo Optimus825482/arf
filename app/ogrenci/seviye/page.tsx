@@ -108,26 +108,26 @@ export default function SabitKalibrasyon() {
         body: JSON.stringify({ action: 'placement', results: finalResults, uid: user.uid })
       });
       const data = await res.json();
-      if (data.success) {
+      if (res.ok && data.success) {
         setActionPlan(data.actionPlan);
         setLearningPath(data.learningPath);
         if (data.aiError) {
           toast.warning('AI analizi şu an ulaşılamıyor; temel seviye tespiti uygulandı.');
         }
+        setMetrics(calculatedMetrics);
+        playSound('levelUp');
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#06b6d4', '#a855f7'] });
       } else {
-        toast.error('Seviye kaydedilemedi. Lütfen tekrar deneyin.');
+        toast.error(data.error || 'Seviye kaydedilemedi. Lütfen tekrar deneyin.');
       }
     } catch (e) {
       if (process.env.NODE_ENV !== 'production') {
         console.error("Placement error:", e);
       }
       toast.error('Bağlantı hatası. Sonuçlar kaydedilemedi.');
+    } finally {
+      setLoading(false);
     }
-    
-    setMetrics(calculatedMetrics);
-    setLoading(false);
-    playSound('levelUp');
-    confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#06b6d4', '#a855f7'] });
   };
 
   if (metrics) {

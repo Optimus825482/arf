@@ -4,8 +4,10 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 import { NextResponse } from "next/server";
 import { ensureEnv } from "./env";
+import firebaseConfig from "../firebase-applet-config.json";
 
 let _app: App | null = null;
+let _db: Firestore | null = null;
 
 function getProjectId() {
   return (
@@ -14,6 +16,10 @@ function getProjectId() {
     process.env.GCLOUD_PROJECT ||
     process.env.GCP_PROJECT
   );
+}
+
+function getDatabaseId() {
+  return process.env.FIREBASE_DATABASE_ID || firebaseConfig.firestoreDatabaseId;
 }
 
 function getAdminApp(): App | null {
@@ -52,12 +58,17 @@ function getAdminApp(): App | null {
 
 /** Admin Firestore instance — bypasses client-side security rules. */
 export function getAdminDb(): Firestore {
+  if (_db) return _db;
+
   const app = getAdminApp();
   if (!app)
     throw new Error(
       "Firebase Admin not initialised - configure FIREBASE_SERVICE_ACCOUNT or platform Google credentials",
     );
-  return getFirestore(app);
+
+  const databaseId = getDatabaseId();
+  _db = databaseId ? getFirestore(app, databaseId) : getFirestore(app);
+  return _db;
 }
 
 export interface AuthedUser {
