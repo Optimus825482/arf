@@ -45,6 +45,70 @@ ARF, matematik eğitimini **Türk Uzay Kuvvetleri (TUK)** temasıyla birleştire
 └── public/               # Statik Varlıklar
 ```
 
+## 🧭 Uygulama Akışı
+
+ARF'nin uçtan uca sistem akışı için detaylı teknik doküman:
+
+- [FLOW.md](/mnt/d/arf/FLOW.md)
+- [Excalidraw diyagramı](/mnt/d/arf/arf-full-flow-2026-04-23.excalidraw)
+
+### Genel Akış Özeti
+
+```mermaid
+flowchart TD
+    A[Ana Sayfa] --> B[Google ile Giris / Auth]
+    B --> C{Rol var mi?}
+    C -->|Ogrenci| D[Ogrenci Paneli]
+    C -->|Veli| E[Veli Paneli]
+    C -->|Yok| F[Kayit Akisi]
+
+    F --> G{Rol Secimi}
+    G -->|Murettebat| H[Ogrenci Kaydi ve Pairing Code]
+    G -->|Gozcu| I[Veli Kaydi ve Ogrenci Eslesmesi]
+
+    H --> J[Ilk Seviye Testi / Kalibrasyon]
+    J --> K[AI veya Fallback ile Seviye ve Plan]
+    K --> D
+
+    D --> L[Gorev Paketi Uretimi]
+    L --> M[Pratik]
+    L --> N[Yildirim]
+    L --> O[AI Gorev]
+    D --> P[Taktik Merkezi]
+
+    M --> Q[XP / Rozet / Performans]
+    N --> Q
+    O --> Q
+    P --> Q
+
+    Q --> R[Gunluk Gorev Ilerlemesi ve Rapor]
+    E --> S[Ogrenci Takibi]
+    S --> T[AI Briefing]
+    S --> U[Mesaj ve Bonus XP]
+    S --> V[PDF Rapor]
+    T --> D
+    U --> D
+```
+
+### Adım Adım
+
+1. Kullanıcı ana sayfadan Google ile giriş yapar.
+2. Sistem kullanıcıyı mevcut rolüne göre öğrenci veya veli paneline yönlendirir.
+3. Yeni kullanıcıysa kayıt akışı başlar:
+   - Öğrenci için `pairingCode` üretilir.
+   - Veli için mevcut öğrenci koduyla eşleşme yapılır.
+4. Öğrenci ilk girişte seviye tespit kalibrasyonunu tamamlar.
+5. Sistem öğrencinin metriklerine göre seviye, öğrenme yolu ve çalışma planı üretir.
+6. Öğrenci dashboard açıldığında günlük görev paketi hazırlanır.
+7. Öğrenci farklı görev modlarında oynar:
+   - Pratik
+   - Yıldırım
+   - AI Görev
+   - Taktik Merkezi
+8. Her görev sonunda XP, badge, performans ve görev ilerleme verileri güncellenir.
+9. Veli paneli bağlı öğrencileri izler, AI briefing alır, mesaj gönderir ve PDF rapor üretir.
+10. Öğrencinin gelişimine göre sistem planı zamanla yeniden değerlendirir.
+
 ## 🚀 Kurulum
 
 1. Bağımlılıkları yükleyin:
