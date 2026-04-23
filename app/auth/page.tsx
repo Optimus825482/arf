@@ -51,6 +51,8 @@ export default function AuthPage() {
   const [parentLastName, setParentLastName] = useState('');
 
   const finishLogin = useCallback(async (signedInUser: User) => {
+    await signedInUser.getIdToken().catch(() => null);
+
     const [studentSnap, parentSnap] = await Promise.all([
       getDoc(doc(db, 'users', signedInUser.uid)),
       getDoc(doc(db, 'parents', signedInUser.uid))

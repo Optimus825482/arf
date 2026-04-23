@@ -10,9 +10,18 @@ function toRequestUrl(input: RequestInfo | URL): RequestInfo | URL {
 
 export async function authFetch(input: RequestInfo | URL, init: RequestInit = {}): Promise<Response> {
   await auth.authStateReady().catch(() => undefined);
+  const waitForUser = async (timeoutMs = 1500) => {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < timeoutMs) {
+      const currentUser = auth.currentUser;
+      if (currentUser) return currentUser;
+      await new Promise((resolve) => window.setTimeout(resolve, 75));
+    }
+    return auth.currentUser;
+  };
 
-  const user = auth.currentUser;
   const buildHeaders = async (forceRefresh = false) => {
+    const user = await waitForUser();
     const headers = new Headers(init.headers || {});
     if (user) {
       try {
@@ -39,14 +48,14 @@ export async function authFetch(input: RequestInfo | URL, init: RequestInit = {}
   try {
     const response = await doFetch(false);
 
-    if ((response.status === 401 || response.status === 403) && user) {
+    if ((response.status === 401 || response.status === 403) && auth.currentUser) {
       response.body?.cancel();
       return await doFetch(true);
     }
 
     return response;
   } catch (error) {
-    if (user) {
+    if (auth.currentUser) {
       try {
         return await doFetch(true);
       } catch {

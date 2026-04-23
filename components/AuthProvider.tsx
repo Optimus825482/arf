@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, signOut, User } from 'firebase/auth';
+import { onIdTokenChanged, signOut, User } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 
 interface AuthContextType {
@@ -17,7 +17,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
+    const unsubscribe = onIdTokenChanged(auth, async (u) => {
+      if (u) {
+        try {
+          await u.getIdToken();
+        } catch (error) {
+          if (process.env.NODE_ENV !== 'production') {
+            console.error('Failed to warm auth token', error);
+          }
+        }
+      }
       setUser(u);
       setLoading(false);
     });
