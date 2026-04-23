@@ -158,7 +158,7 @@ export async function POST(req: Request) {
         // İşlem Algılama: Ortalama hızın tutarlılığı
         const times = results.map((r: ResultItem) => r.time);
         const avgTime = timeT / results.length;
-        const variance = times.reduce((acc, t) => acc + Math.pow(t - avgTime, 2), 0) / times.length;
+        const variance = times.reduce((acc: number, t: number) => acc + Math.pow(t - avgTime, 2), 0) / times.length;
         const perceptionScore = Math.max(0, Math.min(100, Math.round(100 - (Math.sqrt(variance) / 100))));
 
         const metrics = {
