@@ -13,7 +13,7 @@ const ContentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://picsum.photos https://www.gstatic.com https://lh3.googleusercontent.com",
-  "connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebase.com wss://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://api.deepseek.com https://generativelanguage.googleapis.com",
+  "connect-src 'self' https://*.googleapis.com https://apis.google.com https://*.firebaseio.com https://*.firebase.com wss://*.firebaseio.com https://securetoken.googleapis.com https://identitytoolkit.googleapis.com https://api.deepseek.com https://generativelanguage.googleapis.com",
   "frame-src 'self' https://apis.google.com https://accounts.google.com https://*.firebaseapp.com",
   "child-src 'self' https://apis.google.com https://accounts.google.com https://*.firebaseapp.com",
   "worker-src 'self' blob:",

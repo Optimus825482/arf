@@ -31,7 +31,7 @@ service cloud.firestore {
                     incoming().keys().hasOnly([
                       'username', 'firstName', 'lastName', 'nickname', 'gradeLevel',
                       'role', 'pairingCode', 'xp', 'level', 'placementDone',
-                      'shipColor', 'createdAt', 'updatedAt'
+                      'shipColor', 'createdAt', 'updatedAt', 'metrics', 'actionPlan', 'learningPath', 'onboardingSeen'
                     ]) &&
                     incoming().username is string && incoming().username.size() > 0 && incoming().username.size() <= 60 &&
                     incoming().firstName is string && incoming().firstName.size() > 0 && incoming().firstName.size() <= 60 &&
