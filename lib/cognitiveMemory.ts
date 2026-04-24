@@ -3,6 +3,7 @@
  * PostgreSQL-backed episodic + semantic memory layer.
  */
 
+import { GoogleGenAI } from "@google/genai";
 import { logger } from "./logger";
 import { query } from "./db";
 
@@ -39,6 +40,7 @@ export interface SemanticEdge {
 }
 
 type SqlParams = Array<string | number | boolean | null>;
+const EMBEDDING_DIMENSIONS = 1536;
 
 function isDbConfigured() {
   return Boolean(process.env.DATABASE_URL);
@@ -51,6 +53,66 @@ async function safeQuery(text: string, params: SqlParams = []) {
   } catch (error) {
     logger.error("Cognitive memory query failed", error, { text });
     return null;
+  }
+}
+
+function tokenize(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9çğıöşü\s]/gi, " ")
+    .split(/\s+/)
+    .filter(Boolean);
+}
+
+function buildDeterministicEmbedding(text: string) {
+  const vector = new Array<number>(EMBEDDING_DIMENSIONS).fill(0);
+  const tokens = tokenize(text);
+  if (!tokens.length) return vector;
+
+  for (const token of tokens) {
+    let hash = 2166136261;
+    for (let index = 0; index < token.length; index += 1) {
+      hash ^= token.charCodeAt(index);
+      hash = Math.imul(hash, 16777619);
+    }
+
+    const position = Math.abs(hash) % EMBEDDING_DIMENSIONS;
+    vector[position] += 1;
+  }
+
+  const magnitude = Math.sqrt(vector.reduce((sum, value) => sum + value * value, 0)) || 1;
+  return vector.map((value) => Number((value / magnitude).toFixed(8)));
+}
+
+function toPgVector(embedding: number[]) {
+  return `[${embedding.map((value) => Number.isFinite(value) ? value : 0).join(",")}]`;
+}
+
+async function buildEmbedding(text: string) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) {
+    return buildDeterministicEmbedding(text);
+  }
+
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    const response = await ai.models.embedContent({
+      model: "text-embedding-004",
+      contents: [text],
+      config: { outputDimensionality: EMBEDDING_DIMENSIONS },
+    });
+
+    const embedding = response.embeddings?.[0]?.values;
+    if (!embedding?.length) {
+      throw new Error("Gemini embedding response was empty");
+    }
+
+    return embedding.slice(0, EMBEDDING_DIMENSIONS);
+  } catch (error) {
+    logger.warn("Gemini embedding failed, using deterministic fallback", {
+      err: error instanceof Error ? error.message : String(error),
+    });
+    return buildDeterministicEmbedding(text);
   }
 }
 
@@ -112,6 +174,26 @@ function summarizeContext(episodes: Array<{ event_context: string; outcome: stri
   return lines.join("\n");
 }
 
+function describeWorkingMemory(l1State: WorkingMemory) {
+  return [
+    `Odak: ${l1State.currentFocus}`,
+    `Seri hata: ${l1State.consecutiveErrors}`,
+    `Kaygi: ${l1State.currentAnxietyLevel}`,
+    `Yorulma: ${l1State.currentFatigueRatio.toFixed(2)}x`,
+  ].join(" | ");
+}
+
+function buildRetrievalHint(uid: string, metrics?: { accuracy?: number; fatigueRatio?: number; frustrationLevel?: number; currentFocus?: string }) {
+  const l1State: WorkingMemory = {
+    sessionId: `retrieval_${uid}`,
+    currentFocus: metrics?.currentFocus || "Mixed Operations",
+    consecutiveErrors: (metrics?.accuracy ?? 100) < 50 ? 3 : (metrics?.accuracy ?? 100) < 70 ? 1 : 0,
+    currentAnxietyLevel: metrics?.frustrationLevel || 0,
+    currentFatigueRatio: metrics?.fatigueRatio || 1,
+  };
+  return describeWorkingMemory(l1State);
+}
+
 export class HyperCognitiveEngine {
   static processWorkingMemory(uid: string, metrics: { accuracy: number; frustrationLevel?: number; fatigueRatio?: number }): WorkingMemory {
     const l1State: WorkingMemory = {
@@ -142,11 +224,13 @@ export class HyperCognitiveEngine {
       outcome: finalResult === "improved" ? "success" : finalResult === "failure" ? "failure" : "neutral",
     };
 
+    const embeddingSource = `${episode.eventContext}\n${episode.actionTaken}\nSonuc: ${episode.outcome}`;
+    const embedding = await buildEmbedding(embeddingSource);
     const inserted = await safeQuery(
-      `INSERT INTO episodic_memories (uid, event_context, action_taken, outcome)
-       VALUES ($1, $2, $3, $4)
+      `INSERT INTO episodic_memories (uid, event_context, action_taken, outcome, embedding)
+       VALUES ($1, $2, $3, $4, $5::vector)
        RETURNING id`,
-      [episode.uid, episode.eventContext, episode.actionTaken, episode.outcome],
+      [episode.uid, episode.eventContext, episode.actionTaken, episode.outcome, toPgVector(embedding)],
     );
 
     if (inserted) {
@@ -192,12 +276,14 @@ export class HyperCognitiveEngine {
     logger.info(`[L3: Semantic Graph] Guncellendi: ${uid}`);
   }
 
-  static async getCognitiveContext(uid: string): Promise<string> {
+  static async getCognitiveContext(uid: string, retrievalHint?: { accuracy?: number; fatigueRatio?: number; frustrationLevel?: number; currentFocus?: string }): Promise<string> {
     if (!isDbConfigured()) {
       return "[Bellek]: PostgreSQL baglantisi ayarli degil. Varsayilan nazik rehberlik kullan.";
     }
 
-    const [episodesResult, edgesResult] = await Promise.all([
+    const retrievalQuery = await buildEmbedding(buildRetrievalHint(uid, retrievalHint));
+
+    const [episodesResult, similarEpisodesResult, edgesResult] = await Promise.all([
       safeQuery(
         `SELECT event_context, outcome
          FROM episodic_memories
@@ -205,6 +291,15 @@ export class HyperCognitiveEngine {
          ORDER BY created_at DESC
          LIMIT 3`,
         [uid],
+      ),
+      safeQuery(
+        `SELECT event_context, outcome
+         FROM episodic_memories
+         WHERE uid = $1
+           AND embedding IS NOT NULL
+         ORDER BY embedding <=> $2::vector
+         LIMIT 3`,
+        [uid, toPgVector(retrievalQuery)],
       ),
       safeQuery(
         `SELECT
@@ -223,7 +318,15 @@ export class HyperCognitiveEngine {
     ]);
 
     const episodes = episodesResult?.rows ?? [];
+    const similarEpisodes = similarEpisodesResult?.rows ?? [];
     const edges = edgesResult?.rows ?? [];
-    return summarizeContext(episodes, edges);
+    const mergedEpisodes = [...episodes];
+    for (const item of similarEpisodes) {
+      if (!mergedEpisodes.some((episode) => episode.event_context === item.event_context)) {
+        mergedEpisodes.push(item);
+      }
+    }
+
+    return summarizeContext(mergedEpisodes, edges);
   }
 }

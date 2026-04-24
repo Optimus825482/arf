@@ -7,6 +7,28 @@ import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
 import { HyperCognitiveEngine } from "@/lib/cognitiveMemory";
 
+function buildPedagogicalPromptSection() {
+  return `
+PEDAGOGIK KIMLIK:
+- Rol: ${PEDAGOGICAL_BASE.persona.role}
+- Ton: ${PEDAGOGICAL_BASE.persona.tone}
+- Ses: ${PEDAGOGICAL_BASE.persona.voice}
+
+BILIMSEL ILKELER:
+- CLT: ${PEDAGOGICAL_BASE.scientificFoundations.cognitiveLoadTheory.insight} Uygulama: ${PEDAGOGICAL_BASE.scientificFoundations.cognitiveLoadTheory.application}
+- Gorsel Matematik: ${PEDAGOGICAL_BASE.scientificFoundations.visualMathematics.insight} Uygulama: ${PEDAGOGICAL_BASE.scientificFoundations.visualMathematics.application}
+- Growth Mindset: ${PEDAGOGICAL_BASE.scientificFoundations.growthMindset.insight} Uygulama: ${PEDAGOGICAL_BASE.scientificFoundations.growthMindset.application}
+
+MUDAHALE KURALLARI:
+- Yorulma: ${PEDAGOGICAL_BASE.interventions.fatigue.action}
+- Gecis Maliyeti: ${PEDAGOGICAL_BASE.interventions.switchingCost.action}
+- Kaygi: ${PEDAGOGICAL_BASE.interventions.anxiety.action}
+
+OGRETIM YONTEMLERI:
+- Singapur: ${PEDAGOGICAL_BASE.methods.singaporeMath}
+- Trachtenberg: ${PEDAGOGICAL_BASE.methods.trachtenberg}
+`.trim();
+}
 
 export async function POST(req: Request) {
   try {
@@ -167,7 +189,12 @@ export async function POST(req: Request) {
       const perceptionScore = Math.max(0, Math.min(100, Math.round(100 - (Math.sqrt(variance) / 100))));
 
       const l1State = HyperCognitiveEngine.processWorkingMemory(uid, { accuracy, frustrationLevel: 0, fatigueRatio: secondHalfSpeed / firstHalfSpeed });
-      const mentalState = await HyperCognitiveEngine.getCognitiveContext(uid);
+      const mentalState = await HyperCognitiveEngine.getCognitiveContext(uid, {
+        accuracy,
+        fatigueRatio: secondHalfSpeed / firstHalfSpeed,
+        frustrationLevel: 0,
+        currentFocus: addSubScore < mulDivScore ? "Toplama ve Cikarma" : "Carpma ve Bolme",
+      });
 
       const metrics = {
         accuracy,
@@ -197,10 +224,33 @@ export async function POST(req: Request) {
         if (apiKey) {
           const prompt = `
 SEN: ARF Quantum Rehberlik Sistemi.
-GÖREV: Bilişsel analiz yap ve gelişim planla.
-TELEMETRİ: İsabet %${accuracy}, Hız ${speedScore}, Yorulma ${metrics.fatigueRatio.toFixed(2)}x, Odak %${concentrationScore}.
-HAFIZA: ${mentalState}
-SADECE JSON dön: { "recommendedLevel": 1-5, "actionPlan": "tavsiye", "learningPath": "konu listesi" }`;
+GOREV: Bilissel analiz yap ve gelisim planla.
+${buildPedagogicalPromptSection()}
+
+TELEMETRI:
+- Isabet: %${accuracy}
+- Hiz: ${speedScore}
+- Toplama/Cikarma: %${addSubScore}
+- Carpma/Bolme: %${mulDivScore}
+- Zihinden Islem: %${mentalMathScore}
+- Odak: %${concentrationScore}
+- Algisal Tutarlilik: %${perceptionScore}
+- Yorulma: ${metrics.fatigueRatio.toFixed(2)}x
+
+HAFIZA:
+${mentalState}
+
+CIKTI KURALI:
+- Asla sert ya da yargilayici olma.
+- Mikro-ogrenme, gorsellestirme ve gerekirse mola oner.
+- actionPlan en fazla 2 cumle olsun.
+- learningPath sirali ve kisa olsun.
+- SADECE JSON don.
+{
+  "recommendedLevel": 1,
+  "actionPlan": "tavsiye",
+  "learningPath": "konu listesi"
+}`;
 
           const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
             method: "POST",
@@ -234,7 +284,8 @@ SADECE JSON dön: { "recommendedLevel": 1-5, "actionPlan": "tavsiye", "learningP
         learningPath = "Toplama -> Çıkarma -> Çarpma";
       }
 
-      await HyperCognitiveEngine.consolidateToEpisodic(uid, l1State, "neutral");
+      const episodicOutcome = accuracy >= 75 ? "improved" : accuracy < 45 ? "failure" : "neutral";
+      await HyperCognitiveEngine.consolidateToEpisodic(uid, l1State, episodicOutcome);
       await userRef.set({
         level,
         xp: (level - 1) * 100 + 50,
@@ -256,7 +307,11 @@ SADECE JSON dön: { "recommendedLevel": 1-5, "actionPlan": "tavsiye", "learningP
       const currentVersion = u.planVersion || 1;
 
       const l1State = HyperCognitiveEngine.processWorkingMemory(uid, { accuracy: m.accuracy || 0, fatigueRatio: m.fatigueRatio || 1 });
-      const mentalState = await HyperCognitiveEngine.getCognitiveContext(uid);
+      const mentalState = await HyperCognitiveEngine.getCognitiveContext(uid, {
+        accuracy: m.accuracy || 0,
+        fatigueRatio: m.fatigueRatio || 1,
+        frustrationLevel: m.frustrationLevel || 0,
+      });
 
       let newActionPlan = u.actionPlan || "";
       let newLearningPath = u.learningPath || "";
@@ -269,7 +324,31 @@ SADECE JSON dön: { "recommendedLevel": 1-5, "actionPlan": "tavsiye", "learningP
           if (settingsSnap.exists) apiKey = settingsSnap.data()?.value;
         }
         if (apiKey) {
-          const prompt = `REASSESS: Metrikler ${JSON.stringify(m)}, Hafıza: ${mentalState}. SADECE JSON.`;
+          const prompt = `
+SEN: ${PEDAGOGICAL_BASE.persona.name}
+GOREV: Mevcut ogrenci planini yeniden degerlendir.
+${buildPedagogicalPromptSection()}
+
+MEVCUT METRIKLER:
+${JSON.stringify(m, null, 2)}
+
+ONCEKI PLAN:
+- Action plan: ${u.actionPlan || "Yok"}
+- Learning path: ${u.learningPath || "Yok"}
+- Version: ${currentVersion}
+
+HAFIZA:
+${mentalState}
+
+CIKTI KURALI:
+- actionPlan en fazla 2 cumle olsun
+- learningPath sirali ve kisa olsun
+- yorulma yuksekse tempo azalt
+- sadece JSON don
+{
+  "actionPlan": "guncel tavsiye",
+  "learningPath": "sirali konu listesi"
+}`;
           const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
             method: "POST",
             headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
@@ -287,7 +366,8 @@ SADECE JSON dön: { "recommendedLevel": 1-5, "actionPlan": "tavsiye", "learningP
         }
       } catch (e) { aiError = true; }
 
-      await HyperCognitiveEngine.consolidateToEpisodic(uid, l1State, "neutral");
+      const reassessOutcome = (m.accuracy || 0) >= 75 ? "improved" : (m.accuracy || 0) < 45 ? "failure" : "neutral";
+      await HyperCognitiveEngine.consolidateToEpisodic(uid, l1State, reassessOutcome);
       await userRef.set({
         actionPlan: newActionPlan,
         learningPath: newLearningPath,

@@ -6,6 +6,7 @@ import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import { getDifficultyProfile } from "@/lib/commander";
 import { deepseekRequestSchema, formatZodError } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
+import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
 
 export async function POST(req: Request) {
   try {
@@ -55,9 +56,14 @@ export async function POST(req: Request) {
     });
 
     const prompt = `
-SEN: ARF Uzay Gemisi Yapay Zekası.
-GÖREV: Seviyesi ${level || 1} olan bir pilot için "Yeni Nesil" boss matematik problemi üret.
-ANALİZ: Zorlandığı alanlar: ${struggles}. Profil: ${difficultyProfile.label}.
+SEN: ${PEDAGOGICAL_BASE.persona.name}.
+ROL: ${PEDAGOGICAL_BASE.persona.role}
+GOREV: Seviyesi ${level || 1} olan bir pilot icin "Yeni Nesil" boss matematik problemi uret.
+ANALIZ: Zorlandigi alanlar: ${struggles}. Profil: ${difficultyProfile.label}.
+PEDAGOJI:
+- ${PEDAGOGICAL_BASE.scientificFoundations.visualMathematics.application}
+- ${PEDAGOGICAL_BASE.methods.singaporeMath}
+- Hata durumunda ogrenciyi destekleyecek ipucu ekle.
 SADECE JSON dön:
 {
   "question": "Uzay temalı problem metni",

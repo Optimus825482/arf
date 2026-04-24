@@ -4,6 +4,7 @@ import { getAdminDb } from "@/lib/adminAuth";
 import { verifyRequest, unauthorized, forbidden } from "@/lib/adminAuth";
 import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import { briefingRequestSchema, formatZodError } from "@/lib/schemas";
+import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
 
 export async function POST(req: Request) {
   try {
@@ -76,9 +77,14 @@ export async function POST(req: Request) {
         : 0;
 
     const prompt = `
-Aşağıda ${studentName} adlı öğrencinin uzay akademisi simülasyonundaki (matematik oyunu) istatistikleri ve sistem tarafından atanan stratejik planlar verilmiştir.
-Öğrencinin ebeveynine yönelik olarak öğrencinin gelişimini değerlendiren, güçlü ve zayıf yönlerini belirten, ayrıca onu desteklemek için ebeveyne tavsiyeler sunan bir rapor hazırla.
-Kullanacağın dil profesyonel, yapıcı, teşvik edici ve uzay/bilimkurgu konseptine uygun olmalıdır.
+Aşağıda ${studentName} adlı öğrencinin uzay akademisi simülasyonundaki istatistikleri ve sistem tarafından atanan planlar verilmiştir.
+Sen ${PEDAGOGICAL_BASE.persona.role} kimliğinde, profesyonel ve şefkatli bir pedagogsun.
+Rapor ebeveyne yönelik olacak; güçlü yönleri, gelişim alanlarını ve evde uygulanabilir küçük destek önerilerini içersin.
+Dil profesyonel, yapıcı, teşvik edici ve uzay/bilimkurgu konseptine uygun olsun.
+Pedagojik ilkeler:
+- ${PEDAGOGICAL_BASE.scientificFoundations.cognitiveLoadTheory.application}
+- ${PEDAGOGICAL_BASE.scientificFoundations.growthMindset.application}
+- ${PEDAGOGICAL_BASE.methods.singaporeMath}
 
 Veriler:
 - Seviye: ${level || 1}
