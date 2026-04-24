@@ -94,34 +94,39 @@ Yapay Zeka Değerlendirmeleri:
 
 Lütfen raporu kısa paragraflar halinde yaz ve markdown kullanarak okunabilirliği artır. Raporun sonunda ebeveyne "Gözcü Notu" başlığıyla kısa bir özet ekle.
 `.trim();
+const response = await fetch(
+  "https://api.deepseek.com/v1/chat/completions",
+  {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: "deepseek-reasoner", // Muhakeme odaklı model (Think özelliği aktif)
+      messages: [{ role: "user", content: prompt }],
+    }),
+  },
+);
 
-    const response = await fetch(
-      "https://api.deepseek.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${apiKey}`,
-        },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [{ role: "user", content: prompt }],
-          temperature: 0.7,
-        }),
-      },
-    );
+if (!response.ok) {
+  const errText = await response.text();
+  logger.error("DeepSeek API Hatası:", errText);
+  return NextResponse.json(
+    { error: "Yapay zeka ile iletişim kurulamadı." },
+    { status: 500 },
+  );
+}
 
-    if (!response.ok) {
-      const errText = await response.text();
-      logger.error("DeepSeek API Hatası:", errText);
-      return NextResponse.json(
-        { error: "Yapay zeka ile iletişim kurulamadı." },
-        { status: 500 },
-      );
-    }
+const data = await response.json();
 
-    const data = await response.json();
-    const briefing = data.choices[0]?.message?.content;
+// Muhakeme (Think) sürecini logla
+if (data.choices[0].message.reasoning_content) {
+  logger.info("Veli Brifingi Muhakeme Süreci (Think):", { reasoning: data.choices[0].message.reasoning_content });
+}
+
+const briefing = data.choices[0]?.message?.content;
+
 
     if (!briefing) {
       return NextResponse.json(

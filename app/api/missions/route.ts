@@ -56,10 +56,8 @@ SADECE JSON don.
       Authorization: `Bearer ${payload.apiKey}`,
     },
     body: JSON.stringify({
-      model: "deepseek-chat",
+      model: "deepseek-reasoner", // Stratejik görev planlaması için R1 modeline geçildi
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.8,
-      response_format: { type: "json_object" },
     }),
   });
 
@@ -68,7 +66,16 @@ SADECE JSON don.
   }
 
   const data = await response.json();
-  return JSON.parse(data.choices[0]?.message?.content || "{}");
+  let content = data.choices[0]?.message?.content || "{}";
+  
+  // Markdown JSON bloklarını temizle
+  if (content.startsWith("```json")) {
+    content = content.replace(/^```json/, "").replace(/```$/, "").trim();
+  } else if (content.startsWith("```")) {
+    content = content.replace(/^```/, "").replace(/```$/, "").trim();
+  }
+
+  return JSON.parse(content);
 }
 
 export async function GET(req: Request) {
