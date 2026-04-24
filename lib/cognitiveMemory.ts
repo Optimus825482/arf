@@ -1,135 +1,229 @@
 /**
  * ARF Hyper-Cognitive Memory System (Phase 3)
- * Hiyerarşik ve Graf Destekli Bilişsel İşletim Sistemi
- * (PostgreSQL + pgvector mimarisi için tasarlanmıştır)
+ * PostgreSQL-backed episodic + semantic memory layer.
  */
 
 import { logger } from "./logger";
+import { query } from "./db";
 
-// ==========================================
-// MİMARİ: HİYERARŞİK BELLEK (Memory Tiers)
-// ==========================================
-
-/**
- * L1: Working Memory (Çalışma Belleği)
- * Öğrencinin o anki oturumdaki (session) anlık durumunu tutar.
- * Hızlıdır, geçicidir. "Şu an yoruluyor" bilgisini taşır.
- */
 export interface WorkingMemory {
   sessionId: string;
-  currentFocus: string; // Örn: "Çarpma İşlemi"
+  currentFocus: string;
   consecutiveErrors: number;
-  currentAnxietyLevel: number; // 0-100
+  currentAnxietyLevel: number;
   currentFatigueRatio: number;
 }
 
-/**
- * L2: Episodic Memory (Anısal Bellek)
- * Öğrencinin geçmişteki spesifik olaylarını zaman damgasıyla tutar.
- * Örn: "12 Nisan'da 7'ler tablosunda 3 kez üst üste hata yaptı ve pes etti."
- */
 export interface EpisodicMemory {
   eventId: string;
   uid: string;
   timestamp: Date;
-  eventContext: string; // Olayın bağlamı (Örn: Zaman baskısı altındayken)
-  actionTaken: string; // AI'nın müdahalesi (Örn: Mola verdirdi)
-  outcome: "success" | "failure" | "neutral"; // Müdahalenin sonucu
-  vectorEmbedding?: number[]; // pgvector için semantik vektör
+  eventContext: string;
+  actionTaken: string;
+  outcome: "success" | "failure" | "neutral";
+  vectorEmbedding?: number[];
 }
 
-/**
- * L3: Semantic Memory (Semantik / Kavramsal Graf Belleği)
- * Olaylardan (Episodik) damıtılmış, öğrencinin kalıcı karakter analizidir.
- * Bilgi Grafiği (Knowledge Graph) mantığıyla çalışır. (Node -> Edge -> Node)
- */
 export interface SemanticNode {
   nodeId: string;
   uid: string;
-  concept: string; // Örn: "Görsel Öğrenme", "Bölme İşlemi", "Sınav Kaygısı"
-  strength: number; // 0-100 (Bu kavrama ne kadar hakim veya bu duygu ne kadar güçlü)
+  concept: string;
+  strength: number;
 }
 
 export interface SemanticEdge {
   sourceNodeId: string;
   targetNodeId: string;
-  relationType: "TRIGGERS" | "IMPROVES" | "DEPENDS_ON"; 
-  // Örn: "Zaman Baskısı" [TRIGGERS] -> "İşlem Hatası"
-  weight: number; // İlişkinin gücü
+  relationType: "TRIGGERS" | "IMPROVES" | "DEPENDS_ON";
+  weight: number;
 }
 
-// ==========================================
-// CORE: BİLİŞSEL İŞLETİM SİSTEMİ
-// ==========================================
+type SqlParams = Array<string | number | boolean | null>;
+
+function isDbConfigured() {
+  return Boolean(process.env.DATABASE_URL);
+}
+
+async function safeQuery(text: string, params: SqlParams = []) {
+  if (!isDbConfigured()) return null;
+  try {
+    return await query(text, params);
+  } catch (error) {
+    logger.error("Cognitive memory query failed", error, { text });
+    return null;
+  }
+}
+
+function buildConceptSignals(l1State: WorkingMemory) {
+  const signals: Array<{ nodeId: string; label: string; strength: number }> = [];
+
+  if (l1State.currentFatigueRatio >= 1.15) {
+    signals.push({
+      nodeId: "concept_fatigue_under_speed",
+      label: "Yorulma Altinda Hiz Kaybi",
+      strength: Math.min(1, (l1State.currentFatigueRatio - 1) / 0.6),
+    });
+  }
+
+  if (l1State.currentAnxietyLevel >= 40) {
+    signals.push({
+      nodeId: "concept_performance_anxiety",
+      label: "Performans Kaygisi",
+      strength: Math.min(1, l1State.currentAnxietyLevel / 100),
+    });
+  }
+
+  if (l1State.consecutiveErrors >= 3) {
+    signals.push({
+      nodeId: "concept_error_spiral",
+      label: "Ust Uste Hata Spirali",
+      strength: Math.min(1, l1State.consecutiveErrors / 6),
+    });
+  }
+
+  return signals;
+}
+
+function summarizeContext(episodes: Array<{ event_context: string; outcome: string }>, edges: Array<{ source_label: string; target_label: string; relation_type: string; weight: number }>) {
+  const lines: string[] = [];
+
+  if (episodes.length) {
+    const episodeSummary = episodes
+      .slice(0, 3)
+      .map((episode) => `${episode.event_context} Sonuc: ${episode.outcome}.`);
+    lines.push(`[L2 Anisal Bellek]: ${episodeSummary.join(" ")}`);
+  }
+
+  if (edges.length) {
+    const edgeSummary = edges
+      .slice(0, 3)
+      .map((edge) => `${edge.source_label} --(${edge.relation_type})--> ${edge.target_label} (Gucluk: ${edge.weight.toFixed(2)})`);
+    lines.push(`[L3 Semantik Graf]: ${edgeSummary.join(" | ")}`);
+  }
+
+  if (!lines.length) {
+    lines.push("[Bellek]: Henuz yeterli kalici hafiza kaydi yok. Ogrenciyi dikkatle gozlemle ve nazik bir ton kullan.");
+  } else if (edges.some((edge) => edge.source_label.includes("Kayg") || edge.target_label.includes("Kayg"))) {
+    lines.push("[Oneri Yonergesi]: Sure baskisini azalt, dogrulugu odaga al, sakin ve cesaretlendirici kal.");
+  } else if (edges.some((edge) => edge.source_label.includes("Yorulma") || edge.target_label.includes("Yorulma"))) {
+    lines.push("[Oneri Yonergesi]: Kisa adimlar, daha yavas tempo ve mola odakli yonlendirme kullan.");
+  }
+
+  return lines.join("\n");
+}
 
 export class HyperCognitiveEngine {
-  
-  /**
-   * 1. SENSE (Algılama): Anlık verileri Çalışma Belleğine (L1) alır ve yorumlar.
-   */
-  static processWorkingMemory(uid: string, metrics: { accuracy: number, frustrationLevel?: number, fatigueRatio?: number }): WorkingMemory {
+  static processWorkingMemory(uid: string, metrics: { accuracy: number; frustrationLevel?: number; fatigueRatio?: number }): WorkingMemory {
     const l1State: WorkingMemory = {
       sessionId: `sess_${Date.now()}`,
       currentFocus: "Mixed Operations",
-      consecutiveErrors: metrics.accuracy < 50 ? 3 : 0, // Simülasyon
+      consecutiveErrors: metrics.accuracy < 50 ? 3 : metrics.accuracy < 70 ? 1 : 0,
       currentAnxietyLevel: metrics.frustrationLevel || 0,
-      currentFatigueRatio: metrics.fatigueRatio || 1.0
+      currentFatigueRatio: metrics.fatigueRatio || 1.0,
     };
-    
-    logger.debug(`[L1: Working Memory] Güncellendi: ${uid}`, l1State as unknown as Record<string, unknown>);
+
+    logger.debug(`[L1: Working Memory] Guncellendi: ${uid}`, l1State as unknown as Record<string, unknown>);
     return l1State;
   }
 
-  /**
-   * 2. CONSOLIDATE (Pekiştirme): Çalışma belleğindeki önemli anları Episodik Belleğe (L2) yazar.
-   * Bu işlem genellikle "Uyku Modu"nda veya session bittiğinde (Generative Memory) yapılır.
-   */
   static async consolidateToEpisodic(uid: string, l1State: WorkingMemory, finalResult: string) {
-    if (l1State.currentFatigueRatio > 1.2 || l1State.currentAnxietyLevel > 70) {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const episode: EpisodicMemory = {
-        eventId: `ep_${Date.now()}`,
-        uid,
-        timestamp: new Date(),
-        eventContext: `Yüksek yorulma (${l1State.currentFatigueRatio}x) ve kaygı (${l1State.currentAnxietyLevel}) altında çalıştı.`,
-        actionTaken: "Sistem tarafından hız düşürüldü ve görsel destek sağlandı.",
-        outcome: finalResult === "improved" ? "success" : "failure"
-      };
-      
-      logger.info(`[L2: Episodic Memory] Yeni Anı Oluşturuldu: ${uid}`);
-      // TODO: INSERT INTO episodic_memory (uid, event_context, vector) VALUES (...) 
+    if (!(l1State.currentFatigueRatio > 1.1 || l1State.currentAnxietyLevel > 45 || l1State.consecutiveErrors >= 3)) {
+      return;
+    }
+
+    const episode: EpisodicMemory = {
+      eventId: `ep_${Date.now()}`,
+      uid,
+      timestamp: new Date(),
+      eventContext: `Odak ${l1State.currentFocus}; yorulma ${l1State.currentFatigueRatio.toFixed(2)}x; kaygi ${l1State.currentAnxietyLevel}; seri hata ${l1State.consecutiveErrors}.`,
+      actionTaken: l1State.currentFatigueRatio > 1.2
+        ? "Sistem tempoyu yavaslatma ve mini mola onerisi uretmeli."
+        : "Sistem daha sakin, cesaretlendirici yonlendirme vermeli.",
+      outcome: finalResult === "improved" ? "success" : finalResult === "failure" ? "failure" : "neutral",
+    };
+
+    const inserted = await safeQuery(
+      `INSERT INTO episodic_memories (uid, event_context, action_taken, outcome)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id`,
+      [episode.uid, episode.eventContext, episode.actionTaken, episode.outcome],
+    );
+
+    if (inserted) {
+      logger.info(`[L2: Episodic Memory] Yeni ani olusturuldu: ${uid}`);
+      await this.updateSemanticGraph(uid, l1State);
     }
   }
 
-  /**
-   * 3. SYNTHESIZE (Sentezleme - Graf Güncelleme): Epizodik anılardan genel kurallar çıkarır (L3).
-   * GraphRAG mantığının temelidir. Neden-Sonuç ilişkilerini kurar.
-   */
-  static async updateSemanticGraph(uid: string) {
-    // Simüle edilmiş bir Sentez:
-    // Eğer son 5 Episodik anıda "Hız Baskısı" "Hata"yı tetiklediyse, Graf'ta bu Edge'i güçlendir.
-    const newEdge: SemanticEdge = {
-      sourceNodeId: "concept_time_pressure",
-      targetNodeId: "concept_calculation_error",
-      relationType: "TRIGGERS",
-      weight: 0.85 // %85 ihtimalle tetikliyor
-    };
-    
-    logger.info(`[L3: Semantic Graph] Yapısal Bağlantı Kuruldu: ${uid}`, newEdge as unknown as Record<string, unknown>);
-    // TODO: INSERT INTO semantic_edges ...
+  static async updateSemanticGraph(uid: string, l1State?: WorkingMemory) {
+    const signals = l1State ? buildConceptSignals(l1State) : [];
+    if (!signals.length) return;
+
+    await safeQuery(
+      `INSERT INTO student_profiles (uid)
+       VALUES ($1)
+       ON CONFLICT (uid) DO NOTHING`,
+      [uid],
+    );
+
+    for (const signal of signals) {
+      await safeQuery(
+        `INSERT INTO cognitive_nodes (id, uid, label, strength)
+         VALUES ($1, $2, $3, $4)
+         ON CONFLICT (id)
+         DO UPDATE SET
+           uid = EXCLUDED.uid,
+           label = EXCLUDED.label,
+           strength = GREATEST(cognitive_nodes.strength, EXCLUDED.strength),
+           updated_at = CURRENT_TIMESTAMP`,
+        [signal.nodeId, uid, signal.label, signal.strength],
+      );
+    }
+
+    if (signals.length >= 2) {
+      const [source, target] = signals;
+      await safeQuery(
+        `INSERT INTO cognitive_edges (uid, source_node, target_node, relation_type, weight)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [uid, source.nodeId, target.nodeId, "TRIGGERS", Math.max(source.strength, target.strength)],
+      );
+    }
+
+    logger.info(`[L3: Semantic Graph] Guncellendi: ${uid}`);
   }
 
-  /**
-   * 4. RETRIEVE (Geri Çağırma): AI promptu hazırlanırken tüm katmanlardan "İlgili" verileri çeker.
-   */
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   static async getCognitiveContext(uid: string): Promise<string> {
-    // Gelecekte pgvector ve SQL JOIN'ler ile çalışacak olan Context Builder
-    return `
-[L2 Anısal Bellek]: Son 3 görevde zaman baskısı olduğunda doğruluğu %40 düştü.
-[L3 Semantik Graf]: "Zaman Baskısı" --(TETİKLER)--> "İşlem Hatası" (Güç: Yüksek).
-[Öneri Yönergesi]: Öğrencinin hız skorunu görmezden gel. Sadece doğru cevap vermesi için onu cesaretlendir ve süre baskısını kaldır.
-    `.trim();
+    if (!isDbConfigured()) {
+      return "[Bellek]: PostgreSQL baglantisi ayarli degil. Varsayilan nazik rehberlik kullan.";
+    }
+
+    const [episodesResult, edgesResult] = await Promise.all([
+      safeQuery(
+        `SELECT event_context, outcome
+         FROM episodic_memories
+         WHERE uid = $1
+         ORDER BY created_at DESC
+         LIMIT 3`,
+        [uid],
+      ),
+      safeQuery(
+        `SELECT
+           sn.label AS source_label,
+           tn.label AS target_label,
+           ce.relation_type,
+           ce.weight
+         FROM cognitive_edges ce
+         LEFT JOIN cognitive_nodes sn ON sn.id = ce.source_node
+         LEFT JOIN cognitive_nodes tn ON tn.id = ce.target_node
+         WHERE ce.uid = $1
+         ORDER BY ce.updated_at DESC NULLS LAST, ce.weight DESC
+         LIMIT 3`,
+        [uid],
+      ),
+    ]);
+
+    const episodes = episodesResult?.rows ?? [];
+    const edges = edgesResult?.rows ?? [];
+    return summarizeContext(episodes, edges);
   }
 }
-

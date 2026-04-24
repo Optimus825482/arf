@@ -11,6 +11,17 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
-export const query = (text: string, params?: any[]) => pool.query(text, params);
+pool.on('error', (error) => {
+  console.error('Unexpected PostgreSQL pool error:', error);
+});
+
+export const isDatabaseConfigured = () => Boolean(process.env.DATABASE_URL);
+
+export const query = (text: string, params?: unknown[]) => {
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL is not configured');
+  }
+  return pool.query(text, params);
+};
 
 export default pool;
