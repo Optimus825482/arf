@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
-import { adminUnavailable, getAdminDb } from "@/lib/adminAuth";
+import { getAdminDb } from "@/lib/adminAuth";
 import { logger } from "@/lib/logger";
 import { FieldValue } from "firebase-admin/firestore";
 import { verifyRequest, unauthorized, forbidden } from "@/lib/adminAuth";
 import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
+import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
+import { HyperCognitiveEngine } from "@/lib/cognitiveMemory";
 
 export async function POST(req: Request) {
   try {
@@ -15,7 +17,7 @@ export async function POST(req: Request) {
       db = getAdminDb();
     } catch (error) {
       logger.error("Student route admin init failed", error);
-      return adminUnavailable();
+      return NextResponse.json({ error: "Veritabanı bağlantısı hatası" }, { status: 503 });
     }
 
     const body = await req.json();
@@ -175,8 +177,16 @@ export async function POST(req: Request) {
           mentalMathScore,
           concentrationScore,
           perceptionScore,
-          fatigueRatio: secondHalfSpeed / firstHalfSpeed
+          fatigueRatio: secondHalfSpeed / firstHalfSpeed,
+          frustrationLevel: 0, // Bu metrikler L1'e devredildi
+          reflectionLevel: 0
         };
+
+        // 1. SENSE: Anlık verileri Çalışma Belleğine (L1) al
+        const l1State = HyperCognitiveEngine.processWorkingMemory(uid, metrics);
+        
+        // 2. RETRIEVE: Geçmiş Graf ve Anısal Belleği Çek (L2, L3)
+        const mentalState = await HyperCognitiveEngine.getCognitiveContext(uid);
 
         try {
           let apiKey = process.env.DEEPSEEK_API_KEY;
@@ -190,24 +200,31 @@ export async function POST(req: Request) {
 
           if (apiKey) {
             const prompt = `
-Öğrenci matematik seviye tespit testini bitirdi. Veriler:
-- Genel Doğruluk: %${accuracy}
-- İşlem Hızı Puanı: ${speedScore}/100
-- Toplama/Çıkarma Hakimiyeti: %${addSubScore}
-- Çarpma/Bölme (Çarpım Tablosu): %${mulDivScore}
-- Zihinden İşlem Kapasitesi: %${mentalMathScore}
-- Konsantrasyon ve Odaklanma (Test sonu performansı): %${concentrationScore}
-- İşlem Algılama ve Tepki Hızı Tutarlılığı: %${perceptionScore}
-- Yorulma Endeksi: ${metrics.fatigueRatio.toFixed(2)}x (1'den büyükse sona doğru yavaşlamış)
+SEN: ARF Quantum Rehberlik Sistemi (Kıdemli Pedagog & Bilim İnsanı).
+GÖREV: Öğrencinin "Bilişsel Parmak İzi"ni analiz et ve bir sonraki görev sekansını planla.
 
-Bu verilere dayanarak öğrencinin öğrenme karakterini analiz et. 
-Örn: "Çarpım tablosunda hızlı ama test sonunda konsantrasyonu dağılıyor" veya "İşlem algılaması çok yüksek ama bölme işlemlerinde kararsız kalıyor."
+ÖĞRENCİ TELEMETRİSİ:
+- İsabet: %${accuracy} | Hız: ${speedScore}/100
+- Yorulma: ${metrics.fatigueRatio.toFixed(2)}x (Kritik Eşik: 1.15)
+- Odak: %${concentrationScore}
+- Bıkkınlık Endeksi: %${l1State.currentAnxietyLevel.toFixed(1)} (Hata sonrası acele etme oranı)
+- Çalışma Belleği Hata: ${l1State.consecutiveErrors} (Art arda yapılan hatalar)
 
-Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver.
+HAFIZA ÖZETİ:
+${mentalState}
+
+ANALİZ PROTOKOLÜ (Bilimsel RAG):
+1. "Chain of Thought": Önce verileri pedagojik olarak yorumla (örn: Bıkkınlık neden artmış olabilir?).
+2. Bilişsel Yük: Yorulma > 1.15 ise "segmentasyon/mola" öner.
+3. Görsel Matematik: Soyut işlemleri "sayı görselleri" ile destekle.
+4. Gelişim Zihniyeti: Hataları 'sinaps gelişimi' olarak tanımla.
+
+Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver:
 {
+  "thoughtChain": "AI'nın içsel analiz süreci (Gizli akıl yürütme)",
   "recommendedLevel": (1-5),
-  "actionPlan": "Öğrencinin bilişsel ve pratik durumuna özel 1-2 cümlelik tavsiye",
-  "learningPath": "Gelişim için izlemesi gereken sıralı kavramlar"
+  "actionPlan": "Bilimsel temelli nokta atışı pedagojik tavsiye",
+  "learningPath": "Gelişim rotası (Konular arası oklar -> ile)"
 }`;
 
             const response = await fetch(
@@ -274,6 +291,10 @@ Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver.
           actionPlan = "Temel işlemlerde hız ve doğruluk üzerine çalışmaya devam etmelisin.";
           learningPath = "Toplama/Çıkarma -> Çarpma Tablosu -> Bölme Temelleri";
         }
+
+        // 3. CONSOLIDATE & SYNTHESIZE: Anıları kaydet ve grafı güncelle
+        await HyperCognitiveEngine.consolidateToEpisodic(uid, l1State, "neutral");
+        await HyperCognitiveEngine.updateSemanticGraph(uid);
 
         await userRef.set(
           {
@@ -342,16 +363,27 @@ Lütfen AŞAĞIDAKİ JSON FORMATINDA cevap ver.
             apiKey = settingsSnap.data()!.value;
         }
         if (apiKey) {
-          const prompt = `Öğrenci gelişim raporu yeniden değerlendirmesi.
-Güncel metrikler: Doğruluk %${m.accuracy ?? 0}, Hız ${m.speedScore ?? 0}, Toplama/Çıkarma %${m.addSubScore ?? 0}, Çarpma/Bölme %${m.mulDivScore ?? 0}, Zihinden %${m.mentalMathScore ?? 0}
-Seviye: ${currentLevel}, Toplam XP: ${currentXp}, Plan versiyonu: ${currentVersion}
-Kategorik performans: ${JSON.stringify(perfSummary)}
-Önceki plan: "${u.actionPlan || "-"}"
+          const prompt = `
+Sen ARF Akademik Rehberlik Sistemi'sin. Kimliğin: ${PEDAGOGICAL_BASE.persona.role}.
+Öğrenci gelişim raporu yeniden değerlendirmesi.
 
-Bu bilgilere göre, öğrencinin SON döneminde gelişen/gerileyen alanları tespit et ve GÜNCEL bir odak planı üret. Önceki plandan farklı ve kişiye özel olsun. SADECE JSON dön:
+Mevcut Metrikler:
+- Doğruluk: %${m.accuracy ?? 0}, Hız: ${m.speedScore ?? 0}
+- Odak: %${m.concentrationScore ?? 0}, Yorulma: ${m.fatigueRatio ?? 1}x
+- Önceki Plan (v${currentVersion}): "${u.actionPlan || "-"}"
+
+Analiz ve Müdahale Protokolleri (RAG):
+1. Bilişsel Yük: Yorulma Endeksi > 1.15 ise "mikro-öğrenme seansları" öner.
+2. Odaklanma: Konsantrasyon %70 altındaysa "Sistem Bakımı" molası verdir.
+3. Teknik Gelişim: ${PEDAGOGICAL_BASE.methods.trachtenberg} gibi teknikleri öğrencinin hızına göre öner.
+4. Gelişim Zihniyeti: Performans düşüşlerini "beynin yeniden yapılanması" olarak yorumla.
+
+Görev:
+Öğrencinin trendini analiz et ve kişiselleştirilmiş, bilimsel temelli bir plan üret. 
+SADECE JSON dön:
 {
-  "actionPlan": "1-2 cümle — bu dönem odaklanılacak konular ve neden",
-  "learningPath": "önerilen sıralı konu listesi, ok (->) ile ayrılmış"
+  "actionPlan": "Pedagojik odak planı (1-2 cümle)",
+  "learningPath": "önerilen sıralı konu listesi (-> ile ayrılmış)"
 }`;
           const response = await fetch(
             "https://api.deepseek.com/v1/chat/completions",

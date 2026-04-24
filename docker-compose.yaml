@@ -4,10 +4,14 @@ services:
       context: .
       dockerfile: Dockerfile
     restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
     environment:
       NODE_ENV: production
       PORT: 3000
       HOSTNAME: 0.0.0.0
+      DATABASE_URL: ${DATABASE_URL}
       NEXT_TELEMETRY_DISABLED: 1
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL:-https://arf.erkanerdem.net}
       DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
@@ -18,3 +22,21 @@ services:
       UPSTASH_REDIS_REST_TOKEN: ${UPSTASH_REDIS_REST_TOKEN}
     expose:
       - "3000"
+
+  db:
+    image: ankane/pgvector:latest
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-arf_admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-arf_password}
+      POSTGRES_DB: ${POSTGRES_DB:-arf_db}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-arf_admin} -d ${POSTGRES_DB:-arf_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:

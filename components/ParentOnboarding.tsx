@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Radar, BarChart3, Target, ShieldCheck, Sparkles, X, ChevronRight, ChevronLeft, Check, BrainCircuit, Activity } from 'lucide-react';
+import { Radar, Target, ShieldCheck, Sparkles, X, ChevronRight, ChevronLeft, Check, BrainCircuit, Activity } from 'lucide-react';
 
 interface ParentOnboardingProps {
   parentName?: string;
