@@ -16,3 +16,8 @@ yarn-error.log*
 !.env.example
 research_lab/
 tanitim/
+rag.dump
+rag.sql
+rag_docs.sql
+rag_chunks.sql
+rag_inserts.sql

@@ -19,14 +19,23 @@ ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
 
-RUN addgroup -S nodejs && adduser -S nextjs -G nodejs
+RUN apk add --no-cache postgresql-client gzip \
+    && addgroup -S nodejs \
+    && adduser -S nextjs -G nodejs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
+COPY init-db.sql ./init-db.sql
+COPY docker/entrypoint.sh ./docker/entrypoint.sh
+COPY docker/rag_inserts.sql.gz ./docker/rag_inserts.sql.gz
+
+RUN chmod +x ./docker/entrypoint.sh \
+    && chown -R nextjs:nodejs /app
 
 USER nextjs
 
 EXPOSE 3000
 
+ENTRYPOINT ["/app/docker/entrypoint.sh"]
 CMD ["node", "server.js"]
