@@ -4,7 +4,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm ci
+RUN npm ci --node-llama-cpp-postinstall=skip
 
 FROM base AS builder
 ENV NODE_ENV=production
