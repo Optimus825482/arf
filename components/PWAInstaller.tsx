@@ -103,7 +103,7 @@ export default function PWAInstaller() {
         </div>
       )}
       {show && (deferred || manualMode) && (
-        <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[100] w-[min(92vw,430px)] animate-in slide-in-from-bottom-4">
+        <div className="fixed inset-x-3 bottom-[calc(0.75rem+env(safe-area-inset-bottom))] z-[100] mx-auto w-auto max-w-[430px] animate-in slide-in-from-bottom-4 sm:bottom-[calc(1rem+env(safe-area-inset-bottom))]">
           <div className={`hud-module relative overflow-hidden backdrop-blur-xl shadow-2xl ${isSafariGuide ? 'bg-slate-950/95' : 'bg-slate-900/90'}`}>
             <div className="pointer-events-none absolute inset-0">
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-cyan-300/50 to-transparent" />
@@ -162,24 +162,24 @@ export default function PWAInstaller() {
                 </div>
               </div>
             ) : (
-              <div className="relative flex items-center gap-3 p-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-sm bg-gradient-to-br from-cyan-500 to-cyan-500 text-white font-bold">
+              <div className="relative flex items-center gap-2.5 p-3 sm:gap-3 sm:p-4">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-sm bg-gradient-to-br from-cyan-500 to-cyan-500 text-white font-bold">
                   {manualMode === 'generic' ? <Smartphone className="h-4 w-4" /> : 'A'}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-white">ARF’i yükle</p>
-                  <p className="text-xs text-slate-300">
+                  <p className="truncate text-sm font-semibold text-white">ARF’i yükle</p>
+                  <p className="line-clamp-2 text-xs leading-4 text-slate-300">
                     {manualMode === 'generic'
                       ? 'Tarayici menusunden Yukle veya Ana Ekrana Ekle secenegini kullan.'
                       : 'Anasayfana ekle, cevrimdisi calissin.'}
                   </p>
                 </div>
                 {deferred ? (
-                  <button onClick={install} className="flex items-center gap-1.5 rounded-sm bg-cyan-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-cyan-400">
+                  <button onClick={install} className="flex shrink-0 items-center gap-1.5 rounded-sm bg-cyan-500 px-3 py-1.5 text-sm font-medium text-white transition hover:bg-cyan-400">
                     <Download className="h-4 w-4" /> Yükle
                   </button>
                 ) : null}
-                <button onClick={dismiss} aria-label="Kapat" className="rounded-sm p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white">
+                <button onClick={dismiss} aria-label="Kapat" className="shrink-0 rounded-sm p-1.5 text-slate-400 transition hover:bg-white/10 hover:text-white">
                   <X className="h-4 w-4" />
                 </button>
               </div>

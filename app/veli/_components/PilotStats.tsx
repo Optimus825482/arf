@@ -23,7 +23,7 @@ export default function PilotStats({
     <section className="flex flex-col gap-4">
       <div className="flex items-center gap-3 px-2">
         <div className="w-1.5 h-1.5 rounded-sm bg-cyan-400 animate-pulse"></div>
-        <span className="font-label text-[10px] tracking-[0.4em] text-cyan-400 uppercase font-black">MÜRETTEBAT_DURUMU</span>
+        <span className="font-label text-[10px] tracking-[0.24em] sm:tracking-[0.4em] text-cyan-400 uppercase font-black">MÜRETTEBAT_DURUMU</span>
         <div className="h-[1px] flex-1 bg-gradient-to-r from-cyan-400/20 to-transparent"></div>
       </div>
       
@@ -38,16 +38,16 @@ export default function PilotStats({
           <span className="material-symbols-outlined text-8xl text-primary transform rotate-12">flight_takeoff</span>
         </div>
 
-        <div className="p-8 relative z-10">
+        <div className="p-4 sm:p-6 md:p-8 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
-            <div className="flex items-center gap-5">
-              <div className="w-16 h-16 rounded-sm bg-surface-container-highest border border-primary/20 flex items-center justify-center neon-glow relative">
+            <div className="flex min-w-0 items-center gap-4 sm:gap-5">
+              <div className="w-14 h-14 sm:w-16 sm:h-16 shrink-0 rounded-sm bg-surface-container-highest border border-primary/20 flex items-center justify-center neon-glow relative">
                 <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
                 <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-cyan-400 rounded-sm border-4 border-[#191c1f]"></div>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="bg-surface-container-highest border border-primary/20 text-primary font-label text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-sm flex items-center gap-1.5">
+              <div className="min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-1">
+                  <span className="bg-surface-container-highest border border-primary/20 text-primary font-label text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-sm flex shrink-0 items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-sm bg-primary animate-pulse"></span>
                     {code}
                   </span>
@@ -57,13 +57,13 @@ export default function PilotStats({
                     {lastSeen}
                   </span>
                 </div>
-                <h2 className="font-headline text-3xl font-bold text-on-surface uppercase tracking-wide neon-text-primary">
+                <h2 className="font-headline text-2xl sm:text-3xl font-bold text-on-surface uppercase tracking-normal sm:tracking-wide neon-text-primary break-words">
                   {name}
                 </h2>
               </div>
             </div>
             
-            <div className="flex flex-col items-end gap-1">
+            <div className="flex flex-col items-start md:items-end gap-1">
               <span className="font-label text-[10px] tracking-[0.1em] text-on-surface-variant uppercase">RÜTBE SEVİYESİ</span>
               <span className="font-headline text-xl font-bold text-tertiary-container uppercase tracking-widest">YILDIZ ÇAVUŞU</span>
             </div>
@@ -84,7 +84,7 @@ export default function PilotStats({
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="bg-surface-container-highest/30 backdrop-blur-sm rounded-sm p-4 cyber-border text-center group/card transition-all hover:bg-surface-container-highest/50">
               <span className="material-symbols-outlined text-tertiary-container text-xl mb-1 group-hover/card:scale-110 transition-transform">local_fire_department</span>
               <p className="font-label text-[10px] tracking-[0.15em] text-on-surface-variant uppercase mb-1 opacity-70">Seri</p>
