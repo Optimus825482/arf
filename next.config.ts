@@ -42,6 +42,9 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   output: 'standalone',
   typescript: { ignoreBuildErrors: false },
+  experimental: {
+    useWasmBinary: true,
+  },
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'picsum.photos', port: '', pathname: '/**' },
