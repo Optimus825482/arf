@@ -62,7 +62,7 @@ SQL
     echo "[entrypoint] RAG seed already applied ($seed_marker)"
   else
     echo "[entrypoint] applying RAG seed ($seed_marker)..."
-    gzip -dc "$seed_file" | psql "$DATABASE_URL" -v ON_ERROR_STOP=1 >/dev/null
+    gzip -dc "$seed_file" | sed '/^SET transaction_timeout = 0;$/d' | psql "$DATABASE_URL" -v ON_ERROR_STOP=1 >/dev/null
     psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "insert into app_seed_state(key, value, applied_at) values ('$seed_marker', 'applied', now()) on conflict (key) do update set value = excluded.value, applied_at = excluded.applied_at;" >/dev/null
     echo "[entrypoint] RAG seed applied"
   fi
