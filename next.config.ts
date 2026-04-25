@@ -9,7 +9,8 @@ const ContentSecurityPolicy = [
   "object-src 'none'",
   "frame-ancestors 'none'",
   "form-action 'self' https://accounts.google.com https://*.firebaseapp.com",
-  `script-src 'self' ${isProd ? "" : "'unsafe-eval'"} 'unsafe-inline' https://www.gstatic.com https://apis.google.com`,
+  `script-src 'self' blob: ${isProd ? "" : "'unsafe-eval'"} 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com`,
+  `script-src-elem 'self' blob: ${isProd ? "" : "'unsafe-eval'"} 'unsafe-inline' https://www.gstatic.com https://apis.google.com https://accounts.google.com`,
   "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
   "font-src 'self' data: https://fonts.gstatic.com",
   "img-src 'self' data: blob: https://picsum.photos https://www.gstatic.com https://lh3.googleusercontent.com",
@@ -27,18 +28,13 @@ const securityHeaders = [
   { key: 'X-Frame-Options', value: 'DENY' },
   { key: 'X-Content-Type-Options', value: 'nosniff' },
   { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
-  // COOP is intentionally omitted globally — Firebase Auth signInWithPopup uses
-  // window.closed to detect popup closure, which COOP blocks even with
-  // same-origin-allow-popups. Auth pages need unrestricted popup access.
+  // Firebase Auth signInWithPopup uses window.closed to detect popup closure.
+  // A restrictive COOP header breaks that check in Chrome.
+  { key: 'Cross-Origin-Opener-Policy', value: 'unsafe-none' },
   { key: 'Cross-Origin-Embedder-Policy', value: 'unsafe-none' },
   { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=(), interest-cohort=()' },
   { key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubDomains; preload' },
   { key: 'X-DNS-Prefetch-Control', value: 'on' },
-];
-
-// Auth pages need COOP: unsafe-none so Google popup can use window.closed
-const authHeaders = [
-  { key: 'Cross-Origin-Opener-Policy', value: 'unsafe-none' },
 ];
 
 const nextConfig: NextConfig = {
@@ -58,7 +54,6 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: '/(.*)', headers: securityHeaders },
-      { source: '/auth(.*)', headers: authHeaders },
       {
         source: '/sw.js',
         headers: [
