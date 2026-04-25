@@ -17,12 +17,48 @@ if [ "$seed_enabled" != "false" ] && [ -n "${DATABASE_URL:-}" ] && [ -f "$seed_f
     sleep 1
   done
 
+  echo "[entrypoint] checking RAG schema health..."
+  psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL' >/dev/null
+do $$
+declare
+  rag_documents_exists boolean;
+  rag_documents_id_is_key boolean;
+begin
+  select to_regclass('public.rag_documents') is not null
+    into rag_documents_exists;
+
+  if rag_documents_exists then
+    select exists (
+      select 1
+      from pg_constraint
+      where conrelid = 'public.rag_documents'::regclass
+        and contype in ('p', 'u')
+        and conkey = array[
+          (
+            select attnum
+            from pg_attribute
+            where attrelid = 'public.rag_documents'::regclass
+              and attname = 'id'
+          )::smallint
+        ]
+    ) into rag_documents_id_is_key;
+
+    if not rag_documents_id_is_key then
+      raise notice 'repairing incomplete RAG schema';
+      drop table if exists public.rag_chunks cascade;
+      drop table if exists public.rag_documents cascade;
+    end if;
+  end if;
+end $$;
+SQL
+
   echo "[entrypoint] ensuring database schema..."
   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f /app/init-db.sql >/dev/null
   psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "create table if not exists app_seed_state (key text primary key, value text not null, applied_at timestamptz not null default now());" >/dev/null
 
   applied="$(psql "$DATABASE_URL" -At -v ON_ERROR_STOP=1 -c "select value from app_seed_state where key = '$seed_marker';" 2>/dev/null || true)"
-  if [ "$applied" = "applied" ]; then
+  chunk_count="$(psql "$DATABASE_URL" -At -v ON_ERROR_STOP=1 -c "select count(*) from public.rag_chunks;" 2>/dev/null || echo 0)"
+  if [ "$applied" = "applied" ] && [ "${chunk_count:-0}" -gt 0 ]; then
     echo "[entrypoint] RAG seed already applied ($seed_marker)"
   else
     echo "[entrypoint] applying RAG seed ($seed_marker)..."
