@@ -1,18 +1,16 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
-import { getAdminDb } from "@/lib/adminAuth";
 import { verifyRequest, unauthorized } from "@/lib/adminAuth";
 import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import { getDifficultyProfile } from "@/lib/commander";
 import { deepseekRequestSchema, formatZodError } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
-import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
 
 export async function POST(req: Request) {
   try {
-    const db = getAdminDb();
     const authed = await verifyRequest(req);
     if (!authed) return unauthorized();
+    
     const rl = checkRateLimit({
       windowMs: 60_000,
       max: 15,
@@ -21,16 +19,20 @@ export async function POST(req: Request) {
     if (!rl.ok) return rateLimited(rl.retryAfter!);
 
     let rawBody;
-    try { rawBody = await req.json(); } catch { return NextResponse.json({ error: "Geçersiz JSON." }, { status: 400 }); }
+    try { 
+        rawBody = await req.json(); 
+    } catch { 
+        return NextResponse.json({ error: "Geçersiz JSON." }, { status: 400 }); 
+    }
+    
     const parsedBody = deepseekRequestSchema.safeParse(rawBody);
     if (!parsedBody.success) {
       return NextResponse.json({ error: `Geçersiz istek: ${formatZodError(parsedBody.error)}` }, { status: 400 });
     }
+    
     const { level, performanceHistory } = parsedBody.data;
 
-    const settingsSnap = await db.doc("settings/deepseek_api_key").get();
-    const dbApiKey = settingsSnap.exists ? (settingsSnap.data()?.value as string) : null;
-    const apiKey = process.env.DEEPSEEK_API_KEY || dbApiKey;
+    const apiKey = process.env.DEEPSEEK_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json({ error: "DeepSeek API anahtarı bulunamadı!" }, { status: 400 });
@@ -41,30 +43,25 @@ export async function POST(req: Request) {
       apiKey: apiKey,
     });
 
-    let struggles = "none";
+    let struggles = "yok";
     if (performanceHistory) {
-      const struggleAreas: string[] = [];
-      if (typeof performanceHistory.addSubScore === "number" && performanceHistory.addSubScore < 70) struggleAreas.push("toplama/çıkarma");
-      if (typeof performanceHistory.mulDivScore === "number" && performanceHistory.mulDivScore < 70) struggleAreas.push("çarpma/bölme");
-      if (typeof performanceHistory.speedScore === "number" && performanceHistory.speedScore < 50) struggleAreas.push("hız/reaksiyon süresi");
-      if (struggleAreas.length > 0) struggles = struggleAreas.join(", ");
+      const areas: string[] = [];
+      if (performanceHistory.addSubScore && performanceHistory.addSubScore < 70) areas.push("toplama/çıkarma");
+      if (performanceHistory.mulDivScore && performanceHistory.mulDivScore < 70) areas.push("çarpma/bölme");
+      if (areas.length > 0) struggles = areas.join(", ");
     }
 
     const difficultyProfile = getDifficultyProfile({
-      level,
-      metrics: (performanceHistory ?? {}) as Record<string, number>,
+      level: level || 1,
+      metrics: performanceHistory ?? {},
     });
 
     const prompt = `
-SEN: ${PEDAGOGICAL_BASE.persona.name}.
-ROL: ${PEDAGOGICAL_BASE.persona.role}
-GOREV: Seviyesi ${level || 1} olan bir pilot icin "Yeni Nesil" boss matematik problemi uret.
-ANALIZ: Zorlandigi alanlar: ${struggles}. Profil: ${difficultyProfile.label}.
-PEDAGOJI:
-- ${PEDAGOGICAL_BASE.scientificFoundations.visualMathematics.application}
-- ${PEDAGOGICAL_BASE.methods.singaporeMath}
-- Hata durumunda ogrenciyi destekleyecek ipucu ekle.
-SADECE JSON dön:
+SEN: ARF Uzay Gemisi Yapay Zekası.
+GÖREV: Seviyesi ${level || 1} olan bir pilot için "Yeni Nesil" boss matematik problemi üret.
+ANALİZ: Zorlandığı alanlar: ${struggles}. Profil: ${difficultyProfile.label}.
+
+LÜTFEN SADECE JSON formatında ve aşağıdaki anahtarlarla dön:
 {
   "question": "Uzay temalı problem metni",
   "options": ["A", "B", "C", "D"],
@@ -76,16 +73,23 @@ SADECE JSON dön:
 
     const completion = await openai.chat.completions.create({
       messages: [{ role: "system", content: prompt }],
-      model: "deepseek-reasoner", // Muhakeme odaklı model
+      model: "deepseek-v4-pro", // Muhakeme odaklı model
     });
 
     let content = completion.choices[0].message.content || "{}";
-    if (content.includes("```json")) content = content.split("```json")[1].split("```")[0].trim();
-    else if (content.includes("```")) content = content.split("```")[1].split("```")[0].trim();
+    
+    // JSON temizleme (Markdown bloklarını kaldır)
+    if (content.includes("```json")) {
+        content = content.split("```json")[1].split("```")[0].trim();
+    } else if (content.includes("```")) {
+        content = content.split("```")[1].split("```")[0].trim();
+    }
 
-    return NextResponse.json(JSON.parse(content));
+    const parsed = JSON.parse(content);
+    return NextResponse.json(parsed);
+
   } catch (error: unknown) {
     logger.error("DeepSeek Error", error);
-    return NextResponse.json({ error: "Soru üretilirken bir hata oluştu." }, { status: 500 });
+    return NextResponse.json({ error: "Yapay Zeka hatası" }, { status: 500 });
   }
 }

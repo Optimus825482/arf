@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>ARF - Pratik Modu</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "secondary-fixed": "#ffdad7",
+                      "on-secondary": "#68000a",
+                      "on-tertiary": "#462b00",
+                      "tertiary-fixed-dim": "#ffb957",
+                      "secondary-container": "#a40217",
+                      "on-secondary-fixed": "#410004",
+                      "background": "#111417",
+                      "surface-container-lowest": "#0c0e12",
+                      "surface-container-high": "#282a2e",
+                      "secondary": "#ffb3ad",
+                      "error": "#ffb4ab",
+                      "surface-bright": "#37393d",
+                      "on-secondary-container": "#ffaea8",
+                      "primary-fixed-dim": "#2fd9f4",
+                      "on-primary-fixed-variant": "#004e5a",
+                      "primary": "#8aebff",
+                      "on-error": "#690005",
+                      "inverse-primary": "#006877",
+                      "surface-container-low": "#191c1f",
+                      "surface-container": "#1d2023",
+                      "surface-dim": "#111417",
+                      "surface-variant": "#323539",
+                      "outline": "#859397",
+                      "on-secondary-fixed-variant": "#930013",
+                      "on-tertiary-fixed-variant": "#643f00",
+                      "on-background": "#e1e2e7",
+                      "surface-tint": "#2fd9f4",
+                      "tertiary-container": "#ffb13b",
+                      "tertiary": "#ffd6a3",
+                      "outline-variant": "#3c494c",
+                      "on-tertiary-container": "#6e4600",
+                      "on-tertiary-fixed": "#2a1800",
+                      "on-primary": "#00363e",
+                      "surface": "#111417",
+                      "error-container": "#93000a",
+                      "surface-container-highest": "#323539",
+                      "tertiary-fixed": "#ffddb5",
+                      "on-primary-fixed": "#001f25",
+                      "primary-container": "#22d3ee",
+                      "on-error-container": "#ffdad6",
+                      "on-surface": "#e1e2e7",
+                      "on-primary-container": "#005763",
+                      "primary-fixed": "#a2eeff",
+                      "on-surface-variant": "#bbc9cd",
+                      "secondary-fixed-dim": "#ffb3ad",
+                      "inverse-on-surface": "#2e3134",
+                      "inverse-surface": "#e1e2e7"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Space Grotesk"
+                      ],
+                      "display": [
+                              "Space Grotesk"
+                      ],
+                      "body": [
+                              "Inter"
+                      ],
+                      "label": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {}
+      },
+          },
+        }
+      </script>
+<style>
+        .scanline-texture {
+            background-image: linear-gradient(0deg, rgba(0,0,0,0) 50%, rgba(34, 211, 238, 0.05) 50%);
+            background-size: 100% 4px;
+        }
+        .glass-panel {
+            background: rgba(25, 28, 31, 0.6);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .input-glow:focus {
+            box-shadow: 0 4px 15px -3px rgba(34, 211, 238, 0.3);
+        }
+      </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body h-screen flex flex-col overflow-hidden relative selection:bg-primary-container selection:text-on-primary-container">
+<!-- Ambient Glow Background -->
+<div class="absolute inset-0 pointer-events-none overflow-hidden z-[-1]">
+<div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary/5 rounded-full blur-[100px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[60%] h-[60%] bg-secondary/5 rounded-full blur-[120px]"></div>
+</div>
+<!-- TOP HUD (TopAppBar modified) -->
+<header class="flex justify-between items-center w-full px-6 py-4 max-w-full bg-[#111417]/80 backdrop-blur-xl border-b border-[#22D3EE]/15 shadow-[0_0_15px_rgba(34,211,238,0.1)] relative z-10">
+<button aria-label="Go Back" class="text-[#8aebff] hover:bg-[#22D3EE]/10 transition-colors duration-300 p-2 rounded-sm scale-95 transition-transform duration-150 ease-out flex items-center justify-center">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h1 class="font-['Space_Grotesk'] uppercase tracking-[0.05em] text-sm font-bold text-[#8aebff] drop-shadow-[0_0_8px_#22D3EE] text-center absolute left-1/2 -translate-x-1/2">
+            PRATİK MODU
+        </h1>
+<div class="flex items-center gap-2">
+<span class="font-label text-xs tracking-widest text-on-surface-variant uppercase bg-surface-container-high px-3 py-1.5 rounded outline outline-1 outline-outline-variant/30 font-medium">GÖREV 7/20</span>
+</div>
+</header>
+<!-- Progress Bar (Energy Levels) -->
+<div class="w-full h-1 bg-surface-container-highest relative z-10">
+<div class="h-full bg-gradient-to-r from-primary to-primary-fixed-dim w-[35%] relative shadow-[0_0_10px_rgba(34,211,238,0.5)]">
+<div class="absolute top-0 right-0 bottom-0 w-8 bg-white/30 animate-pulse"></div>
+</div>
+</div>
+<!-- MAIN CANVAS -->
+<main class="flex-1 flex flex-col p-6 gap-6 overflow-y-auto relative z-0 container mx-auto max-w-3xl">
+<!-- MISSION AREA (Glassmorphism Card) -->
+<div class="glass-panel rounded-sm relative overflow-hidden outline outline-1 outline-outline-variant/15 flex flex-col flex-1 min-h-[300px] shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
+<!-- Glass Reflection Gradient -->
+<div class="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent pointer-events-none"></div>
+<div class="absolute inset-0 scanline-texture pointer-events-none mix-blend-overlay opacity-30"></div>
+<div class="p-4 flex justify-between items-start relative z-10 border-b border-outline-variant/10">
+<div class="font-label text-xs tracking-[0.1em] text-on-surface-variant uppercase flex items-center gap-2">
+<span class="w-2 h-2 bg-primary rounded-sm shadow-[0_0_5px_#22d3ee]"></span>
+                    SEKTÖR 03 // ÇARPMA
+                </div>
+<div class="font-label text-xs tracking-[0.1em] text-tertiary-fixed-dim flex items-center gap-1 bg-surface-container-highest/80 px-2 py-1 rounded-sm">
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="material-symbols-outlined text-sm text-outline-variant">star</span>
+<span class="material-symbols-outlined text-sm text-outline-variant">star</span>
+<span class="material-symbols-outlined text-sm text-outline-variant">star</span>
+<span class="ml-1 uppercase">KOLAY</span>
+</div>
+</div>
+<div class="flex-1 flex items-center justify-center p-8 relative z-10">
+<div class="font-display text-6xl md:text-8xl font-bold tracking-widest text-on-surface text-center tabular-nums shadow-sm drop-shadow-[0_2px_10px_rgba(255,255,255,0.1)]">
+                    347 × 8 = <span class="text-primary/40">?</span>
+</div>
+</div>
+<!-- Corner Brackets Decorative -->
+<div class="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-primary/30 pointer-events-none"></div>
+<div class="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-primary/30 pointer-events-none"></div>
+<div class="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-primary/30 pointer-events-none"></div>
+<div class="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-primary/30 pointer-events-none"></div>
+</div>
+<!-- INPUT AREA -->
+<div class="flex flex-col gap-4 mt-auto">
+<div class="relative w-full group">
+<input class="w-full bg-surface-container-highest text-on-surface font-label text-xl tracking-widest px-6 py-5 rounded-sm border-none focus:ring-0 text-center placeholder:text-on-surface-variant/50 input-glow transition-shadow duration-300 relative z-10" inputmode="numeric" pattern="[0-9]*" placeholder="Yanıtını gir..." type="text"/>
+<!-- Bottom Trace -->
+<div class="absolute bottom-0 left-0 right-0 h-[2px] bg-outline-variant group-focus-within:bg-primary transition-colors duration-300 z-20"></div>
+<!-- Glowing Underline effect when focused -->
+<div class="absolute bottom-0 left-0 right-0 h-[2px] bg-primary blur-[4px] opacity-0 group-focus-within:opacity-100 transition-opacity duration-300 z-10"></div>
+</div>
+<button class="w-full bg-primary-container text-on-primary font-headline text-lg font-bold tracking-[0.05em] uppercase py-5 rounded-sm hover:bg-primary hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all duration-300 active:scale-[0.98]">
+                ONAYLA
+            </button>
+</div>
+<!-- METRICS ROW (Mini Tactical HUD Cards) -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+<!-- Metric 1: Time -->
+<div class="bg-surface-container-low p-3 rounded-sm outline outline-1 outline-outline-variant/20 flex flex-col gap-1 items-center justify-center">
+<span class="font-label text-[10px] text-on-surface-variant tracking-[0.1em] uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">timer</span> SÜRE
+                </span>
+<span class="font-display text-lg font-bold text-tertiary-fixed-dim tabular-nums tracking-widest">23s</span>
+</div>
+<!-- Metric 2: Accuracy -->
+<div class="bg-surface-container-low p-3 rounded-sm outline outline-1 outline-outline-variant/20 flex flex-col gap-1 items-center justify-center">
+<span class="font-label text-[10px] text-on-surface-variant tracking-[0.1em] uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">track_changes</span> İSABET
+                </span>
+<span class="font-display text-lg font-bold text-primary tabular-nums tracking-widest">6/6</span>
+</div>
+<!-- Metric 3: Speed -->
+<div class="bg-surface-container-low p-3 rounded-sm outline outline-1 outline-outline-variant/20 flex flex-col gap-1 items-center justify-center">
+<span class="font-label text-[10px] text-on-surface-variant tracking-[0.1em] uppercase flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">bolt</span> HIZ
+                </span>
+<span class="font-display text-lg font-bold text-primary tabular-nums tracking-widest">1.8s</span>
+</div>
+<!-- Metric 4: Streak -->
+<div class="bg-surface-container-low p-3 rounded-sm outline outline-1 outline-outline-variant/20 flex flex-col gap-1 items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 bg-tertiary-container/5 pointer-events-none"></div>
+<span class="font-label text-[10px] text-on-surface-variant tracking-[0.1em] uppercase flex items-center gap-1 relative z-10">
+<span class="material-symbols-outlined text-[14px] text-tertiary-container">local_fire_department</span> SERİ
+                </span>
+<span class="font-display text-lg font-bold text-tertiary-container tabular-nums tracking-widest relative z-10">6</span>
+</div>
+</div>
+<!-- FOOTER ACTIONS -->
+<div class="flex justify-between items-center mt-6 pt-4 border-t border-outline-variant/20 mb-8">
+<button class="text-on-surface-variant hover:text-primary font-label text-xs tracking-[0.1em] uppercase transition-colors flex items-center gap-2">
+                GÖREVİ ATLA
+                <span class="material-symbols-outlined text-sm">skip_next</span>
+</button>
+<button class="bg-surface-container-high text-on-surface-variant/50 font-headline text-sm font-bold tracking-[0.05em] uppercase px-6 py-2.5 rounded-sm outline outline-1 outline-outline-variant/20 cursor-not-allowed">
+                TAMAMLA
+            </button>
+</div>
+</main>
+</body></html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="tr"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>GÖZCÜ PANELİ - ARF Math Academy</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Space+Grotesk:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-surface": "#e1e2e7",
+                      "tertiary-container": "#ffb13b",
+                      "primary-fixed": "#a2eeff",
+                      "on-tertiary-fixed": "#2a1800",
+                      "on-surface-variant": "#bbc9cd",
+                      "on-secondary": "#68000a",
+                      "surface-tint": "#2fd9f4",
+                      "outline-variant": "#3c494c",
+                      "secondary-container": "#a40217",
+                      "on-error-container": "#ffdad6",
+                      "surface": "#111417",
+                      "tertiary-fixed-dim": "#ffb957",
+                      "surface-container-high": "#282a2e",
+                      "primary-fixed-dim": "#2fd9f4",
+                      "secondary-fixed-dim": "#ffb3ad",
+                      "on-primary-fixed-variant": "#004e5a",
+                      "surface-variant": "#323539",
+                      "secondary-fixed": "#ffdad7",
+                      "on-secondary-container": "#ffaea8",
+                      "surface-bright": "#37393d",
+                      "on-primary-container": "#005763",
+                      "surface-container-highest": "#323539",
+                      "on-tertiary": "#462b00",
+                      "inverse-surface": "#e1e2e7",
+                      "on-tertiary-container": "#6e4600",
+                      "primary": "#8aebff",
+                      "on-secondary-fixed-variant": "#930013",
+                      "on-error": "#690005",
+                      "on-background": "#e1e2e7",
+                      "surface-dim": "#111417",
+                      "on-tertiary-fixed-variant": "#643f00",
+                      "tertiary": "#ffd6a3",
+                      "inverse-on-surface": "#2e3134",
+                      "background": "#111417",
+                      "on-primary-fixed": "#001f25",
+                      "secondary": "#ffb3ad",
+                      "primary-container": "#22d3ee",
+                      "tertiary-fixed": "#ffddb5",
+                      "outline": "#859397",
+                      "error": "#ffb4ab",
+                      "surface-container-lowest": "#0c0e12",
+                      "on-secondary-fixed": "#410004",
+                      "surface-container-low": "#191c1f",
+                      "inverse-primary": "#006877",
+                      "on-primary": "#00363e",
+                      "error-container": "#93000a",
+                      "surface-container": "#1d2023",
+                      "ai-purple": "#A855F7",
+                      "ai-purple-light": "#d8b4fe"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Space Grotesk", "sans-serif"],
+                      "display": ["Space Grotesk", "sans-serif"],
+                      "body": ["Inter", "sans-serif"],
+                      "label": ["Inter", "sans-serif"]
+              }
+            }
+          }
+        }
+    </script>
+<style>
+        .glass-panel {
+            background: linear-gradient(180deg, rgba(34, 211, 238, 0.05) 0%, rgba(5, 7, 10, 0) 100%), rgba(25, 28, 31, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        .ai-glass-panel {
+            background: linear-gradient(180deg, rgba(168, 85, 247, 0.1) 0%, rgba(5, 7, 10, 0) 100%), rgba(25, 28, 31, 0.6);
+            backdrop-filter: blur(20px);
+        }
+        .hud-border {
+            border: 1px solid rgba(60, 73, 76, 0.15);
+        }
+        .cyan-glow {
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.1);
+        }
+        .purple-glow {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.15);
+        }
+        .neon-text-primary {
+            text-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+        }
+        .scanning-line {
+            background: linear-gradient(90deg, transparent, rgba(34, 211, 238, 0.8), transparent);
+            height: 1px;
+            width: 100%;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface font-body antialiased selection:bg-primary/30 min-h-screen flex flex-col pb-24">
+<!-- TopAppBar -->
+<header class="bg-[#111417]/90 backdrop-blur-lg docked full-width top-0 border-b border-cyan-500/10 shadow-[0_0_15px_rgba(34,211,238,0.1)] transition-all duration-300 ease-in-out z-40 fixed">
+<div class="flex justify-between items-center w-full px-6 py-4">
+<button class="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/5 p-1 rounded-sm flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-2xl" data-icon="radar">radar</span>
+</button>
+<h1 class="font-['Space_Grotesk'] uppercase tracking-[0.05em] font-bold text-lg text-cyan-400 tracking-tighter neon-text-primary">GÖZCÜ PANELİ</h1>
+<div class="flex items-center gap-3">
+<button class="text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/5 p-1 rounded-sm flex items-center justify-center transition-colors">
+<span class="material-symbols-outlined text-xl" data-icon="notifications">notifications</span>
+</button>
+<div class="w-8 h-8 rounded-sm bg-surface-container-high border border-primary/30 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-primary/70 text-lg" data-icon="person">person</span>
+</div>
+</div>
+</div>
+<div class="scanning-line"></div>
+</header>
+<!-- Main Content Canvas -->
+<main class="flex-1 w-full max-w-5xl mx-auto px-4 md:px-6 pt-24 pb-8 flex flex-col gap-6">
+<!-- Connected Pilot Hero Card -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center gap-2 px-1">
+<span class="font-label text-xs tracking-[0.1em] text-outline-variant uppercase">BAĞLI MÜREKKEBİ</span>
+<div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+</div>
+<div class="glass-panel hud-border rounded-DEFAULT p-5 relative overflow-hidden group">
+<div class="absolute top-0 right-0 p-2 opacity-20">
+<span class="material-symbols-outlined text-6xl text-primary transform rotate-12" data-icon="flight_takeoff">flight_takeoff</span>
+</div>
+<div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 relative z-10">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-3 mb-1">
+<span class="bg-surface-container-highest border border-primary/20 text-primary font-label text-[10px] tracking-wider uppercase px-2 py-0.5 rounded-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-primary shadow-[0_0_5px_rgba(34,211,238,0.8)]"></span>
+                                MÜR-7429
+                            </span>
+<span class="text-on-surface-variant text-xs font-label flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-green-500"></span>
+                                Aktif - Son görülen: 2 saat önce
+                            </span>
+</div>
+<h2 class="font-display text-3xl font-bold text-on-surface uppercase tracking-wide">Ahmet Yılmaz</h2>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-2 mt-6">
+<div class="bg-surface-container-high/50 border border-outline-variant/10 rounded-sm p-3 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-tertiary-container mb-1 text-lg" data-icon="local_fire_department">local_fire_department</span>
+<span class="font-label text-[10px] text-outline-variant tracking-wider uppercase">Streak</span>
+<span class="font-display font-semibold text-lg text-on-surface">7 gün</span>
+</div>
+<div class="bg-surface-container-high/50 border border-outline-variant/10 rounded-sm p-3 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-primary mb-1 text-lg" data-icon="check_circle">check_circle</span>
+<span class="font-label text-[10px] text-outline-variant tracking-wider uppercase">Başarı</span>
+<span class="font-display font-semibold text-lg text-primary">87%</span>
+</div>
+<div class="bg-surface-container-high/50 border border-outline-variant/10 rounded-sm p-3 flex flex-col items-center justify-center text-center">
+<span class="material-symbols-outlined text-secondary-fixed-dim mb-1 text-lg" data-icon="timer">timer</span>
+<span class="font-label text-[10px] text-outline-variant tracking-wider uppercase">Bugün</span>
+<span class="font-display font-semibold text-lg text-on-surface">45 dk</span>
+</div>
+</div>
+</div>
+</section>
+<!-- AI Briefing Section -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center gap-2 px-1">
+<span class="material-symbols-outlined text-ai-purple text-sm" data-icon="auto_awesome">auto_awesome</span>
+<span class="font-label text-xs tracking-[0.1em] text-ai-purple uppercase">AI BRIFING</span>
+<div class="h-[1px] flex-1 bg-ai-purple/20"></div>
+</div>
+<div class="ai-glass-panel border border-ai-purple/30 rounded-DEFAULT p-5 relative overflow-hidden purple-glow">
+<div class="flex flex-col gap-3 relative z-10">
+<h3 class="font-display text-lg font-bold text-on-surface uppercase tracking-wide">DeepSeek AI analizi hazır</h3>
+<p class="text-on-surface-variant text-sm font-body leading-relaxed max-w-2xl">
+                        Pilot çarpma işlemlerinde %23 gelişim gösterdi. Bölme konusunda ek görev öneriliyor.
+                    </p>
+<div class="mt-2 flex">
+<button class="bg-surface-container-highest border border-ai-purple/50 text-ai-purple-light hover:bg-ai-purple/10 font-label text-xs uppercase tracking-wider px-4 py-2 rounded-sm transition-all flex items-center gap-2 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+<span class="material-symbols-outlined text-sm" data-icon="visibility">visibility</span>
+                            BRİFİNGİ GÖR
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Performance Chart Placeholder -->
+<section class="flex flex-col gap-2">
+<div class="flex items-center gap-2 px-1">
+<span class="font-label text-xs tracking-[0.1em] text-outline-variant uppercase">HAFTALIK PERFORMANS</span>
+<div class="h-[1px] flex-1 bg-outline-variant/20"></div>
+</div>
+<div class="bg-surface-container-low border border-outline-variant/15 rounded-DEFAULT p-5 min-h-[200px] flex flex-col justify-end relative">
+<!-- Decorative grid lines -->
+<div class="absolute inset-0 flex flex-col justify-between p-5 pb-10 pointer-events-none opacity-20">
+<div class="w-full h-[1px] bg-outline-variant"></div>
+<div class="w-full h-[1px] bg-outline-variant"></div>
+<div class="w-full h-[1px] bg-outline-variant"></div>
+<div class="w-full h-[1px] bg-outline-variant"></div>
+</div>
+<!-- Y Axis Labels -->
+<div class="absolute left-2 top-5 bottom-10 flex flex-col justify-between text-[8px] font-label text-outline-variant font-mono">
+<span>100%</span>
+<span>75%</span>
+<span>50%</span>
+<span>25%</span>
+</div>
+<!-- Bars -->
+<div class="flex justify-between items-end h-[140px] pl-6 w-full relative z-10 gap-1 md:gap-4">
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full max-w-[24px] bg-gradient-to-t from-primary/10 to-primary/60 rounded-t-sm h-[60%] border-t border-primary/50 relative group">
+<div class="absolute -top-6 left-1/2 -translate-x-1/2 opacity-0 group-hover:opacity-100 bg-surface-container-highest px-1.5 py-0.5 rounded-sm text-[10px] text-primary font-mono transition-opacity">60%</div>
+</div>
+<span class="text-[10px] font-label text-outline-variant uppercase tracking-wider">Pzt</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full max-w-[24px] bg-gradient-to-t from-primary/10 to-primary/80 rounded-t-sm h-[75%] border-t border-primary/70 relative group"></div>
+<span class="text-[10px] font-label text-outline-variant uppercase tracking-wider">Sal</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full max-w-[24px] bg-gradient-to-t from-primary/10 to-primary/40 rounded-t-sm h-[40%] border-t border-primary/30 relative group"></div>
+<span class="text-[10px] font-label text-outline-variant uppercase tracking-wider">Çar</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full max-w-[24px] bg-gradient-to-t from-primary/10 to-primary/90 rounded-t-sm h-[85%] border-t border-primary/80 relative group cyan-glow"></div>
+<span class="text-[10px] font-label text-outline-variant uppercase tracking-wider">Per</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full max-w-[24px] bg-gradient-to-t from-primary/10 to-primary/70 rounded-t-sm h-[70%] border-t border-primary/60 relative group"></div>
+<span class="text-[10px] font-label text-outline-variant uppercase tracking-wider">Cum</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full max-w-[24px] bg-gradient-to-t from-primary/10 to-primary/30 rounded-t-sm h-[30%] border-t border-primary/20 relative group"></div>
+<span class="text-[10px] font-label text-outline-variant uppercase tracking-wider">Cmt</span>
+</div>
+<div class="w-full flex flex-col items-center gap-2">
+<div class="w-full max-w-[24px] bg-gradient-to-t from-primary/10 to-primary rounded-t-sm h-[95%] border-t border-primary relative group cyan-glow"></div>
+<span class="text-[10px] font-label text-primary uppercase tracking-wider font-bold">Paz</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Quick Actions Row -->
+<section class="grid grid-cols-3 gap-3">
+<button class="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/20 rounded-sm p-3 flex flex-col items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="picture_as_pdf">picture_as_pdf</span>
+<span class="font-label text-[10px] md:text-xs text-on-surface uppercase tracking-wider text-center">PDF Rapor</span>
+</button>
+<button class="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/20 rounded-sm p-3 flex flex-col items-center justify-center gap-2 transition-colors">
+<span class="material-symbols-outlined text-on-surface-variant" data-icon="chat">chat</span>
+<span class="font-label text-[10px] md:text-xs text-on-surface uppercase tracking-wider text-center">Mesaj Gönder</span>
+</button>
+<button class="bg-surface-container-high hover:bg-surface-container-highest border border-outline-variant/20 rounded-sm p-3 flex flex-col items-center justify-center gap-2 transition-colors group">
+<span class="material-symbols-outlined text-primary group-hover:neon-text-primary transition-all" data-icon="track_changes">track_changes</span>
+<span class="font-label text-[10px] md:text-xs text-primary uppercase tracking-wider text-center">Yeni Plan</span>
+</button>
+</section>
+</main>
+<!-- BottomNavBar -->
+<nav class="bg-[#0c0e12]/95 backdrop-blur-md fixed bottom-0 w-full z-50 border-t border-cyan-500/20 shadow-[0_-4px_20px_rgba(0,0,0,0.5)] md:hidden">
+<div class="flex justify-around items-center w-full h-16 px-2">
+<!-- Active Tab: Panel -->
+<button class="flex flex-col items-center justify-center text-cyan-400 bg-cyan-500/10 rounded-sm py-1 px-3 shadow-[inset_0_0_10px_rgba(34,211,238,0.2)] scale-95 transition-transform w-full">
+<span class="material-symbols-outlined mb-0.5 text-xl" data-icon="dashboard" style="font-variation-settings: 'FILL' 1;">dashboard</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium">Panel</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 py-1 px-3 hover:text-cyan-200 transition-colors active:scale-90 w-full">
+<span class="material-symbols-outlined mb-0.5 text-xl" data-icon="assessment">assessment</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium">Raporlar</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 py-1 px-3 hover:text-cyan-200 transition-colors active:scale-90 w-full">
+<span class="material-symbols-outlined mb-0.5 text-xl" data-icon="settings">settings</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium">Ayarlar</span>
+</button>
+<button class="flex flex-col items-center justify-center text-slate-500 py-1 px-3 hover:text-cyan-200 transition-colors active:scale-90 w-full">
+<span class="material-symbols-outlined mb-0.5 text-xl" data-icon="account_circle">account_circle</span>
+<span class="font-['Inter'] text-[10px] uppercase tracking-[0.1em] font-medium">Profil</span>
+</button>
+</div>
+</nav>
+</body></html>

@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -46,24 +46,24 @@ export default function LevelUpModal({ level, onClose }: LevelUpModalProps) {
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.8, opacity: 0, y: -50 }}
           transition={{ type: "spring", damping: 15 }}
-          className="glass-panel p-8 md:p-12 max-w-lg w-full text-center relative overflow-hidden border-yellow-500/30 shadow-[0_0_60px_rgba(234,179,8,0.25)]"
+          className="hud-module p-8 md:p-12 max-w-lg w-full text-center relative overflow-hidden shadow-[0_0_60px_rgba(34,211,238,0.18)]"
         >
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(250,204,21,0.15),transparent_70%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(34,211,238,0.12),transparent_70%)] pointer-events-none" />
           
           <motion.div
             initial={{ rotate: -180, scale: 0 }}
             animate={{ rotate: 0, scale: 1 }}
             transition={{ type: "spring", delay: 0.2 }}
-            className="mx-auto w-24 h-24 bg-gradient-to-br from-yellow-400 to-orange-600 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(250,204,21,0.6)] mb-6 border-4 border-slate-900 relative z-10"
+            className="mx-auto w-24 h-24 bg-gradient-to-br from-primary to-secondary rounded-sm flex items-center justify-center shadow-[0_0_40px_rgba(34,211,238,0.35)] mb-6 relative z-10"
           >
             <Award className="w-12 h-12 text-white drop-shadow-md" />
           </motion.div>
 
-          <h2 className="text-4xl md:text-5xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-b from-yellow-200 to-yellow-500 mb-2 tracking-widest uppercase filter drop-shadow-[0_0_15px_rgba(250,204,21,0.6)] relative z-10">
+          <h2 className="text-4xl md:text-5xl font-mono font-bold text-transparent bg-clip-text bg-gradient-to-b from-cyan-100 to-primary mb-2 tracking-widest uppercase filter drop-shadow-[0_0_15px_rgba(34,211,238,0.55)] relative z-10">
             Seviye Atladın!
           </h2>
           
-          <div className="bg-slate-950/50 border border-yellow-500/20 rounded-2xl p-4 mb-8 relative z-10">
+          <div className="hud-module bg-slate-950/50 p-4 mb-8 relative z-10">
             <p className="text-xs font-mono text-slate-400 uppercase tracking-[0.2em] mb-1">
               Yeni Rütbe
             </p>

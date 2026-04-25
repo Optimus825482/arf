@@ -59,7 +59,7 @@ export default function TermsPage() {
             <h2 className="text-lg font-mono uppercase tracking-wider text-white">5. Yapay Zeka Ciktilari</h2>
             <p>
               Uygulamada yer alan yapay zeka tabanli ozetler, tavsiyeler ve briefingler destekleyici niteliktedir. Bunlar
-              kesin, resmi veya profesyonel uzman gorusu yerine gecmez. Nihai degerlendirme kullanicinin kendi takdirinde
+              kesin, resmi veya yetkili mesleki gorus yerine gecmez. Nihai degerlendirme kullanicinin kendi takdirinde
               olmalidir.
             </p>
           </section>

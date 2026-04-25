@@ -3,8 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ARF: Bilişsel Matematik Akademisi - Proje Manifestosu</title>
+    <title>ARF: T.U.K. Adaptif Öğrenme Sistemi - Proje Detayları</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
         :root {
             --bg-color: #020617;
             --card-bg: #0f172a;
@@ -12,225 +14,279 @@
             --purple: #a855f7;
             --emerald: #10b981;
             --yellow: #fbbf24;
+            --rose: #f43f5e;
             --text: #e2e8f0;
             --text-dim: #94a3b8;
+            --border: rgba(255, 255, 255, 0.08);
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            font-family: 'Inter', sans-serif;
             background-color: var(--bg-color);
             color: var(--text);
             line-height: 1.6;
             margin: 0;
             padding: 0;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 900px;
-            margin: 40px auto;
-            padding: 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 40px 20px;
         }
 
         header {
             text-align: center;
-            padding: 60px 20px;
-            background: radial-gradient(circle at center, rgba(34, 211, 238, 0.1) 0%, transparent 70%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 100px 20px;
+            background: radial-gradient(circle at center, rgba(34, 211, 238, 0.15) 0%, transparent 70%);
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .version {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 0.8rem;
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            padding: 4px 12px;
+            border-radius: 20px;
+            opacity: 0.7;
         }
 
         h1 {
             color: var(--cyan);
-            font-size: 2.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-            margin-bottom: 10px;
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin: 0;
+            text-shadow: 0 0 30px rgba(34, 211, 238, 0.3);
         }
 
-        .subtitle {
+        header p {
+            font-size: 1.25rem;
             color: var(--text-dim);
-            font-size: 1.1rem;
-            font-style: italic;
+            margin-top: 15px;
         }
 
         section {
-            margin-bottom: 50px;
-            padding: 30px;
             background-color: var(--card-bg);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            padding: 45px;
+            border-radius: 32px;
+            border: 1px solid var(--border);
+            margin-bottom: 40px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
         }
 
-        h2 {
-            color: var(--purple);
-            border-left: 4px solid var(--purple);
-            padding-left: 15px;
-            margin-top: 0;
-            font-size: 1.8rem;
+        h2 { 
+            color: var(--purple); 
+            font-size: 2rem; 
+            margin-top: 0; 
+            display: flex; 
+            align-items: center; 
+            gap: 15px;
         }
 
-        h3 {
-            color: var(--cyan);
-            margin-top: 25px;
+        h2::before {
+            content: '';
+            width: 8px;
+            height: 32px;
+            background: var(--purple);
+            border-radius: 4px;
         }
 
-        ul {
-            list-style: none;
-            padding: 0;
-        }
+        h3 { color: var(--cyan); margin-top: 35px; font-size: 1.5rem; }
 
-        li {
-            margin-bottom: 15px;
-            padding-left: 25px;
-            position: relative;
-        }
-
-        li::before {
-            content: "🚀";
-            position: absolute;
-            left: 0;
-            top: 2px;
-            font-size: 0.8rem;
-        }
-
-        .highlight {
-            color: var(--yellow);
-            font-weight: bold;
-        }
-
-        .badge-grid {
+        .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
             margin-top: 20px;
         }
 
-        .badge {
-            padding: 15px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            border: 1px solid rgba(34, 211, 238, 0.2);
-            text-align: center;
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
         }
 
-        .badge strong {
-            display: block;
+        .card h4 { color: var(--yellow); margin-top: 0; font-size: 1.1rem; }
+
+        .tech-tag {
+            display: inline-block;
+            background: rgba(34, 211, 238, 0.1);
             color: var(--cyan);
-            margin-bottom: 5px;
+            padding: 2px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            border: 1px solid rgba(34, 211, 238, 0.2);
         }
 
-        footer {
-            text-align: center;
-            padding: 40px;
-            color: var(--text-dim);
+        .flow-visual {
+            background: #070a18;
+            padding: 30px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
             font-size: 0.9rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--emerald);
+            overflow-x: auto;
+            border: 1px solid var(--emerald);
+            margin: 30px 0;
+            line-height: 1.4;
         }
 
-        @media (max-width: 600px) {
-            h1 { font-size: 1.8rem; }
-            section { padding: 20px; }
+        .highlight-box {
+            background: linear-gradient(135deg, rgba(168, 85, 247, 0.1), rgba(34, 211, 238, 0.1));
+            padding: 30px;
+            border-radius: 24px;
+            border-left: 6px solid var(--cyan);
+            margin: 40px 0;
+        }
+
+        ul { padding-left: 20px; }
+        li { margin-bottom: 12px; }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-badge.active { color: var(--emerald); }
+        .status-badge.planned { color: var(--yellow); }
+
+        footer { 
+            text-align: center; 
+            padding: 60px 20px; 
+            color: var(--text-dim); 
+            border-top: 1px solid var(--border);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 2.2rem; }
+            section { padding: 25px; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>ARF: Bilişsel Matematik Akademisi</h1>
-        <p class="subtitle">Yapay Zeka Destekli Yeni Nesil Pedagojik Analiz Platformu</p>
+        <div class="version">Build 2026.04.v2</div>
+        <h1>ARF: AKADEMİ OPERASYONU</h1>
+        <p>Türk Uzay Kuvvetleri Temalı Bilişsel Matematik Ekosistemi</p>
     </header>
 
     <div class="container">
         
-        <section>
-            <h2>1. Vizyon ve Çıkış Noktası</h2>
-            <p>ARF, geleneksel "doğru-yanlış" odaklı eğitim sistemini yıkarak, öğrencinin bilişsel süreçlerini analiz eden bir <strong>Dijital Akıl Hocası</strong> olarak tasarlanmıştır. İsmini büyük Türk matematikçisi <strong>Cahit Arf</strong>'tan alan proje, matematiği Türk Uzay Kuvvetleri (T.U.K.) temasıyla bir "uzay operasyonu" heyecanına dönüştürür.</p>
+        <section id="vizyon">
+            <h2>🔭 Sistemin Özü ve Vizyonu</h2>
+            <p>ARF, geleneksel eğitim metodolojilerini Türk Uzay Kuvvetleri (TUK) kurgusuyla birleştiren bir <strong>Yapay Zeka Destekli Adaptif Öğrenme Platformudur</strong>. Proje, "Görünmez Eğitim" felsefesi üzerine inşa edilmiştir: Öğrenci bir dersle değil, gemisini hayatta tutmak için gereken matematiksel operasyonlarla etkileşime girer.</p>
+            
+            <div class="highlight-box">
+                <strong>Pedagojik Temel:</strong> Stanford ve MIT araştırmalarına dayalı "Verimli Zorlanma" (Productive Struggle) prensibi. AI, öğrencinin hata yapma eşiğini saniyelik verilerle izleyerek görev zorluğunu dinamik olarak ayarlar.
+            </div>
         </section>
 
-        <section>
-            <h2>2. Bilişsel Telemetri Sistemi</h2>
-            <p>ARF'ı benzersiz kılan, öğrencinin her işlemini milisaniyelik hassasiyetle ölçen telemetri altyapısıdır:</p>
-            <div class="badge-grid">
-                <div class="badge">
-                    <strong>Algı Hızı (Switching)</strong>
-                    İşlem tipleri arası geçiş esnekliği.
+        <section id="teknik">
+            <h2>🛠️ Modern Teknoloji Yığını</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>Frontend & Client</h4>
+                    <div class="tech-tag">Next.js 15</div>
+                    <div class="tech-tag">TypeScript</div>
+                    <div class="tech-tag">Tailwind CSS v4</div>
+                    <div class="tech-tag">Framer Motion</div>
+                    <div class="tech-tag">Zustand</div>
+                    <p>En yüksek performans için App Router mimarisi ve sıfıra yakın gecikme için optimize edilmiş animasyonlar.</p>
                 </div>
-                <div class="badge">
-                    <strong>Odak Kapasitesi</strong>
-                    Test boyunca korunan konsantrasyon.
+                <div class="card">
+                    <h4>Backend & Data</h4>
+                    <div class="tech-tag">Firebase Auth</div>
+                    <div class="tech-tag">Firestore</div>
+                    <div class="tech-tag">PostgreSQL</div>
+                    <div class="tech-tag">pgvector</div>
+                    <p>Oturum ve anlık veri için Firebase; kalıcı hafıza ve pedagojik RAG sistemi için vektör destekli DB.</p>
                 </div>
-                <div class="badge">
-                    <strong>Yorulma Endeksi</strong>
-                    Bilişsel yük altında yavaşlama oranı.
-                </div>
-                <div class="badge">
-                    <strong>Hata Analizi</strong>
-                    Stres altında karar verme tutarlılığı.
+                <div class="card">
+                    <h4>Zeka Katmanı (AI)</h4>
+                    <div class="tech-tag">DeepSeek API</div>
+                    <div class="tech-tag">RAG System</div>
+                    <div class="tech-tag">Commander Logic</div>
+                    <p>Öğrenciye özel strateji üreten, veliye brifing veren ve görev senaryoları yaratan hibrit AI mimarisi.</p>
                 </div>
             </div>
         </section>
 
-        <section>
-            <h2>3. Operasyonel Akış ve Oyunlaştırma Döngüsü</h2>
-            <h3>A. Pilot Kalibrasyonu ve İlk Rütbe Ataması</h3>
-            <p>Her yeni kullanıcı, 6 sekanslık bir bilişsel stres testinden geçer. Bu test sonunda öğrencinin sadece bilgi seviyesi değil, işlem refleksi ve mental dayanıklılığı da ölçülür. Analiz tamamlandığında, pilotun yetkinliğine uygun bir <strong>Mürettebat Rütbesi</strong> atanır.</p>
+        <section id="is-akisi">
+            <h2>📡 Operasyonel İş Akışı</h2>
             
-            <h3>B. Dinamik Görevler ve Terfi Sistemi</h3>
-            <p>Sistem, pilotun rütbesini artırması ve eksik yönlerini güçlendirmesi için kişiselleştirilmiş görevler sunar. Bu döngü şu şekilde işler:</p>
+            <h3>1. Başlangıç ve Kalibrasyon</h3>
+            <p>Sistem, statik bir seviye seçimiyle başlamaz. Her "Mürettebat" (Öğrenci), gemiye kabul edilmeden önce 15 soruluk bir <strong>Bilişsel Kalibrasyon</strong> testinden geçer. Bu test; işlem hızı, doğruluk ve stres altındaki karar verme süresini ölçer. DeepSeek AI, bu metrikleri analiz ederek kişiye özel bir <strong>Öğrenme Yolu (Learning Path)</strong> oluşturur.</p>
+
+            <div class="flow-visual">
+KULLANICI -> Google Auth -> Rol Seçimi (Mürettebat/Gözcü)
+    |
+    |-- (Öğrenci) -> Pairing Code Üretimi -> Kalibrasyon -> AI Plan Üretimi -> Dashboard
+    |
+    |-- (Veli) -> Pairing Code Eşleşmesi -> Telemetri Paneli -> AI Brifingleri
+            </div>
+
+            <h3>2. Günlük Görev Döngüsü (Daily Mission Pack)</h3>
+            <p>Her sabah, Commander AI öğrencinin geçmiş performansını analiz eder ve 3 aşamalı bir görev paketi hazırlar:</p>
             <ul>
-                <li><strong>Ara Ölçümler:</strong> Görevler sırasında yapılan anlık hız ve doğruluk ölçümleriyle öğrencinin gelişimi saniye saniye izlenir.</li>
-                <li><strong>Plan Revizyonu:</strong> Elde edilen veriler ışığında, DeepSeek AI tarafından hazırlanan gelişim planı sürekli güncellenir. Bu sayede öğrenci, ne çok kolay ne de çok zor olan, tam olarak sınırlarını zorlayan bir tempoda tutulur.</li>
-                <li><strong>Dinamik Merak:</strong> Sürekli değişen görev tipleri ve hikayeleştirilmiş brifinglerle pilotun katılımı ve merakı her zaman canlı tutulur.</li>
+                <li><strong>Pratik Modu:</strong> Temel işlem akıcılığı ve ısınma.</li>
+                <li><strong>Yıldırım (Blitz) Modu:</strong> Zaman baskısı altında refleks geliştirme.</li>
+                <li><strong>Senaryo Görevi:</strong> AI tarafından üretilen, hikaye tabanlı matematik problemleri.</li>
+                <li><strong>Taktik Merkezi:</strong> Hızlı zihinden işlem tekniklerinin öğretildiği mikro-modüller.</li>
             </ul>
 
-            <h3>C. Nihai Hedef: Gemi Generalliği</h3>
-            <p>Oyundaki temel motivasyon kaynağı, disiplinli bir şekilde yükselerek uzay gemisinin tüm kontrolünü eline alan bir <strong>General</strong> rütbesine ulaşmaktır. Her rütbe artışı, daha karmaşık sistemlerin yönetimi ve daha büyük sorumluluklar anlamına gelir.</p>
+            <h3>3. Gözcü (Veli) Gözetimi</h3>
+            <p>Veli, sadece "not" görmez; öğrencinin gelişim grafiğini, hangi işlem türünde tıkandığını ve AI tarafından hazırlanan stratejik önerileri görür. Ayrıca <strong>Komutan Mesajı</strong> üzerinden öğrenciye doğrudan mesaj ve Bonus XP göndererek motivasyon hattını canlı tutar.</p>
         </section>
 
-        <section>
-            <h2>4. Yapay Zeka: DeepSeek Entegrasyonu</h2>
-            <p>Uygulama, gücünü <strong>DeepSeek AI</strong> motorundan alır. Yapay zeka şu kritik görevleri üstlenir:</p>
+        <section id="oyunlastirma">
+            <h2>🏆 Rütbe ve Motivasyon Sistemi</h2>
+            <div class="grid">
+                <div class="card">
+                    <h4>Askeri Hiyerarşi</h4>
+                    <p>Acemi Pilot'tan başlayıp Gemi Generalliği'ne uzanan 10 farklı rütbe. Her rütbe geçişi için gerekli XP eşiği logaritmik olarak artar.</p>
+                </div>
+                <div class="card">
+                    <h4>Madalya Odası</h4>
+                    <p>Sadece başarılar için değil; "Gece Operasyonu", "Hatayı Kabullenme", "Işık Hızı" gibi davranışsal rozetler verilir.</p>
+                </div>
+                <div class="card">
+                    <h4>Gemi Garajı</h4>
+                    <p>Toplanan puanlarla kişiselleştirilebilir gemi renkleri ve görsel geliştirmeler. Bu, sisteme olan bağlılığı (retention) artırır.</p>
+                </div>
+            </div>
+        </section>
+
+        <section id="gelecek">
+            <h2>🚀 Planlanan Gelişmeler</h2>
             <ul>
-                <li>Haftalık performans verilerinden kişiye özel <span class="highlight">Stratejik Gelişim Planı</span> oluşturma.</li>
-                <li>Dinamik olarak zorluğu ve öğrenme yolunu güncelleme.</li>
-                <li>Öğrenciye özel, motivasyonel "Komutan Brifingleri" hazırlama.</li>
+                <li><span class="status-badge planned">● Planned</span> <strong>Pedagojik RAG:</strong> Binlerce sayfalık matematik eğitimi makalesinin AI hafızasına yüklenerek cevap kalitesinin artırılması.</li>
+                <li><span class="status-badge active">● In Progress</span> <strong>Sunucu Tarafı Doğrulama:</strong> Hile koruması için işlemlerin server-side kontrolü.</li>
+                <li><span class="status-badge planned">● Planned</span> <strong>Liderlik Tablosu:</strong> Diğer akademilerle (okullar/sınıflar) tatlı bir rekabet için küresel sıralama.</li>
             </ul>
-        </section>
-
-        <section>
-            <h2>5. Neden ARF? (Fark Yaratanlar)</h2>
-            <ul>
-                <li><strong>Veri Derinliği:</strong> Sadece sonuç değil, süreç analizi yapılır.</li>
-                <li><strong>Gelişmiş UX/UI:</strong> Tamamen Next.js 15 ve Tailwind CSS v4 ile örülmüş, sürükleyici "Glassmorphism" tasarımı.</li>
-                <li><strong>İnteraktif Motivasyon:</strong> Velinin çocuğuna anlık mesaj ve bonus XP gönderebildiği eşsiz ekosistem.</li>
-                <li><strong>PWA Desteği:</strong> Her cihazda uygulama hızında deneyim.</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>6. Gelecek Vizyonu (Faz 2): Dijital Kognitif Klon</h2>
-            <p>ARF, yakın gelecekte statik bir analiz aracından, öğrenciyi yıllarca takip eden kişiselleştirilmiş bir <strong>Dijital Pedagoga</strong> dönüşecektir. Bu devrimsel sıçrama üç ana mimariyle sağlanacaktır:</p>
-            <ul>
-                <li><strong>Vektör Tabanlı Katmanlı Hafıza:</strong> AI, öğrencinin sadece o anki testini değil, aylar önceki zorlanma noktalarını da vektörel veritabanında tutarak uzun süreli bir hafıza geliştirir. <em>"Geçen ay 7'ler tablosunda zorlanıyordun, bugün o eşiği aştığını görüyorum komutan!"</em> diyerek inanılmaz bir bağ kurar.</li>
-                <li><strong>RAG Tabanlı Bilgi Deposu:</strong> Sisteme standart LLM bilgisi yerine, dünyanın en geçerli pedagojik taktikleri, zihinsel matematik kısayolları ve modern eğitim müfredatları (RAG mimarisiyle) entegre edilecektir. Öğrenci hata yaptığında AI en doğru pratik çözümü bu depodan çekerek öğretir.</li>
-                <li><strong>Profesyonel Pedagog Kimliği:</strong> Yapay zeka sadece matematiksel hataları değil, öğrencinin moral, motivasyon ve yorgunluk durumunu analiz eden empatik bir uzman pedagog gibi davranacaktır. Hata yapıldığında yargılayan değil, yönlendiren ve cesaretlendiren bir ton benimseyecektir.</li>
-            </ul>
-        </section>
-
-        <section>
-            <h2>7. Yaratıcı Vizyon ve Geliştirici Notu</h2>
-            <p>ARF projesi, yapay zeka ve yazılım teknolojilerine tutkuyla bağlı bir gönüllü olan <strong>Erkan Erdem</strong> tarafından hayata geçirilmiştir. Erdem'in bu projeyi oluştururken temel aldığı felsefe şudur:</p>
-            <p style="background: rgba(168, 85, 247, 0.1); padding: 15px; border-radius: 10px; border-left: 4px solid var(--purple); font-style: italic;">
-                "Yapay zeka, insanların yerini almak için değil; insanların yaptığı işlerin verimliliğini, hızını ve niteliğini artırmak için kullanılmalıdır."
-            </p>
-            <p>Bu bakış açısıyla ARF, öğrenciyi sistemden dışlamak yerine, onun potansiyelini en üst düzeye çıkarmak için tasarlanmış bir katalizör görevi görür. Erkan Erdem, bu konudaki merakını ve deneyimini; geliştirdiği yazılımlar ve paylaştığı çalışmalar aracılığıyla teknolojiye ilgi duyan herkesle buluşturmayı bir misyon edinmiştir.</p>
         </section>
 
     </div>
 
     <footer>
-        <p>&copy; 2026 ARF Project - Created by Erkan Erdem</p>
-        <p style="font-size: 0.7rem; margin-top: 10px;">Bu doküman NotebookLM analizi için özel olarak hazırlanmıştır.</p>
+        <p>&copy; 2026 ARF Project - Türk Uzay Kuvvetleri Akademisi Operasyon Merkezi</p>
+        <p style="opacity: 0.5; margin-top: 10px;">Bu belge sistemin tüm mantıksal akışını ve teknik derinliğini yansıtmak amacıyla oluşturulmuştur.</p>
     </footer>
 
 </body>

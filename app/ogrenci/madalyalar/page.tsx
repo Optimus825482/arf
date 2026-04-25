@@ -22,14 +22,14 @@ export default function MadalyaOdasi() {
   const badgeConfig: Record<string, any> = {
       'isik_hizi_pilotu': {
           name: "Işık Hızı Pilotu",
-          icon: <Zap className="w-10 h-10 text-yellow-400" />,
+          icon: <Zap className="w-10 h-10 text-secondary" />,
           desc: "Saha eğitiminde 20 barajını aşarak ışık hızına ulaşan pilotlar içindir.",
           rarity: "EFSANEVİ",
           requirement: "Pratik modunda 20+ skor",
-          color: "border-yellow-500/50 bg-yellow-950/20 text-yellow-400"
+          color: "border-secondary/50 bg-secondary/10 text-secondary"
       },
-      'radar_sistem_uzmani': {
-          name: "Radar Sistem Uzmanı",
+      'radar_sistem_operatoru': {
+          name: "Radar Sistem Operatörü",
           icon: <Radio className="w-10 h-10 text-cyan-400" />,
           desc: "Saha eğitiminde 12 barajını aşan pilotlara verilir.",
           rarity: "HAZİNE",
@@ -38,27 +38,27 @@ export default function MadalyaOdasi() {
       },
       'kalkan_ustasi': {
           name: "Kalkan Ustası",
-          icon: <ShieldAlert className="w-10 h-10 text-green-400" />,
+          icon: <ShieldAlert className="w-10 h-10 text-cyan-400" />,
           desc: "Toplama ve çıkarma simülasyonlarında sarsılmaz bir isabet sergileyen ustalara verilir.",
           rarity: "DESTANSI",
           requirement: "%95+ Isabet (50+ Deneme)",
-          color: "border-green-500/50 bg-green-950/20 text-green-400"
+          color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-400"
       },
       'kuantum_islemci': {
           name: "Kuantum İşlemci",
-          icon: <BrainCircuit className="w-10 h-10 text-blue-400" />,
+          icon: <BrainCircuit className="w-10 h-10 text-cyan-400" />,
           desc: "Çarpma ve bölme işlemlerinde kuantum hızında çözüm üreten pilotlar içindir.",
           rarity: "DESTANSI",
           requirement: "%90+ Isabet (30+ Deneme)",
-          color: "border-blue-500/50 bg-blue-950/20 text-blue-400"
+          color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-400"
       },
       'nebula_kasifi': {
           name: "Nebula Kaşifi",
-          icon: <Rocket className="w-10 h-10 text-purple-400" />,
+          icon: <Rocket className="w-10 h-10 text-cyan-400" />,
           desc: "Bilinmeyen nebulaları keşfeden cesur kaşiflere verilir.",
           rarity: "NADİR",
           requirement: "1000+ Toplam XP",
-          color: "border-purple-500/50 bg-purple-950/20 text-purple-400"
+          color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-400"
       },
       'uzay_operasyon_generali': {
           name: "Uzay Operasyon Generali",
@@ -70,27 +70,27 @@ export default function MadalyaOdasi() {
       },
       'kara_delik_madencisi': {
           name: "Kara Delik Madencisi",
-          icon: <Flame className="w-10 h-10 text-orange-600" />,
+          icon: <Flame className="w-10 h-10 text-red-600" />,
           desc: "En zorlu uzay görevlerini başarıyla tamamlayan pilotlara verilir.",
           rarity: "HAZİNE",
           requirement: "Yapay Zeka Görev Başarısı",
-          color: "border-orange-600/50 bg-orange-950/20 text-orange-500"
+          color: "border-red-600/50 bg-red-950/20 text-red-500"
       },
       'galaksi_koruyucusu': {
           name: "Galaksi Koruyucusu",
-          icon: <Shield className="w-10 h-10 text-indigo-400" />,
+          icon: <Shield className="w-10 h-10 text-cyan-400" />,
           desc: "Uygulamada yüksek istikrar ve disiplin gösteren muhafızlara verilir.",
           rarity: "DESTANSI",
           requirement: "100+ Toplam Deneme (%80+ Isabet)",
-          color: "border-indigo-500/50 bg-indigo-950/20 text-indigo-300"
+          color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-300"
       },
       'matematik_ustadi': {
           name: "Matematik Üstadı",
-          icon: <Target className="w-10 h-10 text-pink-400" />,
+          icon: <Target className="w-10 h-10 text-red-400" />,
           desc: "Karmaşık ve çok adımlı matematik işlemlerini hatasız çözen üstatlara verilir.",
           rarity: "EFSANEVİ",
           requirement: "Mixed Operasyon Başarısı",
-          color: "border-pink-500/50 bg-pink-950/20 text-pink-400"
+          color: "border-red-500/50 bg-red-950/20 text-red-400"
       },
       'yildiz_kesifcisi': {
           name: "Yıldız Keşifçisi",
@@ -102,27 +102,27 @@ export default function MadalyaOdasi() {
       },
       'isik_hizinin_otesi': {
           name: "Işık Hızının Ötesi",
-          icon: <Crown className="w-10 h-10 text-amber-300" />,
+          icon: <Crown className="w-10 h-10 text-secondary" />,
           desc: "Saha eğitiminde 25 barajını aşarak ışığı geçen efsanevi pilotlara verilir.",
           rarity: "MİTİK",
           requirement: "Pratik modunda 25+ skor",
-          color: "border-amber-400/50 bg-amber-950/20 text-amber-300"
+          color: "border-secondary/50 bg-secondary/10 text-secondary"
       },
       'mutlak_dogruluk': {
           name: "Mutlak Doğruluk",
-          icon: <Crosshair className="w-10 h-10 text-emerald-400" />,
+          icon: <Crosshair className="w-10 h-10 text-cyan-400" />,
           desc: "Genel isabette %95 üzeri doğruluk sağlayan nişancılar içindir.",
           rarity: "EFSANEVİ",
           requirement: "%95+ Genel İsabet (100+ Deneme)",
-          color: "border-emerald-500/50 bg-emerald-950/20 text-emerald-400"
+          color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-400"
       },
       'kozmik_fatih': {
           name: "Kozmik Fatih",
-          icon: <Globe className="w-10 h-10 text-sky-400" />,
+          icon: <Globe className="w-10 h-10 text-cyan-400" />,
           desc: "500 denemeyi aşarak kozmik bir güç haline gelen fatihlere verilir.",
           rarity: "PRESTİJ",
           requirement: "500+ Toplam Deneme",
-          color: "border-sky-500/50 bg-sky-950/20 text-sky-300"
+          color: "border-cyan-500/50 bg-cyan-950/20 text-cyan-300"
       }
   };
 
@@ -155,7 +155,7 @@ export default function MadalyaOdasi() {
     return (
       <AppLoader
         variant="fullscreen"
-        accent="amber"
+        accent="red"
         title="Madalya odasi aciliyor"
         subtitle="Unvan kayitlari cozuluyor"
         messages={[
@@ -169,10 +169,10 @@ export default function MadalyaOdasi() {
 
   return (
     <div className="flex flex-col min-h-screen p-4 md:p-8 max-w-5xl mx-auto space-y-8 relative z-10 w-full">
-      <header className="flex flex-col md:flex-row items-center justify-between bg-blue-900/10 backdrop-blur-md rounded-3xl p-6 border border-blue-500/20 mb-2 gap-4">
+      <header className="flex flex-col md:flex-row items-center justify-between bg-cyan-950/20 backdrop-blur-md rounded-sm p-6 border border-cyan-400/20 mb-2 gap-4">
         <div className="flex items-center gap-4 w-full md:w-auto">
           <Link href="/ogrenci" prefetch={false}>
-            <button className="flex items-center justify-center w-12 h-12 rounded-full bg-slate-800 border border-blue-400/50 p-2 hover:bg-slate-700 transition" onClick={() => playSound('click')}>
+            <button className="flex items-center justify-center w-12 h-12 rounded-sm bg-slate-800 border border-cyan-400/50 p-2 hover:bg-slate-700 transition" onClick={() => playSound('click')}>
               <ArrowLeft className="w-full h-full text-cyan-400" />
             </button>
           </Link>
@@ -181,9 +181,9 @@ export default function MadalyaOdasi() {
             <p className="hud-badge text-slate-500">TUK ARF Mürettebat Başarı Kayıtları</p>
           </div>
         </div>
-        <div className="bg-yellow-900/20 px-6 py-2 rounded-2xl border border-yellow-500/30 flex items-center gap-3">
-           <Award className="w-5 h-5 text-yellow-500 animate-bounce" />
-           <span className="text-xl font-mono font-bold text-yellow-400">{earnedBadges.length} / {Object.keys(badgeConfig).length}</span>
+        <div className="bg-secondary/10 px-6 py-2 rounded-sm border border-secondary/30 flex items-center gap-3">
+           <Award className="w-5 h-5 text-secondary animate-bounce" />
+           <span className="text-xl font-mono font-bold text-secondary">{earnedBadges.length} / {Object.keys(badgeConfig).length}</span>
         </div>
       </header>
 
@@ -203,9 +203,9 @@ export default function MadalyaOdasi() {
               {/* Arka Plan Efekti */}
               {isEarned && <div className="absolute -inset-10 bg-white/5 blur-3xl rotate-45 pointer-events-none group-hover:bg-white/10 transition-all"></div>}
               
-              <div className={`mb-6 p-4 rounded-full border border-white/5 bg-slate-900/50 shadow-2xl relative ${isEarned ? 'animate-none' : ''}`}>
+              <div className={`mb-6 p-4 rounded-sm border border-white/5 bg-slate-900/50 shadow-2xl relative ${isEarned ? 'animate-none' : ''}`}>
                  {b.icon}
-                 {isEarned && <div className="absolute inset-0 bg-white/20 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>}
+                 {isEarned && <div className="absolute inset-0 bg-white/20 rounded-sm blur-xl opacity-0 group-hover:opacity-100 transition-opacity"></div>}
               </div>
 
               <div className="text-[9px] font-mono font-bold tracking-[0.2em] mb-2 opacity-60 uppercase">{b.rarity}</div>
@@ -214,12 +214,12 @@ export default function MadalyaOdasi() {
                  {isEarned ? b.desc : "Bu madalyanın detayları komuta merkezi tarafından kilitlenmiştir."}
               </p>
               
-              <div className="bg-slate-900/60 border border-white/5 rounded-xl px-4 py-2 mb-6 w-full text-[10px] font-mono text-slate-400">
+              <div className="bg-slate-900/60 border border-white/5 rounded-sm px-4 py-2 mb-6 w-full text-[10px] font-mono text-slate-400">
                 <span className="text-cyan-500 font-bold">GEREKSİNİM:</span> {b.requirement}
               </div>
 
               {isEarned ? (
-                 <div className="mt-auto px-4 py-1.5 rounded-full bg-white/10 text-[9px] font-mono font-bold text-white tracking-widest uppercase border border-white/10">
+                 <div className="mt-auto px-4 py-1.5 rounded-sm bg-white/10 text-[9px] font-mono font-bold text-white tracking-widest uppercase border border-white/10">
                     AKTİF NİŞAN
                  </div>
               ) : (

@@ -4,15 +4,15 @@ export default function ArfLogo({ className = "w-10 h-10" }: { className?: strin
       <defs>
         <linearGradient id="deltaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#22d3ee" /> {/* cyan-400 */}
-          <stop offset="100%" stopColor="#0284c7" /> {/* sky-600 */}
+          <stop offset="100%" stopColor="#06b6d4" /> {/* cyan-500 */}
         </linearGradient>
         <linearGradient id="deltaDark" x1="0%" y1="0%" x2="100%" y2="100%">
           <stop offset="0%" stopColor="#0891b2" /> {/* cyan-600 */}
-          <stop offset="100%" stopColor="#1e3a8a" /> {/* blue-900 */}
+          <stop offset="100%" stopColor="#083344" /> {/* cyan-950 */}
         </linearGradient>
         <linearGradient id="flameGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-          <stop offset="0%" stopColor="#fcd34d" /> {/* amber-300 */}
-          <stop offset="40%" stopColor="#f97316" /> {/* orange-500 */}
+          <stop offset="0%" stopColor="#ffb3ad" /> {/* red alert tint */}
+          <stop offset="40%" stopColor="#ef4444" /> {/* red-500 */}
           <stop offset="100%" stopColor="#ef4444" /> {/* red-500 */}
         </linearGradient>
         <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">

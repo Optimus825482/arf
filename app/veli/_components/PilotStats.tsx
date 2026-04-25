@@ -1,0 +1,108 @@
+import React from 'react';
+
+interface PilotStatsProps {
+  name: string;
+  code: string;
+  status: string;
+  lastSeen: string;
+  streak: string;
+  successRate: string;
+  todayMinutes: string;
+}
+
+export default function PilotStats({
+  name = "Ahmet Yılmaz",
+  code = "MÜR-7429",
+  status = "Aktif",
+  lastSeen = "2 saat önce",
+  streak = "7 gün",
+  successRate = "87%",
+  todayMinutes = "45 dk"
+}: PilotStatsProps) {
+  return (
+    <section className="flex flex-col gap-4">
+      <div className="flex items-center gap-3 px-2">
+        <div className="w-1.5 h-1.5 rounded-sm bg-cyan-400 animate-pulse"></div>
+        <span className="font-label text-[10px] tracking-[0.4em] text-cyan-400 uppercase font-black">MÜRETTEBAT_DURUMU</span>
+        <div className="h-[1px] flex-1 bg-gradient-to-r from-cyan-400/20 to-transparent"></div>
+      </div>
+      
+      <div className="relative rounded-sm overflow-hidden border border-white/5 bg-white/[0.02] hud-glass group">
+        {/* HUD Decoration */}
+        <div className="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
+          <span className="font-label text-[9px] tracking-[0.2em] text-cyan-400 font-bold uppercase">
+            {'SEC-02 // BIO_DATA'}
+          </span>
+        </div>
+        <div className="absolute bottom-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
+          <span className="material-symbols-outlined text-8xl text-primary transform rotate-12">flight_takeoff</span>
+        </div>
+
+        <div className="p-8 relative z-10">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
+            <div className="flex items-center gap-5">
+              <div className="w-16 h-16 rounded-sm bg-surface-container-highest border border-primary/20 flex items-center justify-center neon-glow relative">
+                <span className="material-symbols-outlined text-primary text-4xl" style={{ fontVariationSettings: "'FILL' 1" }}>person</span>
+                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-cyan-400 rounded-sm border-4 border-[#191c1f]"></div>
+              </div>
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="bg-surface-container-highest border border-primary/20 text-primary font-label text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-sm flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-sm bg-primary animate-pulse"></span>
+                    {code}
+                  </span>
+                  <span className="text-on-surface-variant text-[10px] font-label uppercase tracking-wider opacity-70">
+                    {status}
+                    {' // SON GİRİŞ: '}
+                    {lastSeen}
+                  </span>
+                </div>
+                <h2 className="font-headline text-3xl font-bold text-on-surface uppercase tracking-wide neon-text-primary">
+                  {name}
+                </h2>
+              </div>
+            </div>
+            
+            <div className="flex flex-col items-end gap-1">
+              <span className="font-label text-[10px] tracking-[0.1em] text-on-surface-variant uppercase">RÜTBE SEVİYESİ</span>
+              <span className="font-headline text-xl font-bold text-tertiary-container uppercase tracking-widest">YILDIZ ÇAVUŞU</span>
+            </div>
+          </div>
+
+          {/* Progress Bar (Experience) */}
+          <div className="mb-8">
+            <div className="flex justify-between items-end mb-2">
+              <span className="font-label text-[10px] tracking-[0.2em] text-primary uppercase font-bold">Deneyim Puanı (XP)</span>
+              <span className="font-mono text-xs text-on-surface-variant">
+                <span className="text-primary font-bold">2,340</span> / 3,000
+              </span>
+            </div>
+            <div className="h-2 w-full bg-surface-container-highest rounded-sm overflow-hidden cyber-border">
+              <div className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-sm relative w-[78%] transition-all duration-1000 ease-out">
+                <div className="absolute top-0 right-0 bottom-0 w-8 bg-white/30 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-surface-container-highest/30 backdrop-blur-sm rounded-sm p-4 cyber-border text-center group/card transition-all hover:bg-surface-container-highest/50">
+              <span className="material-symbols-outlined text-tertiary-container text-xl mb-1 group-hover/card:scale-110 transition-transform">local_fire_department</span>
+              <p className="font-label text-[10px] tracking-[0.15em] text-on-surface-variant uppercase mb-1 opacity-70">Seri</p>
+              <p className="font-headline text-lg font-bold text-on-surface uppercase">{streak}</p>
+            </div>
+            <div className="bg-surface-container-highest/30 backdrop-blur-sm rounded-sm p-4 cyber-border text-center group/card transition-all hover:bg-surface-container-highest/50">
+              <span className="material-symbols-outlined text-primary text-xl mb-1 group-hover/card:scale-110 transition-transform">check_circle</span>
+              <p className="font-label text-[10px] tracking-[0.15em] text-on-surface-variant uppercase mb-1 opacity-70">Başarı</p>
+              <p className="font-headline text-lg font-bold text-primary uppercase">{successRate}</p>
+            </div>
+            <div className="bg-surface-container-highest/30 backdrop-blur-sm rounded-sm p-4 cyber-border text-center group/card transition-all hover:bg-surface-container-highest/50">
+              <span className="material-symbols-outlined text-secondary-fixed-dim text-xl mb-1 group-hover/card:scale-110 transition-transform">timer</span>
+              <p className="font-label text-[10px] tracking-[0.15em] text-on-surface-variant uppercase mb-1 opacity-70">Süre</p>
+              <p className="font-headline text-lg font-bold text-on-surface uppercase">{todayMinutes}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}

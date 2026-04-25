@@ -54,11 +54,33 @@ export const briefingRequestSchema = z.object({
   learningPath: z.string().max(8000).optional(),
 }).passthrough();
 
+
+export const placementResultSchema = z.object({
+  type: z.enum(["+", "-", "x", "÷", "mm"]),
+  correct: z.boolean(),
+  time: z.number().finite().min(0).max(120_000),
+});
+
+export const placementPayloadSchema = z.object({
+  results: z.array(placementResultSchema).min(2).max(100),
+});
+
+export const ragQueryRequestSchema = z.object({
+  query: z.string().min(1).max(1000),
+  topK: z.number().int().min(1).max(12).optional(),
+  limit: z.number().int().min(1).max(12).optional(),
+  minSimilarity: z.number().min(-1).max(1).optional(),
+  maxContextChars: z.number().int().min(120).max(6000).optional(),
+});
+
+export type PlacementResult = z.infer<typeof placementResultSchema>;
+
 export type DeepseekRequest = z.infer<typeof deepseekRequestSchema>;
 export type StudentXpUpdate = z.infer<typeof studentXpUpdateSchema>;
 export type SettingsUpdate = z.infer<typeof settingsUpdateSchema>;
 export type MissionsRequest = z.infer<typeof missionsRequestSchema>;
 export type BriefingRequest = z.infer<typeof briefingRequestSchema>;
+export type RagQueryRequest = z.infer<typeof ragQueryRequestSchema>;
 
 export function formatZodError(err: z.ZodError): string {
   return err.issues.map((i) => `${i.path.join(".") || "body"}: ${i.message}`).join("; ");

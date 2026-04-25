@@ -10,7 +10,25 @@
       "Bash(node -e \"const fs=require\\('fs'\\);const p='app/api/student/route.ts';const t=fs.readFileSync\\(p,'utf8'\\);const n=t.replace\\('if \\(Date.now\\(\\) - lastUpdate < 3000\\)','if \\(Date.now\\(\\) - lastUpdate < 5000\\)'\\);fs.writeFileSync\\(p,n\\);console.log\\(n!==t?'done':'unchanged'\\);\")",
       "Bash(npm install *)",
       "Bash(git diff *)",
-      "Read(//tmp/**)"
+      "Read(//tmp/**)",
+      "mcp__jcodemunch__get_symbol_source",
+      "mcp__Desktop_Commander__read_file",
+      "mcp__jcodemunch__resolve_repo",
+      "Bash(python -)",
+      "mcp__jcodemunch__get_file_outline",
+      "mcp__jcodemunch__index_folder",
+      "mcp__jcodemunch__search_symbols",
+      "mcp__Desktop_Commander__edit_block",
+      "Bash(npm run *)",
+      "Bash(node scripts/rag/cli.mjs --help)",
+      "Bash(node scripts/rag/cli.mjs ingest --help)",
+      "Bash(node scripts/rag/cli.mjs inventory --json)",
+      "Bash(node scripts/rag/cli.mjs ingest --dry-run --progress)",
+      "Bash(export RAG_EMBEDDING_CMD=node RAG_EMBEDDING_ARGS=scripts/rag/llama-embedding-wrapper.mjs RAG_EMBEDDING_MODEL_PATH=\"D:\\\\arf\\\\research_lab\\\\models\\\\hf_ggml-org_embeddinggemma-300M-Q8_0.gguf\" RAG_EMBED_DIM=768)",
+      "Bash(time node *)",
+      "Bash(export RAG_EMBEDDING_MODEL_PATH=\"D:\\\\arf\\\\research_lab\\\\models\\\\hf_ggml-org_embeddinggemma-300M-Q8_0.gguf\" RAG_EMBED_DIM=768)",
+      "Bash(ps -W)",
+      "Bash(markitdown --version)"
     ]
   }
 }

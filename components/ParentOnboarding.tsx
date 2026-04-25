@@ -7,7 +7,7 @@ import { Radar, Target, ShieldCheck, Sparkles, X, ChevronRight, ChevronLeft, Che
 interface ParentOnboardingProps {
   parentName?: string;
   onComplete: (dontShowAgain: boolean) => void;
-  onSkip: () => void;
+  onSkip: (dontShowAgain: boolean) => void;
 }
 
 const steps = [
@@ -15,37 +15,37 @@ const steps = [
     title: "Görev Gözlem Merkezi",
     description: "ARF Komuta Merkezine hoş geldiniz. Bu panel üzerinden pilotunuzun matematik görevlerindeki performansını anlık telemetri verileriyle takip edebilirsiniz.",
     icon: <Radar className="w-16 h-16 text-cyan-400" />,
-    color: "from-cyan-500/20 to-blue-500/20",
+    color: "from-cyan-500/20 to-cyan-950/20",
   },
   {
     title: "Bilişsel Analiz Laboratuvarı",
-    description: "Sadece doğru cevapları değil; işlem algı hızını, odaklanma kapasitesini ve zihinsel yorulma endeksini ölçüyoruz. Çocuğunuzun çalışma ritmini bilimsel verilerle keşfedin.",
-    icon: <BrainCircuit className="w-16 h-16 text-purple-400" />,
-    color: "from-purple-500/20 to-indigo-500/20",
+    description: "Sadece doğru cevapları değil; işlem algı hızını, odaklanma kapasitesini ve zihinsel yorulma endeksini ölçüyoruz. Çocuğunuzun çalışma ritmini telemetri verileriyle keşfedin.",
+    icon: <BrainCircuit className="w-16 h-16 text-cyan-400" />,
+    color: "from-cyan-500/20 to-cyan-950/20",
   },
   {
     title: "Stratejik Performans Verileri",
-    description: "Dinamik zorluk seviyeleri, isabet oranları ve işlem bazlı (T/Ç, Ç/B) yetkinlik analizleri. Pilotun hangi teknik sistemlerde uzmanlaştığını anlık görün.",
-    icon: <Activity className="w-16 h-16 text-emerald-400" />,
-    color: "from-emerald-500/20 to-teal-500/20",
+    description: "Dinamik zorluk seviyeleri, isabet oranları ve işlem bazlı (T/Ç, Ç/B) görev sinyalleri. Pilotun hangi teknik sistemlerde güç kazandığını anlık görün.",
+    icon: <Activity className="w-16 h-16 text-cyan-400" />,
+    color: "from-cyan-500/20 to-cyan-950/20",
   },
   {
-    title: "AI Destekli Gelişim Rotası",
-    description: "DeepSeek AI, pilotun zayıf noktalarını tespit ederek her hafta kişiselleştirilmiş bir stratejik plan ve öğrenme yolu oluşturur.",
-    icon: <Sparkles className="w-16 h-16 text-yellow-400" />,
-    color: "from-yellow-500/20 to-orange-500/20",
+    title: "Komuta Destekli Gelişim Rotası",
+    description: "Komuta bilgisayarı, pilotun zorlandığı rotaları izleyerek her hafta kişiselleştirilmiş bir görev planı ve gelişim yolu oluşturur.",
+    icon: <Sparkles className="w-16 h-16 text-secondary" />,
+    color: "from-red-500/20 to-red-950/20",
   },
   {
     title: "Hedef ve Motivasyon",
     description: "Pilotunuza özel 'Komutan Talimatları' ve XP bonusları göndererek motivasyonunu artırabilir, kazandığı onur nişanlarını inceleyebilirsiniz.",
-    icon: <Target className="w-16 h-16 text-pink-400" />,
-    color: "from-pink-500/20 to-rose-500/20",
+    icon: <Target className="w-16 h-16 text-secondary" />,
+    color: "from-red-500/20 to-red-950/20",
   },
   {
     title: "Güvenli Veri Hattı",
     description: "Tüm performans verileri uçtan uca şifrelenmiş olarak saklanır. Pilotunuzun eğitimi ve gelişimi için her şey hazır. Operasyon başlasın!",
-    icon: <ShieldCheck className="w-16 h-16 text-sky-400" />,
-    color: "from-sky-500/20 to-cyan-500/20",
+    icon: <ShieldCheck className="w-16 h-16 text-cyan-400" />,
+    color: "from-cyan-500/20 to-cyan-950/20",
   },
 ];
 
@@ -74,12 +74,12 @@ export default function ParentOnboarding({ parentName, onComplete, onSkip }: Par
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
-          className={`relative w-full max-w-lg rounded-3xl border border-white/10 bg-gradient-to-br ${current.color} bg-slate-950/90 backdrop-blur-xl shadow-2xl p-8`}
+          className={`hud-module relative w-full max-w-lg bg-gradient-to-br ${current.color} bg-slate-950/90 shadow-2xl p-8`}
         >
           <button
-            onClick={onSkip}
+            onClick={() => onSkip(dontShowAgain)}
             aria-label="Kapat"
-            className="absolute top-4 right-4 p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+            className="absolute top-4 right-4 p-2 rounded-sm text-slate-400 hover:text-white hover:bg-white/10 transition"
           >
             <X className="w-5 h-5" />
           </button>
@@ -117,41 +117,48 @@ export default function ParentOnboarding({ parentName, onComplete, onSkip }: Par
               {steps.map((_, i) => (
                 <div
                   key={i}
-                  className={`h-1.5 rounded-full transition-all ${
+                  className={`h-1.5 transition-all ${
                     i === step ? 'w-8 bg-cyan-400' : i < step ? 'w-1.5 bg-cyan-400/60' : 'w-1.5 bg-white/20'
                   }`}
                 />
               ))}
             </div>
 
-            {isLast && (
+            <div
+              className="flex items-center gap-2 cursor-pointer group mb-6 select-none"
+              onClick={() => setDontShowAgain((value) => !value)}
+              role="checkbox"
+              aria-checked={dontShowAgain}
+              tabIndex={0}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                  event.preventDefault();
+                  setDontShowAgain((value) => !value);
+                }
+              }}
+            >
               <div
-                className="flex items-center gap-2 cursor-pointer group mb-6 select-none"
-                onClick={() => setDontShowAgain(!dontShowAgain)}
+                className={`w-5 h-5 flex items-center justify-center transition ${
+                  dontShowAgain ? 'bg-cyan-500' : 'bg-slate-800 group-hover:bg-cyan-500/20'
+                }`}
               >
-                <div
-                  className={`w-5 h-5 rounded border flex items-center justify-center transition ${
-                    dontShowAgain ? 'bg-cyan-500 border-cyan-500' : 'border-slate-600 group-hover:border-cyan-500'
-                  }`}
-                >
-                  {dontShowAgain && <Check className="w-3 h-3 text-white" />}
-                </div>
-                <span className="text-xs text-slate-400 font-mono">Bir daha gösterme</span>
+                {dontShowAgain && <Check className="w-3 h-3 text-white" />}
               </div>
-            )}
+              <span className="text-xs text-slate-400 font-mono">Bir daha gösterme</span>
+            </div>
 
             <div className="flex gap-3 w-full">
               {step > 0 && (
                 <button
                   onClick={prev}
-                  className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-white px-4 py-3 text-sm font-mono transition"
+                  className="flex-1 flex items-center justify-center gap-2 rounded-sm bg-white/5 hover:bg-white/10 text-white px-4 py-3 text-sm font-mono transition"
                 >
                   <ChevronLeft className="w-4 h-4" /> Geri
                 </button>
               )}
               <button
                 onClick={next}
-                className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-3 text-sm font-mono font-bold transition"
+                className="flex-1 flex items-center justify-center gap-2 rounded-sm bg-primary hover:bg-cyan-300 text-slate-950 px-4 py-3 text-sm font-mono font-bold transition"
               >
                 {isLast ? 'Tamam, Başlayalım' : 'Devam'}
                 {!isLast && <ChevronRight className="w-4 h-4" />}
@@ -160,7 +167,7 @@ export default function ParentOnboarding({ parentName, onComplete, onSkip }: Par
 
             {!isLast && (
               <button
-                onClick={onSkip}
+                onClick={() => onSkip(dontShowAgain)}
                 className="mt-3 text-xs text-slate-500 hover:text-slate-300 font-mono transition"
               >
                 Tanıtımı atla

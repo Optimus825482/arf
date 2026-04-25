@@ -1,0 +1,18 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "allowJs": false,
+    "incremental": false,
+    "isolatedModules": false,
+    "jsx": "react-jsx",
+    "lib": ["ES2022"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "noEmit": false,
+    "outDir": ".tmp/rag-cli",
+    "target": "ES2022",
+    "types": ["node"]
+  },
+  "include": ["scripts/rag/**/*.ts", "lib/db.ts"],
+  "exclude": ["node_modules"]
+}

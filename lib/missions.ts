@@ -13,7 +13,7 @@ export interface MissionCard {
   estimatedMinutes: number;
   briefing: string;
   motivation: string;
-  accent: "cyan" | "red" | "emerald" | "purple";
+  accent: "cyan" | "red";
   completedAt?: string;
   success?: boolean;
 }
@@ -87,7 +87,7 @@ function buildFallbackMissions(data: MissionStudentData): MissionCard[] {
       estimatedMinutes: 8,
       briefing: `Komuta merkezi, sana ${commanderFocus.toLowerCase()} içeren çok aşamalı bir senaryo gönderdi. Yakıt seviyeni (XP) artırmak ve rütbeni yükseltmek için bu stratejik operasyonu başarıyla tamamlaman gerekiyor.`,
       motivation: "Gerçek komutanlar kaosun içinde sükunetini koruyanlardır. Sorunu parçala, analiz et ve kararı sen ver. Pilot, kokpit senin!",
-      accent: "purple",
+      accent: "cyan",
     },
   ];
 }

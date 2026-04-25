@@ -89,3 +89,68 @@ CREATE INDEX IF NOT EXISTS idx_episodic_memories_embedding_ivfflat
 ON episodic_memories
 USING ivfflat (embedding vector_cosine_ops)
 WITH (lists = 100);
+
+-- 5. RAG source documents
+CREATE TABLE IF NOT EXISTS rag_documents (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    source_path TEXT NOT NULL UNIQUE,
+    source_type TEXT NOT NULL,
+    title TEXT NOT NULL,
+    topic TEXT,
+    authors JSONB,
+    publication_year INTEGER,
+    doi TEXT,
+    metadata JSONB,
+    file_hash TEXT,
+    content_hash TEXT,
+    extracted_text TEXT NOT NULL,
+    summary TEXT,
+    chunk_count INTEGER DEFAULT 0,
+    ingestion_status TEXT NOT NULL DEFAULT 'pending',
+    last_ingested_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+ALTER TABLE IF EXISTS rag_documents
+ADD COLUMN IF NOT EXISTS ingestion_status TEXT NOT NULL DEFAULT 'pending';
+
+ALTER TABLE IF EXISTS rag_documents
+ADD COLUMN IF NOT EXISTS last_ingested_at TIMESTAMP WITH TIME ZONE;
+
+-- 6. RAG chunks with embeddings
+CREATE TABLE IF NOT EXISTS rag_chunks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    document_id UUID NOT NULL REFERENCES rag_documents(id) ON DELETE CASCADE,
+    chunk_index INTEGER NOT NULL,
+    title TEXT,
+    content TEXT NOT NULL,
+    token_estimate INTEGER,
+    metadata JSONB,
+    content_hash TEXT,
+    embedding_model TEXT DEFAULT 'hf_ggml-org_embeddinggemma-300M-Q8_0',
+    embedding_dim INTEGER DEFAULT 768,
+    embedding vector(768),
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(document_id, chunk_index)
+);
+
+DROP TRIGGER IF EXISTS update_rag_documents_updated_at ON rag_documents;
+CREATE TRIGGER update_rag_documents_updated_at
+BEFORE UPDATE ON rag_documents
+FOR EACH ROW
+EXECUTE PROCEDURE update_updated_at_column();
+
+-- RAG indexes
+CREATE INDEX IF NOT EXISTS idx_rag_documents_topic ON rag_documents(topic);
+CREATE INDEX IF NOT EXISTS idx_rag_documents_year ON rag_documents(publication_year);
+CREATE INDEX IF NOT EXISTS idx_rag_documents_file_hash ON rag_documents(file_hash);
+CREATE INDEX IF NOT EXISTS idx_rag_documents_content_hash ON rag_documents(content_hash);
+CREATE INDEX IF NOT EXISTS idx_rag_chunks_document_chunk_index ON rag_chunks(document_id, chunk_index);
+CREATE INDEX IF NOT EXISTS idx_rag_chunks_content_hash ON rag_chunks(content_hash);
+CREATE INDEX IF NOT EXISTS idx_rag_chunks_metadata_gin ON rag_chunks USING GIN (metadata);
+CREATE INDEX IF NOT EXISTS idx_rag_chunks_embedding_model_dim ON rag_chunks(embedding_model, embedding_dim);
+CREATE INDEX IF NOT EXISTS idx_rag_chunks_embedding_ivfflat
+ON rag_chunks
+USING ivfflat (embedding vector_cosine_ops)
+WITH (lists = 100);

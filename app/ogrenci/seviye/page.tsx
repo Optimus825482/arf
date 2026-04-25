@@ -12,21 +12,24 @@ import { toast } from 'sonner';
 import { authFetch } from '@/lib/apiClient';
 import { useAuth } from '@/components/AuthProvider';
 import AppLoader from '@/components/AppLoader';
+import { calculateCalibrationMetrics, type CalibrationResult } from '@/lib/seviyeMetrics';
+
+type CalibrationQuestion = { q: string; a: number; type: CalibrationResult['type'] };
 
 export default function SabitKalibrasyon() {
   const router = useRouter();
   const { user } = useAuth();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [questions, setQuestions] = useState<{q:string, a:number, type:string}[]>([]);
+  const [questions, setQuestions] = useState<CalibrationQuestion[]>([]);
   const [answer, setAnswer] = useState('');
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<{type:string, correct:boolean, time:number}[]>([]);
+  const [results, setResults] = useState<CalibrationResult[]>([]);
   const [startTime, setStartTime] = useState<number>(0);
   const [started, setStarted] = useState(false);
 
   useEffect(() => {
     // Akıllı Soru Sekansı: Her grup farklı bir bilişsel metriği ölçer
-    const initialQuestions = [
+    const initialQuestions: CalibrationQuestion[] = [
       // GRUP 1: Baz Hız ve Isınma (Motor Reflex)
       { q: "4 + 3", a: 7, type: '+' },
       { q: "10 - 4", a: 6, type: '-' },
@@ -66,10 +69,15 @@ export default function SabitKalibrasyon() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!answer) return;
+    const normalizedAnswer = answer.trim();
+    if (!normalizedAnswer) return;
+    if (!/^-?\d{1,6}$/.test(normalizedAnswer)) {
+      toast.error('Lütfen en fazla 6 haneli tam sayı gir.');
+      return;
+    }
 
-    const isCorrect = parseInt(answer) === questions[currentQuestion].a;
-    const timeTaken = Date.now() - (startTime || Date.now());
+    const isCorrect = Number(normalizedAnswer) === questions[currentQuestion].a;
+    const timeTaken = Math.min(30000, Math.max(250, Date.now() - (startTime || Date.now())));
 
     if (isCorrect) playSound('correct');
     else playSound('click');
@@ -95,28 +103,18 @@ export default function SabitKalibrasyon() {
   const [actionPlan, setActionPlan] = useState('');
   const [learningPath, setLearningPath] = useState('');
 
-  const finishCalibration = async (finalResults: any[]) => {
+  const finishCalibration = async (finalResults: CalibrationResult[]) => {
     if (!user) return;
     setLoading(true);
 
-    let addSubC = 0, addSubT = 0, mulDivC = 0, mulDivT = 0, timeT = 0;
-    
-    finalResults.forEach((r: any) => {
-       timeT += r.time;
-       if (r.type === '+' || r.type === '-') { addSubT++; if (r.correct) addSubC++; }
-       if (r.type === 'x' || r.type === '÷') { mulDivT++; if (r.correct) mulDivC++; }
-    });
-    
-    const addSubScore = addSubT ? Math.round((addSubC / addSubT) * 100) : 0;
-    const mulDivScore = mulDivT ? Math.round((mulDivC / mulDivT) * 100) : 0;
-    const accuracy = Math.round(((addSubC + mulDivC) / finalResults.length) * 100);
-    const avgTimeMs = timeT / finalResults.length;
-    
-    let speedScore = Math.round(100 - ((avgTimeMs - 2000) / 100)); 
-    if (speedScore > 100) speedScore = 100;
-    if (speedScore < 0) speedScore = 0;
-
-    const calculatedMetrics = { accuracy, speedScore, addSubScore, mulDivScore };
+    let calculatedMetrics;
+    try {
+      calculatedMetrics = calculateCalibrationMetrics(finalResults, questions.length);
+    } catch {
+      toast.error('Kalibrasyon sonucu tutarsız. Testi yeniden başlat.');
+      setLoading(false);
+      return;
+    }
     
     try {
       const res = await authFetch('/api/student', {
@@ -150,21 +148,29 @@ export default function SabitKalibrasyon() {
   if (metrics) {
     return (
       <div className="flex flex-col min-h-screen items-center justify-center p-4 relative z-10 w-full animate-in fade-in duration-700">
-        <div className="glass-panel max-w-md w-full p-10 text-center space-y-6 border-t-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.2)]">
-          <Trophy className="w-20 h-20 text-yellow-400 mx-auto drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
+        <div className="hud-module max-w-md w-full p-10 text-center space-y-6 shadow-[0_0_50px_rgba(255,179,173,0.18)]">
+          <Trophy className="w-20 h-20 text-secondary mx-auto drop-shadow-[0_0_15px_rgba(255,179,173,0.45)]" />
           <div>
             <h1 className="text-3xl font-mono font-bold text-white uppercase tracking-wider mb-1">ANALİZ TAMAMLANDI</h1>
-            <p className="text-yellow-400 font-mono text-xl font-bold tracking-widest">{getRankName(metrics.accuracy >= 80 ? 3 : (metrics.accuracy >= 50 ? 2 : 1))}</p>
+            <p className="text-secondary font-mono text-xl font-bold tracking-widest">{getRankName(metrics.accuracy >= 80 ? 3 : (metrics.accuracy >= 50 ? 2 : 1))}</p>
           </div>
 
           <div className="grid grid-cols-2 gap-4 text-left">
-            <div className="bg-slate-900/50 p-4 rounded-xl border border-white/5">
+            <div className="bg-slate-900/50 p-4 rounded-sm border border-white/5">
               <span className="text-[10px] font-mono text-slate-500 uppercase block mb-1">Hız Puanı</span>
               <span className="text-2xl font-mono font-bold text-cyan-400">{metrics.speedScore}</span>
             </div>
-            <div className="bg-slate-900/50 p-4 rounded-xl border border-white/5">
+            <div className="bg-slate-900/50 p-4 rounded-sm border border-white/5">
               <span className="text-[10px] font-mono text-slate-500 uppercase block mb-1">Doğruluk</span>
-              <span className="text-2xl font-mono font-bold text-emerald-400">%{metrics.accuracy}</span>
+              <span className="text-2xl font-mono font-bold text-cyan-400">%{metrics.accuracy}</span>
+            </div>
+            <div className="bg-slate-900/50 p-4 rounded-sm border border-white/5">
+              <span className="text-[10px] font-mono text-slate-500 uppercase block mb-1">Zihin</span>
+              <span className="text-2xl font-mono font-bold text-cyan-400">%{metrics.mentalMathScore}</span>
+            </div>
+            <div className="bg-slate-900/50 p-4 rounded-sm border border-white/5">
+              <span className="text-[10px] font-mono text-slate-500 uppercase block mb-1">Ort. Süre</span>
+              <span className="text-2xl font-mono font-bold text-secondary">{(metrics.avgTimeMs / 1000).toFixed(1)} sn</span>
             </div>
           </div>
 
@@ -172,13 +178,13 @@ export default function SabitKalibrasyon() {
             <div className="text-left space-y-4 py-2 border-y border-white/5">
               {actionPlan && (
                 <div>
-                  <h3 className="text-[10px] font-mono font-bold text-blue-400 uppercase tracking-widest mb-1">STRATEJİK PLAN</h3>
+                  <h3 className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest mb-1">STRATEJİK PLAN</h3>
                   <p className="text-xs text-slate-300 font-mono italic leading-relaxed">"{actionPlan}"</p>
                 </div>
               )}
               {learningPath && (
                 <div>
-                  <h3 className="text-[10px] font-mono font-bold text-purple-400 uppercase tracking-widest mb-1">GELİŞİM ROTASI</h3>
+                  <h3 className="text-[10px] font-mono font-bold text-cyan-400 uppercase tracking-widest mb-1">GELİŞİM ROTASI</h3>
                   <p className="text-xs text-slate-300 font-mono leading-relaxed">{learningPath}</p>
                 </div>
               )}
@@ -191,6 +197,7 @@ export default function SabitKalibrasyon() {
 
           <button 
             onClick={() => { playSound('click'); router.replace('/ogrenci'); }}
+            aria-label="Öğrenci ana sayfasına dön"
             className="w-full neon-btn-blue py-5 tracking-widest font-bold text-lg"
           >
             ANA ÜSSE GİRİŞ YAP
@@ -208,7 +215,7 @@ export default function SabitKalibrasyon() {
             <p className="text-slate-300 font-mono text-sm leading-relaxed">
               ARF Uzay Gemisine hoş geldin! Türk Uzay Kuvvetleri standartlarına girmek üzeresin. Ana bilgisayarın seni tanıması ve sana uygun görev programını oluşturması için bir sistem testinden geçmen gerekiyor.
             </p>
-            <button onClick={() => { playSound('click'); setStarted(true); setStartTime(Date.now()); }} className="neon-btn-cyan w-full py-4 tracking-widest font-mono font-bold">
+            <button onClick={() => { playSound('click'); setStarted(true); setStartTime(Date.now()); }} aria-label="Kalibrasyon testini başlat" className="neon-btn-cyan w-full py-4 tracking-widest font-mono font-bold">
               KONTROLLERİ BAŞLAT
             </button>
          </motion.div>
@@ -222,7 +229,7 @@ export default function SabitKalibrasyon() {
     return (
       <AppLoader
         variant="fullscreen"
-        accent="amber"
+        accent="red"
         title="Telemetri analiz ediliyor"
         subtitle="Rutbe ve gorev profili hesaplanıyor"
         messages={[
@@ -241,8 +248,8 @@ export default function SabitKalibrasyon() {
            <span className="flex items-center gap-2"><Rocket className="w-4 h-4 text-cyan-500"/> SİSTEM KALİBRASYONU</span>
            <span className="text-cyan-400 font-mono">SEKANS {currentQuestion + 1} / {questions.length}</span>
         </div>
-        <div className="w-full bg-slate-800/80 h-2 rounded-full overflow-hidden border border-white/5">
-           <div className="bg-gradient-to-r from-purple-500 to-cyan-400 h-full transition-all duration-300" style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}></div>
+        <div className="w-full bg-slate-800/80 h-2 rounded-sm overflow-hidden border border-white/5">
+           <div className="bg-gradient-to-r from-cyan-500 to-cyan-400 h-full transition-all duration-300" style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}></div>
         </div>
       </div>
       
@@ -253,10 +260,10 @@ export default function SabitKalibrasyon() {
           animate={{ scale: 1, opacity: 1, x: 0 }}
           exit={{ scale: 0.9, opacity: 0, x: -20 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="glass-panel p-10 md:p-14 rounded-3xl max-w-md w-full text-center border-t-2 border-t-cyan-500 shadow-[0_0_40px_rgba(6,182,212,0.1)] relative overflow-hidden"
+          className="glass-panel p-10 md:p-14 rounded-sm max-w-md w-full text-center border-t-2 border-t-cyan-500 shadow-[0_0_40px_rgba(6,182,212,0.1)] relative overflow-hidden"
         >
           <div className="absolute top-4 left-4 flex gap-1">
-            <div className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
+            <div className="w-2 h-2 rounded-sm bg-red-500 animate-pulse"></div>
             <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">Motor Kod: {questions[currentQuestion].type === '+' || questions[currentQuestion].type === '-' ? 'ALFA' : 'BETA'}</span>
           </div>
 
@@ -270,10 +277,10 @@ export default function SabitKalibrasyon() {
               type="number" 
               value={answer}
               onChange={e => setAnswer(e.target.value)}
-              className="w-full text-center bg-slate-900/80 border-2 border-cyan-500/30 rounded-2xl py-6 text-5xl font-black font-mono focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_20px_rgba(34,211,238,0.2)] text-white transition-all placeholder:text-slate-700"
+              className="w-full text-center bg-slate-900/80 border-2 border-cyan-500/30 rounded-sm py-6 text-5xl font-black font-mono focus:outline-none focus:border-cyan-400 focus:shadow-[0_0_20px_rgba(34,211,238,0.2)] text-white transition-all placeholder:text-slate-700"
               placeholder="ROTA GİR"
             />
-            <button type="submit" className="w-full neon-btn-blue py-5 text-xl tracking-widest">
+            <button type="submit" aria-label="Cevabı onayla ve sonraki soruya geç" className="w-full neon-btn-blue py-5 text-xl tracking-widest">
               ONAYLA VE ATEŞLE
             </button>
           </form>

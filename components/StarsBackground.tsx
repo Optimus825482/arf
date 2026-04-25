@@ -123,8 +123,8 @@ export default function StarsBackground() {
   return (
     <>
       <div className="fixed inset-0 pointer-events-none opacity-40 z-0">
-        <div className="absolute top-20 right-20 w-32 h-32 bg-purple-900 rounded-full filter blur-[100px] opacity-20"></div>
-        <div className="absolute bottom-10 left-10 w-48 h-48 bg-blue-900 rounded-full filter blur-[120px] opacity-20"></div>
+        <div className="absolute top-20 right-20 w-32 h-32 bg-cyan-900 rounded-sm filter blur-[100px] opacity-20"></div>
+        <div className="absolute bottom-10 left-10 w-48 h-48 bg-cyan-950 rounded-sm filter blur-[120px] opacity-20"></div>
       </div>
       <canvas 
         ref={canvasRef} 

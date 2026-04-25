@@ -174,11 +174,11 @@ function UzayGoreviContent() {
   if (errorMsg) {
     return (
       <div className="flex justify-center items-center h-screen p-6 relative z-10">
-        <div className="glass-panel max-w-lg p-8 rounded-3xl text-center">
-          <AlertTriangle className="w-16 h-16 text-yellow-500 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
+        <div className="hud-module max-w-lg p-8 text-center">
+          <AlertTriangle className="w-16 h-16 text-secondary mx-auto mb-4 drop-shadow-[0_0_15px_rgba(255,179,173,0.45)]" />
           <h2 className="text-xl font-mono text-white mb-2 uppercase tracking-wide">Görev İletişimi Koptu</h2>
           <p className="text-slate-400 mb-8 font-mono text-sm leading-relaxed">{errorMsg}</p>
-          <Link href="/ogrenci" prefetch={false} className="neon-btn-purple px-8 py-4 inline-block tracking-widest text-sm w-full">ANA ÜSSE DÖN</Link>
+          <Link href="/ogrenci" prefetch={false} className="cyber-button-primary inline-block w-full text-sm">ANA ÜSSE DÖN</Link>
         </div>
       </div>
     );
@@ -186,16 +186,16 @@ function UzayGoreviContent() {
 
   return (
     <div className="flex flex-col min-h-screen p-4 max-w-4xl mx-auto justify-center relative z-10 w-full">
-      <header className="flex items-center justify-between border-b border-purple-500/20 pb-4 mb-8">
+      <header className="flex items-center justify-between bg-surface-container-lowest/40 pb-4 mb-8">
         <Link href="/ogrenci" prefetch={false} className="hud-badge text-slate-500 hover:text-white transition">İptal Et</Link>
-        <div className="flex items-center text-[10px] font-mono tracking-widest font-bold bg-purple-900/40 text-purple-400 border border-purple-500/30 px-4 py-2 rounded-full">
+        <div className="flex items-center text-[10px] font-mono tracking-widest font-bold bg-primary/10 text-primary px-4 py-2 rounded-sm">
           <BrainCircuit className="w-4 h-4 mr-2" /> YAPAY ZEKA GÖREVİ
         </div>
         <div className="flex items-center gap-2">
            <button 
              onClick={showHintToast}
              disabled={loading || !question}
-             className="p-2 bg-yellow-900/30 text-yellow-500 rounded-lg border border-yellow-500/30 hover:bg-yellow-900/40 transition disabled:opacity-50"
+             className="p-2 bg-tertiary-container/10 text-tertiary-container rounded-sm hover:bg-tertiary-container/20 transition disabled:opacity-50"
              title="Yapay Zeka İpucu İste"
            >
              <Lightbulb className="w-5 h-5" />
@@ -213,7 +213,7 @@ function UzayGoreviContent() {
           <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
             <AppLoader
               variant="panel"
-              accent="purple"
+              accent="cyan"
               title="Yapay zeka sinyali araniyor"
               subtitle="Derin uzay problemi uretiliyor"
               messages={[
@@ -232,12 +232,12 @@ function UzayGoreviContent() {
             <motion.div 
               animate={{ 
                 scale: showExplanation ? (isCorrect ? [1, 1.02, 1] : 1) : 1,
-                borderColor: showExplanation ? (isCorrect ? "#22c55e" : "#ef4444") : "#a855f7"
+                borderColor: showExplanation ? (isCorrect ? "#22c55e" : "#ef4444") : "#22d3ee"
               }}
-              className="glass-panel p-8 md:p-12 rounded-3xl border-t-2 transition-colors duration-500"
+              className="hud-module p-8 md:p-12 transition-colors duration-500"
             >
                <div className="absolute top-4 left-6 flex items-center gap-2">
-                 <span className="flex h-1.5 w-1.5 rounded-full bg-purple-500 animate-pulse"></span>
+                 <span className="flex h-1.5 w-1.5 bg-primary animate-pulse"></span>
                </div>
                <h2 className="text-xl md:text-2xl font-mono text-white leading-relaxed font-bold tracking-wide break-words">{question.question}</h2>
             </motion.div>
@@ -245,20 +245,20 @@ function UzayGoreviContent() {
             {!showResultBlock ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {question.options.map((opt, i) => {
-                  let btnClass = "p-6 md:p-8 border rounded-2xl text-2xl font-mono transition-all text-white ";
+                  let btnClass = "p-6 md:p-8 rounded-sm text-2xl font-mono transition-all text-white ";
                   if (!showExplanation) {
                     if (isEvaluating && opt === selected) {
                        btnClass += "bg-white/20 border-white/60 animate-pulse shadow-[0_0_20px_rgba(255,255,255,0.3)] scale-105 z-10";
                     } else {
-                       btnClass += "bg-slate-800/40 hover:bg-purple-900/30 border-purple-500/20 hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] cursor-pointer";
+                       btnClass += "bg-surface-container-low/70 hover:bg-primary/10 hover:shadow-[0_0_15px_rgba(34,211,238,0.18)] cursor-pointer";
                     }
                   } else {
                      if (opt === question.correctAnswer) {
-                       btnClass += "bg-green-600/40 border-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]";
+                       btnClass += "bg-cyan-500/30 border-cyan-400 shadow-[0_0_20px_rgba(34,211,238,0.35)]";
                      } else if (opt === selected && opt !== question.correctAnswer) {
                        btnClass += "bg-red-600/40 border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.4)]";
                      } else {
-                       btnClass += "bg-slate-800/20 border-slate-700/50 opacity-50";
+                       btnClass += "bg-surface-container-low/30 opacity-50";
                      }
                   }
 
@@ -277,7 +277,7 @@ function UzayGoreviContent() {
             ) : (
               <motion.div 
                 initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-                className={`p-8 md:p-10 rounded-3xl border-2 shadow-2xl relative overflow-hidden ${isCorrect ? 'bg-green-950/40 border-green-500/50' : 'bg-red-950/40 border-red-500/50'}`}
+                className={`p-8 md:p-10 rounded-sm shadow-2xl relative overflow-hidden ${isCorrect ? 'bg-cyan-950/40' : 'bg-red-950/40'}`}
               >
                 <div className="absolute -inset-2 bg-gradient-to-br from-white/5 to-transparent blur-lg z-0"></div>
                 <div className="relative z-10">
@@ -285,20 +285,20 @@ function UzayGoreviContent() {
                      <motion.div
                        initial={{ opacity: 0, y: 14, scale: 0.96 }}
                        animate={{ opacity: 1, y: 0, scale: 1 }}
-                       className="mb-5 rounded-2xl border border-cyan-500/30 bg-cyan-500/10 p-4"
+                       className="mb-5 rounded-sm bg-cyan-500/10 p-4"
                      >
                        <p className="text-sm font-mono font-bold uppercase tracking-widest text-cyan-300">ANLIK KOMUTA KUTLAMASI</p>
                        <p className="mt-2 text-xs font-mono text-slate-200">
                          {missionReward.bonusXp > 0 ? `Paket bonusu: +${missionReward.bonusXp} XP` : 'Görev zinciri kaydı işlendi.'}
                        </p>
-                       {missionReward.allCompleted && <p className="mt-2 text-xs font-mono text-yellow-300">Komutan raporu günlük merkezde açıldı.</p>}
+                       {missionReward.allCompleted && <p className="mt-2 text-xs font-mono text-secondary">Komutan raporu günlük merkezde açıldı.</p>}
                      </motion.div>
                    )}
                    <div className="flex items-center mb-6">
-                     {isCorrect ? <Sparkles className="w-8 h-8 text-green-400 mr-3 drop-shadow-[0_0_8px_rgba(74,222,128,0.5)]"/> : <AlertTriangle className="w-8 h-8 text-red-400 mr-3 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]"/>}
+                     {isCorrect ? <Sparkles className="w-8 h-8 text-cyan-400 mr-3 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]"/> : <AlertTriangle className="w-8 h-8 text-red-400 mr-3 drop-shadow-[0_0_8px_rgba(248,113,113,0.5)]"/>}
                      <h3 className="text-xl font-mono uppercase tracking-widest font-bold text-white">{isCorrect ? 'GÖREV BAŞARILI (+50 XP)' : 'SİSTEM HATASI'}</h3>
                    </div>
-                   <p className="text-sm font-mono text-slate-300 mb-8 pb-8 border-b border-white/10 leading-relaxed">
+                   <p className="text-sm font-mono text-slate-300 mb-8 pb-8 bg-surface-container-lowest/30 leading-relaxed">
                      {question.explanation}
                    </p>
                    <div className="flex flex-col md:flex-row gap-4">
@@ -308,16 +308,16 @@ function UzayGoreviContent() {
                             playSound('click');
                             router.push(`${nextMission.route}?mission=${nextMission.id}`);
                           }}
-                          className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold py-4 rounded-xl transition flex items-center justify-center gap-2 uppercase tracking-widest text-xs"
+                          className="flex-1 cyber-button-primary flex items-center justify-center gap-2 text-xs"
                         >
                           SIRADAKİ GÖREV <ArrowRight className="w-4 h-4" />
                         </button>
                      ) : (
-                        <button onClick={() => fetchQuestion(1)} className="flex-1 neon-btn-purple py-4 font-mono font-bold tracking-widest text-xs">
+                        <button onClick={() => fetchQuestion(1)} className="flex-1 cyber-button-primary py-4 text-xs">
                           YENİ GÖREV İSTE
                         </button>
                      )}
-                     <Link href="/ogrenci" prefetch={false} className="flex-1 text-center bg-slate-800 hover:bg-slate-700 transition rounded-xl py-4 font-mono font-bold text-white tracking-widest text-xs border border-white/10 flex items-center justify-center">
+                     <Link href="/ogrenci" prefetch={false} className="flex-1 text-center cyber-button-secondary py-4 text-xs flex items-center justify-center">
                        ANA ÜS
                      </Link>
                    </div>
@@ -337,7 +337,7 @@ export default function UzayGorevi() {
       fallback={
         <AppLoader
           variant="fullscreen"
-          accent="purple"
+          accent="cyan"
           title="AI gorev modulu yukleniyor"
           subtitle="Derin uzay senaryosu aciliyor"
           messages={['Komuta zekasi problem alanini kuruyor...']}

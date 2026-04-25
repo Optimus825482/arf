@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
-export default [
+const config = [
   { ignores: ["dist/**/*", ".next/**/*", "node_modules/**/*", "next-env.d.ts", "public/**/*"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   firebaseRulesPlugin.configs["flat/recommended"],
@@ -21,3 +21,5 @@ export default [
     },
   },
 ];
+
+export default config;

@@ -8,8 +8,11 @@ yarn-debug.log*
 yarn-error.log*
 .swc/
 .turbo/
+.tmp/
 .idea/
 .vscode/
 .env
 .env*
 !.env.example
+research_lab/
+tanitim/

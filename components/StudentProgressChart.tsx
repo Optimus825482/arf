@@ -49,7 +49,7 @@ export default function StudentProgressChart({ userId }: ChartProps) {
   if (loading) return (
     <AppLoader
       variant="panel"
-      accent="purple"
+      accent="cyan"
       title="Telemetri grafigi yukleniyor"
       subtitle="Kayitlar son 30 gun icin getiriliyor"
       messages={['Gozlem verileri okunuyor...']}
@@ -58,7 +58,7 @@ export default function StudentProgressChart({ userId }: ChartProps) {
   );
 
   if (data.length < 2) return (
-    <div className="h-64 flex flex-col items-center justify-center bg-slate-900/20 rounded-2xl border border-white/5 text-slate-500 font-mono text-xs">
+    <div className="h-64 flex flex-col items-center justify-center bg-slate-900/20 rounded-sm border border-white/5 text-slate-500 font-mono text-xs">
       <TrendingUp className="w-8 h-8 mb-2 opacity-20" />
       Grafik için daha fazla veri toplanıyor...
     </div>
@@ -67,7 +67,7 @@ export default function StudentProgressChart({ userId }: ChartProps) {
   return (
     <div className="glass-panel p-4 h-80 w-full mt-6">
       <h4 className="text-[10px] font-mono font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-         <TrendingUp className="w-4 h-4 text-purple-400" /> PERFORMANS TELEMETRİSİ (SON 30 GÜN)
+         <TrendingUp className="w-4 h-4 text-cyan-400" /> PERFORMANS TELEMETRİSİ (SON 30 GÜN)
       </h4>
       <ResponsiveContainer width="100%" height="100%">
         <LineChart data={data} margin={{ top: 5, right: 20, left: -20, bottom: 5 }}>

@@ -285,7 +285,7 @@ function YildirimModuContent() {
     return (
       <AppLoader
         variant="fullscreen"
-        accent="purple"
+        accent="cyan"
         title="Yildirim harekati hazirlaniyor"
         subtitle="Refleks koridoru basinclaniyor"
         messages={[
@@ -315,13 +315,13 @@ function YildirimModuContent() {
              ]}
            />
         </div>
-        <div className="glass-panel text-center p-8 rounded-3xl w-full border-t-2 border-purple-500 shadow-[0_0_40px_rgba(168,85,247,0.15)] relative">
-          <Zap className="w-20 h-20 text-purple-400 mx-auto mb-6 mt-4 drop-shadow-[0_0_15px_rgba(168,85,247,0.8)] animate-pulse" />
-          <h1 className="text-3xl font-mono font-bold uppercase tracking-[0.1em] text-purple-300 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)] mb-8">YILDIRIM HAREKÂTI</h1>
+        <div className="hud-module text-center p-8 rounded-sm w-full shadow-[0_0_40px_rgba(34,211,238,0.15)] relative">
+          <Zap className="w-20 h-20 text-cyan-400 mx-auto mb-6 mt-4 drop-shadow-[0_0_15px_rgba(34,211,238,0.65)] animate-pulse" />
+          <h1 className="text-3xl font-mono font-bold uppercase tracking-[0.1em] text-cyan-300 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)] mb-8">YILDIRIM HAREKÂTI</h1>
           
-          <div className="bg-slate-900/50 rounded-xl p-4 md:p-6 mb-8 text-left border border-slate-700/50">
+          <div className="bg-slate-900/50 rounded-sm p-4 md:p-6 mb-8 text-left border border-slate-700/50">
              <h3 className="hud-badge mb-3 flex items-center text-red-400 border-red-500/30"><ShieldAlert className="w-4 h-4 mr-2" /> DİKKAT</h3>
-             <p className="font-mono text-slate-300 text-sm leading-relaxed p-2 bg-slate-800/40 rounded-lg border-l-2 border-l-red-500">
+             <p className="font-mono text-slate-300 text-sm leading-relaxed p-2 bg-slate-800/40 rounded-sm border-l-2 border-l-red-500">
                &quot;Soru başına 5 saniyen var. Yanlış cevap veya süre aşımı hasar verir. Seriyi bozma pilot!&quot;
              </p>
           </div>
@@ -332,7 +332,7 @@ function YildirimModuContent() {
             ))}
           </div>
 
-          <button onClick={startGame} className="w-full neon-btn-outline border-purple-500 text-purple-300 hover:bg-purple-900/40 py-5 text-xl tracking-widest font-bold">YILDIRIMI ÇAĞIR</button>
+          <button onClick={startGame} className="w-full neon-btn-outline border-cyan-500 text-cyan-300 hover:bg-cyan-900/40 py-5 text-xl tracking-widest font-bold">YILDIRIMI ÇAĞIR</button>
           <Link href="/ogrenci" prefetch={false} className="mt-6 inline-block font-mono text-xs uppercase text-slate-500 hover:text-red-400 transition tracking-widest">Geri Dön</Link>
         </div>
       </div>
@@ -348,40 +348,40 @@ function YildirimModuContent() {
 
     return (
       <div className="flex flex-col min-h-screen items-center justify-center p-4 relative z-10 w-full max-w-sm mx-auto">
-        <div className="glass-panel text-center p-8 rounded-3xl w-full border-t-2 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.1)]">
+        <div className="glass-panel text-center p-8 rounded-sm w-full border-t-2 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.1)]">
           {missionReward && (
             <motion.div
               initial={{ opacity: 0, y: 14, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              className="mb-6 rounded-2xl border border-purple-500/30 bg-purple-500/10 p-4"
+              className="mb-6 rounded-sm border border-cyan-500/30 bg-cyan-500/10 p-4"
             >
-              <p className="text-sm font-mono font-bold uppercase tracking-widest text-purple-300">YILDIRIM KUTLAMASI</p>
+              <p className="text-sm font-mono font-bold uppercase tracking-widest text-cyan-300">YILDIRIM KUTLAMASI</p>
               <p className="mt-2 text-xs font-mono text-slate-200">
                 {missionReward.bonusXp > 0 ? `Paket bonusu: +${missionReward.bonusXp} XP` : 'Gorev kaydi islendi.'}
               </p>
-              {missionReward.allCompleted && <p className="mt-2 text-xs font-mono text-yellow-300">Tum gunluk gorev zinciri tamamlandi.</p>}
+              {missionReward.allCompleted && <p className="mt-2 text-xs font-mono text-secondary">Tum gunluk gorev zinciri tamamlandi.</p>}
             </motion.div>
           )}
-          <Trophy className="w-16 h-16 text-purple-400 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+          <Trophy className="w-16 h-16 text-cyan-400 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
           <h1 className="text-xl font-mono font-bold uppercase mb-2 text-slate-300 tracking-widest">Sistem Devre Dışı</h1>
-          <p className="text-6xl font-mono font-bold text-purple-400 mb-4 drop-shadow-[0_0_10px_rgba(168,85,247,0.5)]">{score}</p>
+          <p className="text-6xl font-mono font-bold text-cyan-400 mb-4 drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">{score}</p>
           
-          <div className="bg-slate-950/50 p-5 rounded-2xl mb-6 border border-white/5 space-y-4">
+          <div className="bg-slate-950/50 p-5 rounded-sm mb-6 border border-white/5 space-y-4">
              <div>
                <div className="flex justify-between text-[10px] font-mono mb-2 uppercase tracking-tighter">
                  <span className="text-slate-400">Rutbe Ilerlemesi (Sv. {lvl})</span>
-                 <span className="text-purple-400">%{Math.round(progress)}</span>
+                 <span className="text-cyan-400">%{Math.round(progress)}</span>
                </div>
-               <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-white/5">
+               <div className="w-full bg-slate-800 h-2 rounded-sm overflow-hidden border border-white/5">
                  <motion.div 
                    initial={{ width: 0 }}
                    animate={{ width: `${progress}%` }}
                    transition={{ duration: 1.5, ease: "easeOut" }}
-                   className="h-full bg-gradient-to-r from-purple-600 to-indigo-400 shadow-[0_0_10px_rgba(168,85,247,0.5)]"
+                   className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
                  />
                </div>
              </div>
-             <p className="text-purple-400 font-mono font-bold tracking-widest text-xs">+{finalXpData?.earnedXp || score * 10} XP KAZANILDI</p>
+             <p className="text-cyan-400 font-mono font-bold tracking-widest text-xs">+{finalXpData?.earnedXp || score * 10} XP KAZANILDI</p>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
@@ -391,13 +391,13 @@ function YildirimModuContent() {
                   playSound('click');
                   router.push(`${nextMission.route}?mission=${nextMission.id}`);
                 }}
-                className="w-full bg-purple-600 hover:bg-purple-500 text-white font-mono font-bold py-4 rounded-2xl transition flex items-center justify-center gap-2 uppercase tracking-widest text-sm"
+                className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold py-4 rounded-sm transition flex items-center justify-center gap-2 uppercase tracking-widest text-sm"
               >
                 Sıradaki Göreve Geç <ArrowRight className="w-4 h-4" />
               </button>
             )}
-            <button onClick={startGame} disabled={saving} className="w-full border border-purple-500/50 text-purple-400 hover:bg-purple-950/30 py-4 text-sm tracking-widest font-bold rounded-2xl transition">TEKRAR DENE</button>
-            <Link href="/ogrenci" prefetch={false} className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-2xl py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
+            <button onClick={startGame} disabled={saving} className="w-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-950/30 py-4 text-sm tracking-widest font-bold rounded-sm transition">TEKRAR DENE</button>
+            <Link href="/ogrenci" prefetch={false} className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-sm py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
           </div>
         </div>
       </div>
@@ -406,7 +406,7 @@ function YildirimModuContent() {
 
   return (
     <div className="flex flex-col min-h-screen p-4 max-w-3xl mx-auto justify-center relative z-10">
-      <header className="flex items-center justify-between bg-purple-900/10 backdrop-blur-md rounded-2xl p-4 border border-purple-500/20 mb-8">
+      <header className="flex items-center justify-between bg-cyan-900/10 backdrop-blur-md rounded-sm p-4 border border-cyan-500/20 mb-8">
         <div className="flex gap-2">
            {[...Array(3)].map((_, i) => (
              <Heart key={i} className={`w-8 h-8 transition-all ${i < lives ? 'text-red-500 fill-red-500 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]' : 'text-slate-700'}`} />
@@ -416,19 +416,19 @@ function YildirimModuContent() {
         <div className="flex items-center gap-4">
            <div className="flex flex-col items-center">
              <span className="hud-badge text-[10px]">SKOR</span>
-             <div className="text-2xl font-mono font-bold text-purple-400 drop-shadow-[0_0_8px_rgba(168,85,247,0.5)]">{score}</div>
+             <div className="text-2xl font-mono font-bold text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">{score}</div>
            </div>
-           <div className="flex flex-col items-center border-l border-purple-500/30 pl-4">
-             <span className="hud-badge text-[10px] text-yellow-400 border-yellow-500/30">COMBO</span>
-             <div className="text-xl font-mono font-bold text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]">x{combo}</div>
+           <div className="flex flex-col items-center border-l border-cyan-500/30 pl-4">
+             <span className="hud-badge text-[10px] text-secondary border-secondary/30">COMBO</span>
+             <div className="text-xl font-mono font-bold text-secondary drop-shadow-[0_0_8px_rgba(255,179,173,0.45)]">x{combo}</div>
            </div>
         </div>
       </header>
 
       {/* Lightning Timer Bar */}
-      <div className="w-full h-3 bg-slate-800 rounded-full mb-8 overflow-hidden border border-slate-700">
+      <div className="w-full h-3 bg-slate-800 rounded-sm mb-8 overflow-hidden border border-slate-700">
         <motion.div 
-          className={`h-full ${timeLeft < 3 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-purple-500'}`}
+          className={`h-full ${timeLeft < 3 ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]' : 'bg-cyan-500'}`}
           initial={{ width: '100%' }}
           animate={{ width: `${(timeLeft / (combo > 30 ? 2 : combo > 20 ? 3 : combo > 10 ? 4 : 5)) * 100}%` }}
           transition={{ duration: 1, ease: 'linear' }}
@@ -442,7 +442,7 @@ function YildirimModuContent() {
           scale: lastCorrect === true ? [1, 1.05, 1] : 1,
           borderColor: lastCorrect === true ? "#a855f7" : (lastCorrect === false ? "#ef4444" : (timeLeft < 3 ? "#ef4444" : "#a855f7"))
         }}
-        className={`glass-panel py-16 rounded-3xl mb-8 flex flex-col items-center justify-center text-center border-t-2 transition-colors duration-300 relative overflow-hidden ${timeLeft < 3 ? 'animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.4)] border-red-500' : 'shadow-[0_0_30px_rgba(168,85,247,0.1)]'}`}
+        className={`hud-module py-16 rounded-sm mb-8 flex flex-col items-center justify-center text-center transition-colors duration-300 relative overflow-hidden ${timeLeft < 3 ? 'animate-pulse shadow-[0_0_30px_rgba(239,68,68,0.4)]' : 'shadow-[0_0_30px_rgba(34,211,238,0.12)]'}`}
       >
         <div className="text-7xl md:text-[100px] font-bold text-transparent bg-clip-text bg-gradient-to-b from-white to-slate-400 leading-none tracking-widest font-mono">
           {question.q}
@@ -456,7 +456,7 @@ function YildirimModuContent() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => handleAnswer(opt)} 
-            className="neon-btn-outline border-purple-500/50 text-white hover:bg-purple-900/30 py-6 px-4 text-3xl md:text-5xl font-mono tracking-widest rounded-2xl"
+            className="neon-btn-outline border-cyan-500/50 text-white hover:bg-cyan-900/30 py-6 px-4 text-3xl md:text-5xl font-mono tracking-widest rounded-sm"
           >
             {opt}
           </motion.button>
@@ -472,7 +472,7 @@ export default function YildirimModu() {
       fallback={
         <AppLoader
           variant="fullscreen"
-          accent="purple"
+          accent="cyan"
           title="Yildirim modulu yukleniyor"
           subtitle="Savunma refleksleri devreye aliniyor"
           messages={['Yildirim koridoru senkronize ediliyor...']}

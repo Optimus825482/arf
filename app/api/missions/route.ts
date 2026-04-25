@@ -7,6 +7,61 @@ import {
   type MissionCard,
   type MissionMode,
 } from "@/lib/missions";
+import { sanitizePromptInput, sanitizePromptValue } from "@/lib/sanitize";
+import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
+
+const RAG_CONTEXT_MODULE = "../../../lib/rag/context";
+
+async function loadPedagogicalRagContext(query: string, maxLen = 600) {
+  try {
+    const ragModule = await import(RAG_CONTEXT_MODULE);
+    const builder =
+      ragModule.buildPedagogicalRagContext ||
+      ragModule.buildRagContext ||
+      ragModule.getRagContext;
+
+    if (typeof builder !== "function") return "";
+
+    const result = await builder({
+      query: sanitizePromptInput(query, 220),
+      limit: 2,
+      maxChars: maxLen,
+    });
+    const formatter = ragModule.formatRagContextForPrompt;
+    const formatted = typeof formatter === "function"
+      ? formatter(result, { maxChars: maxLen })
+      : result;
+
+    if (typeof formatted === "string") {
+      return sanitizePromptInput(formatted, maxLen);
+    }
+
+    const record = formatted && typeof formatted === "object"
+      ? formatted as Record<string, unknown>
+      : {};
+    const direct =
+      typeof record.promptContext === "string" ? record.promptContext :
+      typeof record.context === "string" ? record.context :
+      typeof record.text === "string" ? record.text :
+      "";
+    if (direct) return sanitizePromptInput(direct, maxLen);
+
+    const sources = Array.isArray(record.sources) ? record.sources.slice(0, 2) : [];
+    return sanitizePromptInput(
+      sources.map((source) => {
+        const item = source && typeof source === "object" ? source as Record<string, unknown> : {};
+        return [
+          typeof item.title === "string" ? item.title : "",
+          typeof item.summary === "string" ? item.summary : "",
+          typeof item.content === "string" ? item.content : "",
+        ].filter(Boolean).join(": ");
+      }).filter(Boolean).join(" | "),
+      maxLen,
+    );
+  } catch (error) {
+    return "";
+  }
+}
 
 async function buildAiMissionPack(payload: {
   apiKey: string;
@@ -17,16 +72,33 @@ async function buildAiMissionPack(payload: {
   level?: number;
   xp?: number;
 }) {
+  const username = sanitizePromptInput(payload.username, 64) || "Pilot";
+  const actionPlan = sanitizePromptInput(payload.actionPlan, 1000) || "Yok";
+  const learningPath = sanitizePromptInput(payload.learningPath, 1000) || "Yok";
+  const metrics = sanitizePromptValue(payload.metrics || {}, {
+    stringMaxLen: 128,
+    maxDepth: 3,
+    maxEntries: 30,
+  });
+  const ragContext = await loadPedagogicalRagContext(
+    `daily mission math practice action ${actionPlan} path ${learningPath} metrics ${JSON.stringify(metrics)}`,
+    600,
+  );
   const prompt = `Sen uzay akademisinin komuta yapay zekasisin.
 Asagidaki ogrenci icin bugunluk gorev merkezi paketi uret.
 
 Ogrenci:
-- Ad: ${payload.username || "Pilot"}
+- Ad: ${username}
 - Seviye: ${payload.level || 1}
 - XP: ${payload.xp || 0}
-- Aksiyon plani: ${payload.actionPlan || "Yok"}
-- Ogrenme yolu: ${payload.learningPath || "Yok"}
-- Metrikler: ${JSON.stringify(payload.metrics || {})}
+- Aksiyon plani: ${actionPlan}
+- Ogrenme yolu: ${learningPath}
+- Metrikler: ${JSON.stringify(metrics)}
+
+PEDAGOJIK/RAG SINYALI:
+- Temel: ${PEDAGOGICAL_BASE.rag_index.math_mastery}
+${ragContext ? `- Kisa kaynak: ${ragContext}` : "- Kisa kaynak: Yok"}
+- Gorevleri mikro-ogrenme, gorsellestirme ve dusuk bilissel yuk ilkelerine gore kisa tut.
 
 SADECE JSON don.
 {
@@ -44,7 +116,7 @@ SADECE JSON don.
       "estimatedMinutes": 6,
       "briefing": "gorev oncesi briefing",
       "motivation": "goreve ozel motivasyon",
-      "accent": "cyan | red | emerald | purple"
+      "accent": "cyan | red | cyan | cyan"
     }
   ]
 }`;
@@ -56,7 +128,7 @@ SADECE JSON don.
       Authorization: `Bearer ${payload.apiKey}`,
     },
     body: JSON.stringify({
-      model: "deepseek-reasoner", // Stratejik görev planlaması için R1 modeline geçildi
+      model: "deepseek-v4-pro", // Stratejik görev planlaması için R1 modeline geçildi
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -121,13 +193,7 @@ export async function GET(req: Request) {
       dailyTasks: userData.dailyTasks,
     });
 
-    let apiKey = process.env.DEEPSEEK_API_KEY;
-    if (!apiKey) {
-      const settingsSnap = await db.doc("settings/deepseek_api_key").get();
-      if (settingsSnap.exists && settingsSnap.data()?.value) {
-        apiKey = settingsSnap.data()!.value as string;
-      }
-    }
+    const apiKey = process.env.DEEPSEEK_API_KEY;
 
     if (apiKey) {
       try {

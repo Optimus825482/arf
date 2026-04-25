@@ -6,7 +6,6 @@ import type { NextRequest } from 'next/server';
 // The actual auth verification happens in each page component via useAuth().
 
 const protectedRoutes = ['/ogrenci', '/veli'];
-const publicRoutes = ['/auth', '/'];
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;

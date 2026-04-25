@@ -5,6 +5,60 @@ import { verifyRequest, unauthorized, forbidden } from "@/lib/adminAuth";
 import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import { briefingRequestSchema, formatZodError } from "@/lib/schemas";
 import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
+import { sanitizePromptInput } from "@/lib/sanitize";
+
+const RAG_CONTEXT_MODULE = "../../../lib/rag/context";
+
+async function loadPedagogicalRagContext(query: string, maxLen = 800) {
+  try {
+    const ragModule = await import(RAG_CONTEXT_MODULE);
+    const builder =
+      ragModule.buildPedagogicalRagContext ||
+      ragModule.buildRagContext ||
+      ragModule.getRagContext;
+
+    if (typeof builder !== "function") return "";
+
+    const result = await builder({
+      query: sanitizePromptInput(query, 240),
+      limit: 3,
+      maxChars: maxLen,
+    });
+    const formatter = ragModule.formatRagContextForPrompt;
+    const formatted = typeof formatter === "function"
+      ? formatter(result, { maxChars: maxLen })
+      : result;
+
+    if (typeof formatted === "string") {
+      return sanitizePromptInput(formatted, maxLen);
+    }
+
+    const record = formatted && typeof formatted === "object"
+      ? formatted as Record<string, unknown>
+      : {};
+    const direct =
+      typeof record.promptContext === "string" ? record.promptContext :
+      typeof record.context === "string" ? record.context :
+      typeof record.text === "string" ? record.text :
+      "";
+    if (direct) return sanitizePromptInput(direct, maxLen);
+
+    const sources = Array.isArray(record.sources) ? record.sources.slice(0, 3) : [];
+    return sanitizePromptInput(
+      sources.map((source) => {
+        const item = source && typeof source === "object" ? source as Record<string, unknown> : {};
+        return [
+          typeof item.title === "string" ? item.title : "",
+          typeof item.content === "string" ? item.content : "",
+          typeof item.summary === "string" ? item.summary : "",
+        ].filter(Boolean).join(": ");
+      }).filter(Boolean).join(" | "),
+      maxLen,
+    );
+  } catch (error) {
+    return "";
+  }
+}
 
 export async function POST(req: Request) {
   try {
@@ -24,10 +78,15 @@ export async function POST(req: Request) {
     if (!parsed.success) {
       return NextResponse.json({ error: "Öğrenci verisi eksik/hatalı: " + formatZodError(parsed.error) }, { status: 400 });
     }
-    const { studentId, studentName, performance, badges, level, xp, actionPlan, learningPath } = parsed.data;
+    const { studentId, performance, level, xp } = parsed.data;
+    const studentName = sanitizePromptInput(parsed.data.studentName, 128) || "Pilot";
+    const actionPlan = sanitizePromptInput(parsed.data.actionPlan, 2000);
+    const learningPath = sanitizePromptInput(parsed.data.learningPath, 2000);
+    const badges = (parsed.data.badges || []).map((b: string) => sanitizePromptInput(b, 64)).filter(Boolean);
 
     // Security check: Ensure parent is linked to this student
-    if (authed.uid !== "unverified") {
+    const isDevBypass = authed.uid === "unverified" && process.env.NODE_ENV !== "production";
+    if (!isDevBypass) {
       const parentSnap = await db.doc(`parents/${authed.uid}`).get();
       const parentData = parentSnap.data();
       if (!parentData?.linkedPilots?.includes(studentId)) {
@@ -35,14 +94,7 @@ export async function POST(req: Request) {
       }
     }
 
-    let apiKey = process.env.DEEPSEEK_API_KEY;
-
-    if (!apiKey) {
-      const settingsSnap = await db.doc("settings/deepseek_api_key").get();
-      if (settingsSnap.exists && settingsSnap.data()?.value) {
-        apiKey = settingsSnap.data()!.value;
-      }
-    }
+    const apiKey = process.env.DEEPSEEK_API_KEY;
 
     if (!apiKey) {
       return NextResponse.json(
@@ -76,15 +128,23 @@ export async function POST(req: Request) {
           )
         : 0;
 
+    const frameworks = PEDAGOGICAL_BASE.scientificFrameworks;
+    const strategies = PEDAGOGICAL_BASE.instructionalStrategies;
+    const ragContext = await loadPedagogicalRagContext(
+      `parent briefing math support accuracy ${accuracy} add_sub ${addSub} mul_div ${mulDiv} action ${actionPlan} path ${learningPath}`,
+      800,
+    );
+
     const prompt = `
-Aşağıda ${studentName} adlı öğrencinin uzay akademisi simülasyonundaki istatistikleri ve sistem tarafından atanan planlar verilmiştir.
-Sen ${PEDAGOGICAL_BASE.persona.role} kimliğinde, profesyonel ve şefkatli bir pedagogsun.
-Rapor ebeveyne yönelik olacak; güçlü yönleri, gelişim alanlarını ve evde uygulanabilir küçük destek önerilerini içersin.
-Dil profesyonel, yapıcı, teşvik edici ve uzay/bilimkurgu konseptine uygun olsun.
-Pedagojik ilkeler:
-- ${PEDAGOGICAL_BASE.scientificFoundations.cognitiveLoadTheory.application}
-- ${PEDAGOGICAL_BASE.scientificFoundations.growthMindset.application}
-- ${PEDAGOGICAL_BASE.methods.singaporeMath}
+	Aşağıda ${studentName} adlı öğrencinin uzay akademisi simülasyonundaki istatistikleri ve sistem tarafından atanan planlar verilmiştir.
+		Sen ARF Görev Gözlem Sistemi kimliğinde, oyun evrenine uygun ve veri temelli bir komuta raporu hazırlıyorsun.
+	Rapor ebeveyne yönelik olacak; güçlü yönleri, gelişim alanlarını ve evde uygulanabilir küçük destek önerilerini içersin.
+	Dil sakin, yapıcı, teşvik edici ve uzay/bilimkurgu konseptine uygun olsun. Klinik, mesleki veya resmi değerlendirme otoritesi gibi konuşma; sistem içi "Gözcü Notu" dili kullan.
+	Komuta ilkeleri:
+	- ${frameworks.cognitiveLoadManagement.ai_action}
+	- ${frameworks.neuroplasticity.ai_action}
+	- ${frameworks.spatialTemporalReasoning.application}
+	- ${strategies.scaffolding.join(" ")}
 
 Veriler:
 - Seviye: ${level || 1}
@@ -94,32 +154,34 @@ Veriler:
 - İtki Sistemleri (Çarpma/Bölme) Başarısı: %${mulDiv}
 - Kazanılan Nişanlar: ${badges && badges.length > 0 ? badges.join(", ") : "Henüz kazanılmadı"}
 
-Yapay Zeka Değerlendirmeleri:
+Komuta Sistemi Notları:
 - Stratejik Plan: ${actionPlan || "Henüz atanmadı"}
 - Öğrenme Yolu: ${learningPath || "Henüz belirlenmedi"}
 
+VELIYE YONELIK KAYNAK DESTEKLI ONERI:
+- Pedagojik dayanak: ${PEDAGOGICAL_BASE.rag_index.learning_sources}
+${ragContext ? `- Kısa kaynak sinyali: ${ragContext}` : "- Kısa kaynak sinyali: Yok"}
+- Bu bölümü kesin yargı gibi değil, evde denenebilir küçük destek önerisi olarak yaz.
+
 Lütfen raporu kısa paragraflar halinde yaz ve markdown kullanarak okunabilirliği artır. Raporun sonunda ebeveyne "Gözcü Notu" başlığıyla kısa bir özet ekle.
 `.trim();
-const response = await fetch(
-  "https://api.deepseek.com/v1/chat/completions",
-  {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${apiKey}`,
-    },
-    body: JSON.stringify({
-      model: "deepseek-reasoner", // Muhakeme odaklı model (Think özelliği aktif)
-      messages: [{ role: "user", content: prompt }],
-    }),
+const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${apiKey}`,
   },
-);
+  body: JSON.stringify({
+    model: "deepseek-v4-pro", // Muhakeme odaklı model (Think özelliği aktif)
+    messages: [{ role: "user", content: prompt }],
+  }),
+});
 
 if (!response.ok) {
   const errText = await response.text();
   logger.error("DeepSeek API Hatası:", errText);
   return NextResponse.json(
-    { error: "Yapay zeka ile iletişim kurulamadı." },
+    { error: "Komuta raporu hazırlanamadı." },
     { status: 500 },
   );
 }
@@ -136,7 +198,7 @@ const briefing = data.choices[0]?.message?.content;
 
     if (!briefing) {
       return NextResponse.json(
-        { error: "Yapay zeka analizi boş döndü." },
+        { error: "Komuta raporu boş döndü." },
         { status: 500 },
       );
     }

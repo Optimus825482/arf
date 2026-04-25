@@ -1,7 +1,7 @@
 /* eslint-disable */
 "use client";
 
-import { Suspense, useState, useEffect, useCallback } from 'react';
+import { Suspense, useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { motion } from 'motion/react';
 import { Rocket, Trophy, Clock, Zap, Lightbulb, ArrowRight } from 'lucide-react';
@@ -41,6 +41,27 @@ function PratikOyunuContent() {
   const [finalXpData, setFinalXpData] = useState<{currentXp: number, level: number, earnedXp: number} | null>(null);
   // Batch: collect answers locally, write to Firestore once at end
   const [pendingResults, setPendingResults] = useState<Array<{category: string; correct: boolean}>>([]); 
+  const endGameStartedRef = useRef(false);
+  const missionSavedRef = useRef(false);
+  const scoreRef = useRef(score);
+  const pendingResultsRef = useRef(pendingResults);
+  const userRef = useRef(user);
+
+  useEffect(() => {
+    scoreRef.current = score;
+  }, [score]);
+
+  useEffect(() => {
+    pendingResultsRef.current = pendingResults;
+  }, [pendingResults]);
+
+  useEffect(() => {
+    missionSavedRef.current = missionSaved;
+  }, [missionSaved]);
+
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
 
   useEffect(() => {
     if (!user || !missionId) return;
@@ -174,34 +195,42 @@ function PratikOyunuContent() {
     setQuestion({ q: displayQuestion, options: shuffledOptions, a, category });
   }, [metrics]);
 
-  const endGame = async () => {
+  const endGame = useCallback(async () => {
+    if (endGameStartedRef.current) return;
+    endGameStartedRef.current = true;
+
+    const currentUser = userRef.current;
+    const finalScore = scoreRef.current;
+    const resultsToSave = pendingResultsRef.current;
+
     playSound('levelUp');
     setGameState('end');
     setSaving(true);
     
-    if (user) {
+    if (currentUser) {
       // Batch write: first record all per-category performance
-      for (const result of pendingResults) {
-        await addXpAndBadge(user.uid, 0, null, result.category, result.correct);
+      for (const result of resultsToSave) {
+        await addXpAndBadge(currentUser.uid, 0, null, result.category, result.correct);
       }
 
       // Then award XP + badge for overall score
-      const xpEarned = score * 5;
+      const xpEarned = finalScore * 5;
       let badge = null;
-      if (score >= 25) badge = { id: 'isik_hizinin_otesi', name: 'Işık Hızının Ötesi' };
-      else if (score >= 20) badge = { id: 'isik_hizi_pilotu', name: 'Işık Hızı Pilotu' };
-      else if (score >= 12) badge = { id: 'radar_sistem_uzmani', name: 'Radar Sistem Uzmanı' };
+      if (finalScore >= 25) badge = { id: 'isik_hizinin_otesi', name: 'Işık Hızının Ötesi' };
+      else if (finalScore >= 20) badge = { id: 'isik_hizi_pilotu', name: 'Işık Hızı Pilotu' };
+      else if (finalScore >= 12) badge = { id: 'radar_sistem_operatoru', name: 'Radar Sistem Operatörü' };
 
-      const xpResult = await addXpAndBadge(user.uid, xpEarned, badge, 'classic', true);
+      const xpResult = await addXpAndBadge(currentUser.uid, xpEarned, badge, 'classic', true);
 
       let totalEarned = xpEarned;
 
-      if (missionId && !missionSaved) {
+      if (missionId && !missionSavedRef.current) {
+        missionSavedRef.current = true;
         const missionData = await completeMission(missionId, {
           mode: 'pratik',
-          score,
+          score: finalScore,
           xpEarned,
-          success: score > 0,
+          success: finalScore > 0,
         });
         const bonus = missionData.missionBonusXp || 0;
         totalEarned += bonus;
@@ -220,13 +249,18 @@ function PratikOyunuContent() {
     }
     
     setPendingResults([]);
+    pendingResultsRef.current = [];
     setSaving(false);
-    confetti({ particleCount: score * 10, spread: 100, origin: { y: 0.6 } });
+    confetti({ particleCount: finalScore * 10, spread: 100, origin: { y: 0.6 } });
     toast.success("Eğitim Tamamlandı!");
-  };
+  }, [missionId]);
 
   const startGame = () => {
     playSound('click');
+    endGameStartedRef.current = false;
+    missionSavedRef.current = false;
+    scoreRef.current = 0;
+    pendingResultsRef.current = [];
     setScore(0);
     setCombo(0);
     setTimeLeft(60);
@@ -247,14 +281,18 @@ function PratikOyunuContent() {
       endGame();
     }
     return () => clearInterval(t);
-  }, [timeLeft, gameState]);
+  }, [timeLeft, gameState, endGame]);
 
   const handleAnswer = (ans: number) => {
     const correct = ans === question.a;
     setLastCorrect(correct);
     
     // Batch: collect result locally instead of writing to Firestore
-    setPendingResults(prev => [...prev, { category: question.category, correct }]);
+    setPendingResults(prev => {
+      const next = [...prev, { category: question.category, correct }];
+      pendingResultsRef.current = next;
+      return next;
+    });
 
     if (correct) {
       playSound('correct');
@@ -337,12 +375,12 @@ function PratikOyunuContent() {
              ]}
            />
         </div>
-        <div className="glass-panel text-center p-8 rounded-3xl w-full border-t-2 border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.1)] relative">
+        <div className="glass-panel text-center p-8 rounded-sm w-full border-t-2 border-cyan-500 shadow-[0_0_30px_rgba(6,182,212,0.1)] relative">
           <Rocket className="w-16 h-16 text-cyan-400 mx-auto mb-6 mt-4" />
           <h1 className="text-3xl font-mono font-bold uppercase tracking-[0.1em] neon-text-cyan mb-8">Saha Eğitimi</h1>
-          <div className="bg-slate-900/50 rounded-xl p-4 md:p-6 mb-8 text-left border border-slate-700/50">
+          <div className="bg-slate-900/50 rounded-sm p-4 md:p-6 mb-8 text-left border border-slate-700/50">
              <h3 className="hud-badge mb-3 flex items-center text-cyan-400"><Zap className="w-4 h-4 mr-2" /> BRİFİNG: {briefing.title}</h3>
-             <p className="font-mono text-slate-300 text-sm leading-relaxed p-2 bg-slate-800/40 rounded-lg border-l-2 border-l-cyan-500">"{briefing.text}"</p>
+             <p className="font-mono text-slate-300 text-sm leading-relaxed p-2 bg-slate-800/40 rounded-sm border-l-2 border-l-cyan-500">"{briefing.text}"</p>
           </div>
           <p className="text-slate-500 mb-6 font-mono text-xs uppercase tracking-widest text-center">Hedef 60s. Yanlış = -5s.</p>
           <button onClick={startGame} className="w-full neon-btn-blue py-5 text-xl tracking-widest font-bold">MOTÖRÜ ATEŞLE</button>
@@ -361,41 +399,41 @@ function PratikOyunuContent() {
 
     return (
       <div className="flex flex-col min-h-screen items-center justify-center p-4 relative z-10 w-full max-w-sm mx-auto">
-        <div className="glass-panel text-center p-8 rounded-3xl w-full border-t-2 border-yellow-500 shadow-[0_0_30px_rgba(234,179,8,0.1)]">
+        <div className="hud-module text-center p-8 rounded-sm w-full shadow-[0_0_30px_rgba(255,179,173,0.12)]">
           {missionReward && (
             <motion.div
               initial={{ opacity: 0, y: 14, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              className="mb-6 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 p-4"
+              className="mb-6 rounded-sm border border-cyan-500/30 bg-cyan-500/10 p-4"
             >
-              <p className="text-sm font-mono font-bold uppercase tracking-widest text-emerald-300">GÖREV RAPORU ALINDI</p>
+              <p className="text-sm font-mono font-bold uppercase tracking-widest text-cyan-300">GÖREV RAPORU ALINDI</p>
               <p className="mt-2 text-xs font-mono text-slate-200">
                 {missionReward.bonusXp > 0 ? `Paket bonusu: +${missionReward.bonusXp} XP` : 'Operasyon kaydı işlendi.'}
               </p>
-              {missionReward.allCompleted && <p className="mt-2 text-xs font-mono text-yellow-300">Tüm günlük rota tamamlandı!</p>}
+              {missionReward.allCompleted && <p className="mt-2 text-xs font-mono text-secondary">Tüm günlük rota tamamlandı!</p>}
             </motion.div>
           )}
           
-          <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4 drop-shadow-[0_0_15px_rgba(234,179,8,0.5)]" />
+          <Trophy className="w-16 h-16 text-secondary mx-auto mb-4 drop-shadow-[0_0_15px_rgba(255,179,173,0.45)]" />
           <h1 className="text-xl font-mono font-bold uppercase mb-2 text-slate-300 tracking-widest">Eğitim Sonu</h1>
           <p className="text-6xl font-mono font-bold neon-text-cyan mb-4">{score}</p>
           
-          <div className="bg-slate-950/50 p-5 rounded-2xl mb-6 border border-white/5 space-y-4">
+          <div className="bg-slate-950/50 p-5 rounded-sm mb-6 border border-white/5 space-y-4">
              <div>
                <div className="flex justify-between text-[10px] font-mono mb-2 uppercase tracking-tighter">
                  <span className="text-slate-400">Rütbe İlerlemesi (Sv. {lvl})</span>
                  <span className="text-cyan-400">%{Math.round(progress)}</span>
                </div>
-               <div className="w-full bg-slate-800 h-2 rounded-full overflow-hidden border border-white/5">
+               <div className="w-full bg-slate-800 h-2 rounded-sm overflow-hidden border border-white/5">
                  <motion.div 
                    initial={{ width: 0 }}
                    animate={{ width: `${progress}%` }}
                    transition={{ duration: 1.5, ease: "easeOut" }}
-                   className="h-full bg-gradient-to-r from-cyan-600 to-blue-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
+                   className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 shadow-[0_0_10px_rgba(34,211,238,0.5)]"
                  />
                </div>
              </div>
-             <p className="text-green-400 font-mono font-bold tracking-widest text-xs">+{finalXpData?.earnedXp || score * 5} XP KAZANILDI</p>
+             <p className="text-cyan-400 font-mono font-bold tracking-widest text-xs">+{finalXpData?.earnedXp || score * 5} XP KAZANILDI</p>
           </div>
 
           <div className="grid grid-cols-1 gap-3">
@@ -405,13 +443,13 @@ function PratikOyunuContent() {
                   playSound('click');
                   router.push(`${nextMission.route}?mission=${nextMission.id}`);
                 }}
-                className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold py-4 rounded-2xl transition flex items-center justify-center gap-2 uppercase tracking-widest text-sm"
+                className="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-mono font-bold py-4 rounded-sm transition flex items-center justify-center gap-2 uppercase tracking-widest text-sm"
               >
                 Sıradaki Göreve Geç <ArrowRight className="w-4 h-4" />
               </button>
             )}
-            <button onClick={startGame} disabled={saving} className="w-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-950/30 py-4 text-sm tracking-widest font-bold rounded-2xl transition">TEKRAR UÇ</button>
-            <Link href="/ogrenci" prefetch={false} className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-2xl py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
+            <button onClick={startGame} disabled={saving} className="w-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-950/30 py-4 text-sm tracking-widest font-bold rounded-sm transition">TEKRAR UÇ</button>
+            <Link href="/ogrenci" prefetch={false} className="w-full block bg-slate-800/40 hover:bg-slate-700/50 transition border border-white/5 rounded-sm py-4 font-mono font-bold text-slate-400 uppercase text-xs tracking-widest">ANA ÜSSE DÖN</Link>
           </div>
         </div>
       </div>
@@ -420,26 +458,27 @@ function PratikOyunuContent() {
 
   return (
     <div className="flex flex-col min-h-screen p-4 max-w-3xl mx-auto justify-center relative z-10">
-      <header className="flex items-center justify-between bg-blue-900/10 backdrop-blur-md rounded-2xl p-4 border border-blue-500/20 mb-8">
+      <header className="flex items-center justify-between bg-cyan-950/20 backdrop-blur-md rounded-sm p-4 border border-cyan-400/20 mb-8">
         <div className="flex items-center gap-4">
            <div className="flex flex-col items-center">
              <span className="hud-badge text-[10px]">SKOR</span>
              <div className="text-2xl font-mono font-bold text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]">{score}</div>
            </div>
-           <div className="flex flex-col items-center border-l border-blue-500/30 pl-4">
-             <span className="hud-badge text-[10px] text-yellow-400 border-yellow-500/30">COMBO</span>
-             <div className="text-xl font-mono font-bold text-yellow-400 drop-shadow-[0_0_8px_rgba(250,204,21,0.5)]">x{combo}</div>
+           <div className="flex flex-col items-center border-l border-cyan-500/30 pl-4">
+             <span className="hud-badge text-[10px] text-secondary border-secondary/30">COMBO</span>
+             <div className="text-xl font-mono font-bold text-secondary drop-shadow-[0_0_8px_rgba(255,179,173,0.45)]">x{combo}</div>
            </div>
         </div>
         <div className="flex flex-col items-center">
              <span className="hud-badge text-[10px]">SÜRE</span>
-             <div className={`text-2xl font-mono font-bold ${timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-blue-400'}`}>00:{timeLeft.toString().padStart(2, '0')}</div>
+             <div className={`text-2xl font-mono font-bold ${timeLeft <= 10 ? 'text-red-500 animate-pulse' : 'text-cyan-400'}`}>00:{timeLeft.toString().padStart(2, '0')}</div>
         </div>
         <div className="flex items-center gap-2">
            <button 
              onClick={showHintToast}
-             className="p-3 bg-yellow-900/20 text-yellow-400 rounded-xl border border-yellow-500/30 hover:bg-yellow-900/40 transition" 
+             className="p-3 bg-secondary/10 text-secondary rounded-sm border border-secondary/30 hover:bg-secondary/20 transition" 
              title="İpucu Al"
+             aria-label="İpucu al"
            >
              <Lightbulb className="w-5 h-5" />
            </button>
@@ -457,7 +496,7 @@ function PratikOyunuContent() {
           scale: lastCorrect === true ? [1, 1.02, 1] : 1,
           borderColor: lastCorrect === true ? "#22c55e" : (lastCorrect === false ? "#ef4444" : "#06b6d4")
         }}
-        className="glass-panel py-10 md:py-16 px-6 rounded-3xl mb-8 flex flex-col items-center justify-center text-center border-t-2 transition-colors duration-300 relative overflow-hidden min-h-[300px]"
+        className="glass-panel py-10 md:py-16 px-6 rounded-sm mb-8 flex flex-col items-center justify-center text-center border-t-2 transition-colors duration-300 relative overflow-hidden min-h-[300px]"
       >
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.05),transparent)]"></div>
         {showFastBonus && (
@@ -465,7 +504,7 @@ function PratikOyunuContent() {
              initial={{ opacity: 0, y: 20, scale: 0.8 }}
              animate={{ opacity: [0, 1, 1, 0], y: -30, scale: 1.2 }}
              transition={{ duration: 0.8 }}
-             className="absolute top-4 text-yellow-400 font-bold tracking-widest text-lg z-20 drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]"
+             className="absolute top-4 text-secondary font-bold tracking-widest text-lg z-20 drop-shadow-[0_0_10px_rgba(255,179,173,0.65)]"
            >
              ⚡ HIZLI CEVAP!
            </motion.div>
@@ -475,9 +514,9 @@ function PratikOyunuContent() {
            {question.category !== 'mixed' ? (
               <div className="space-y-4">
                  <div className="flex items-center justify-center gap-2 mb-2">
-                    <span className="h-1 w-8 bg-cyan-500/30 rounded-full"></span>
+                    <span className="h-1 w-8 bg-cyan-500/30 rounded-sm"></span>
                     <span className="text-[10px] font-mono text-cyan-400 uppercase tracking-[0.3em]">Harekât Verisi</span>
-                    <span className="h-1 w-8 bg-cyan-500/30 rounded-full"></span>
+                    <span className="h-1 w-8 bg-cyan-500/30 rounded-sm"></span>
                  </div>
                  <h2 className="text-xl md:text-2xl font-mono text-white leading-relaxed tracking-wide drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
                    {question.q}
@@ -498,7 +537,7 @@ function PratikOyunuContent() {
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.95 }}
             onClick={() => handleAnswer(opt)} 
-            className="neon-btn-outline py-6 px-4 text-3xl md:text-5xl font-mono tracking-widest rounded-2xl"
+            className="neon-btn-outline py-6 px-4 text-3xl md:text-5xl font-mono tracking-widest rounded-sm"
           >
             {opt}
           </motion.button>

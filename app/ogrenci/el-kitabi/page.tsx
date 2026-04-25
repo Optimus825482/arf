@@ -16,25 +16,25 @@ export default function PilotElKitabi() {
     {
       title: "Gelişim Sistemi (XP & Rütbe)",
       icon: <Zap className="w-6 h-6" />,
-      color: "text-yellow-400",
+      color: "text-secondary",
       content: "Her başarılı cevap ve tamamlanan görev size XP kazandırır. 100 XP biriktirdiğinizde rütbeniz yükselir. Rütbe yükseldikçe daha karmaşık sistemlere erişim sağlarsınız."
     },
     {
       title: "Saha Eğitimi",
       icon: <Target className="w-6 h-6" />,
-      color: "text-blue-400",
+      color: "text-cyan-400",
       content: "60 saniyelik simülasyonlarda reflekslerinizi test edin. Yanlış cevaplar kalkan enerjinizi (zamanınızı) hızlıca tüketir. Dikkatli olun!"
     },
     {
       title: "Yapay Zeka Görevleri",
       icon: <BrainCircuit className="w-6 h-6" />,
-      color: "text-purple-400",
+      color: "text-cyan-400",
       content: "Derin uzaydan gelen, hikayeli ve karmaşık problemleri çözümleyin. Bu görevler yüksek XP ödülleri ve nadir madalyalar sunar."
     },
     {
       title: "Madalyalar & Başarılar",
       icon: <Trophy className="w-6 h-6" />,
-      color: "text-emerald-400",
+      color: "text-cyan-400",
       content: "Zorlu hedeflere ulaşarak (Örn: Hiç hata yapmadan 20 soru bilmek) kalıcı madalyalar kazanın. Madalyalarınız profilinizde rütbenizin yanında parlar."
     },
     {
@@ -68,7 +68,7 @@ export default function PilotElKitabi() {
             transition={{ delay: idx * 0.1 }}
             className="glass-panel p-6 md:p-8 border-t-2 border-slate-700/50 hover:border-cyan-500/50 transition-all group"
           >
-            <div className={`p-3 rounded-xl bg-slate-800/80 w-fit mb-6 group-hover:scale-110 transition ${section.color}`}>
+            <div className={`p-3 rounded-sm bg-slate-800/80 w-fit mb-6 group-hover:scale-110 transition ${section.color}`}>
               {section.icon}
             </div>
             <h3 className={`text-lg font-mono font-bold uppercase tracking-wide mb-4 ${section.color}`}>
@@ -82,7 +82,7 @@ export default function PilotElKitabi() {
       </div>
 
       <footer className="mt-12 text-center">
-        <div className="inline-block px-10 py-6 border border-dashed border-slate-700 rounded-3xl">
+        <div className="inline-block px-10 py-6 bg-surface-container-low/50 rounded-sm">
           <p className="text-slate-500 font-mono text-xs uppercase tracking-widest leading-loose">
             &quot;BİLGİ, EN GÜÇLÜ KALKANDIR.&quot;<br/>
             - TUAV KOMUTANLIĞI

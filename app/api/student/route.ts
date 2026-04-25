@@ -1,33 +1,96 @@
 import { NextResponse } from "next/server";
 import { getAdminDb } from "@/lib/adminAuth";
+import { sanitizePromptInput, sanitizePromptValue } from "@/lib/sanitize";
+import { placementPayloadSchema, formatZodError } from "@/lib/schemas";
 import { logger } from "@/lib/logger";
 import { FieldValue } from "firebase-admin/firestore";
 import { verifyRequest, unauthorized, forbidden } from "@/lib/adminAuth";
 import { checkRateLimit, clientKey, rateLimited } from "@/lib/rateLimit";
 import { PEDAGOGICAL_BASE } from "@/lib/knowledge/pedagogy";
-import { HyperCognitiveEngine } from "@/lib/cognitiveMemory";
+import { HyperCognitiveEngine, classifyOutcome } from "@/lib/cognitiveMemory";
 
-function buildPedagogicalPromptSection() {
+const RAG_CONTEXT_MODULE = "../../../lib/rag/context";
+
+function buildLearningRoutePromptSection() {
+  const frameworks = PEDAGOGICAL_BASE.scientificFrameworks;
+  const metacognition = PEDAGOGICAL_BASE.affectiveMetacognition;
+  const strategies = PEDAGOGICAL_BASE.instructionalStrategies;
+
   return `
-PEDAGOGIK KIMLIK:
-- Rol: ${PEDAGOGICAL_BASE.persona.role}
-- Ton: ${PEDAGOGICAL_BASE.persona.tone}
-- Ses: ${PEDAGOGICAL_BASE.persona.voice}
+ROTA KIMLIGI:
+- Rol: ARF Quantum Rota Sistemi, oyun evreni icinde veri temelli gelisim rotasi ureten komuta modulu
+- Ton: Destekleyici, oyunlastirilmis ve yargilamayan
+- Ses: Pilotun potansiyelini ortaya cikaran sakin komuta merkezi
 
 BILIMSEL ILKELER:
-- CLT: ${PEDAGOGICAL_BASE.scientificFoundations.cognitiveLoadTheory.insight} Uygulama: ${PEDAGOGICAL_BASE.scientificFoundations.cognitiveLoadTheory.application}
-- Gorsel Matematik: ${PEDAGOGICAL_BASE.scientificFoundations.visualMathematics.insight} Uygulama: ${PEDAGOGICAL_BASE.scientificFoundations.visualMathematics.application}
-- Growth Mindset: ${PEDAGOGICAL_BASE.scientificFoundations.growthMindset.insight} Uygulama: ${PEDAGOGICAL_BASE.scientificFoundations.growthMindset.application}
+- Noroplastisite: ${frameworks.neuroplasticity.insight} Uygulama: ${frameworks.neuroplasticity.ai_action}
+- Gorsel/Uzamsal Matematik: ${frameworks.spatialTemporalReasoning.application}
+- Bilissel Yuk: ${frameworks.cognitiveLoadManagement.threshold} durumunda ${frameworks.cognitiveLoadManagement.ai_action}
 
 MUDAHALE KURALLARI:
-- Yorulma: ${PEDAGOGICAL_BASE.interventions.fatigue.action}
-- Gecis Maliyeti: ${PEDAGOGICAL_BASE.interventions.switchingCost.action}
-- Kaygi: ${PEDAGOGICAL_BASE.interventions.anxiety.action}
+- Kaygi: ${metacognition.anxiety_management.intervention}
+- Frustrasyon: ${metacognition.frustration_loop.intervention}
+- Growth Mindset: ${strategies.growthMindsetQuotes.join(" ")}
 
 OGRETIM YONTEMLERI:
-- Singapur: ${PEDAGOGICAL_BASE.methods.singaporeMath}
-- Trachtenberg: ${PEDAGOGICAL_BASE.methods.trachtenberg}
+- Iskele Kurma: ${strategies.scaffolding.join(" ")}
+- Referanslar: ${PEDAGOGICAL_BASE.rag_index.math_mastery}
+
+DIL SINIRI:
+- Klinik, mesleki veya resmi degerlendirme otoritesi gibi konusma.
+- Ciktilari oyun ici "komuta rotasi", "gorev planı" ve "pilot destek sinyali" diliyle yaz.
 `.trim();
+}
+
+async function loadPedagogicalRagContext(query: string, maxLen = 800) {
+  try {
+    const ragModule = await import(RAG_CONTEXT_MODULE);
+    const builder =
+      ragModule.buildPedagogicalRagContext ||
+      ragModule.buildRagContext ||
+      ragModule.getRagContext;
+
+    if (typeof builder !== "function") return "";
+
+    const result = await builder({
+      query: sanitizePromptInput(query, 240),
+      limit: 3,
+      maxChars: maxLen,
+    });
+    const formatter = ragModule.formatRagContextForPrompt;
+    const formatted = typeof formatter === "function"
+      ? formatter(result, { maxChars: maxLen })
+      : result;
+
+    if (typeof formatted === "string") {
+      return sanitizePromptInput(formatted, maxLen);
+    }
+
+    const record = formatted && typeof formatted === "object"
+      ? formatted as Record<string, unknown>
+      : {};
+    const direct =
+      typeof record.promptContext === "string" ? record.promptContext :
+      typeof record.context === "string" ? record.context :
+      typeof record.text === "string" ? record.text :
+      "";
+    if (direct) return sanitizePromptInput(direct, maxLen);
+
+    const sources = Array.isArray(record.sources) ? record.sources.slice(0, 3) : [];
+    return sanitizePromptInput(
+      sources.map((source) => {
+        const item = source && typeof source === "object" ? source as Record<string, unknown> : {};
+        return [
+          typeof item.title === "string" ? item.title : "",
+          typeof item.content === "string" ? item.content : "",
+          typeof item.summary === "string" ? item.summary : "",
+        ].filter(Boolean).join(": ");
+      }).filter(Boolean).join(" | "),
+      maxLen,
+    );
+  } catch (error) {
+    return "";
+  }
 }
 
 export async function POST(req: Request) {
@@ -50,7 +113,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "UID is required" }, { status: 400 });
     }
 
-    const isSelf = authed.uid === uid || authed.uid === "unverified";
+    const isDevBypass = authed.uid === "unverified" && process.env.NODE_ENV !== "production";
+    const isSelf = authed.uid === uid || isDevBypass;
     
     if (!isSelf) {
       if (action === "reassess" && authed.email) {
@@ -77,7 +141,7 @@ export async function POST(req: Request) {
 
     if (action === "add_xp") {
       const { xpToAdd, type } = body;
-      if (typeof xpToAdd !== "number") {
+      if (typeof xpToAdd !== "number" || !Number.isFinite(xpToAdd) || xpToAdd <= 0 || xpToAdd > 500) {
         return NextResponse.json({ error: "Invalid XP" }, { status: 400 });
       }
 
@@ -102,7 +166,7 @@ export async function POST(req: Request) {
           leveledUp = true;
         }
 
-        const updateData: any = {
+        const updateData: Record<string, unknown> = {
           xp: newXp,
           level: newLevel,
           updatedAt: FieldValue.serverTimestamp(),
@@ -127,17 +191,18 @@ export async function POST(req: Request) {
     }
 
     if (action === "placement") {
-      const { results } = body;
-      if (!Array.isArray(results)) {
-        return NextResponse.json({ error: "Results array required" }, { status: 400 });
+      const parsedPlacement = placementPayloadSchema.safeParse(body);
+      if (!parsedPlacement.success) {
+        return NextResponse.json({ error: `Gecersiz placement verisi: ${formatZodError(parsedPlacement.error)}` }, { status: 400 });
       }
+      const placementResults = parsedPlacement.data.results;
 
       let addSubC = 0, addSubT = 0;
       let mulDivC = 0, mulDivT = 0;
       let mmC = 0, mmT = 0;
       let timeT = 0;
 
-      results.forEach((r: any) => {
+      placementResults.forEach((r) => {
         timeT += r.time;
         if (r.type === "+" || r.type === "-") {
           addSubT++;
@@ -154,44 +219,48 @@ export async function POST(req: Request) {
       const addSubScore = addSubT ? Math.round((addSubC / addSubT) * 100) : 0;
       const mulDivScore = mulDivT ? Math.round((mulDivC / mulDivT) * 100) : 0;
       const mentalMathAccuracy = mmT ? Math.round((mmC / mmT) * 100) : 0;
-      const mmAvgTime = mmT ? mmT / results.length : 0;
+      const mmAvgTime = mmT ? mmT / placementResults.length : 0;
       const mmSpeedBonus = Math.max(0, 100 - (mmAvgTime - 1500) / 50);
 
       const mentalMathScore = Math.round(
         mentalMathAccuracy * 0.6 + Math.min(100, mmSpeedBonus) * 0.4,
       );
       const accuracy = Math.round(
-        ((addSubC + mulDivC + mmC) / results.length) * 100,
+        ((addSubC + mulDivC + mmC) / placementResults.length) * 100,
       );
-      const avgTimeMs = timeT / results.length;
+      const avgTimeMs = timeT / placementResults.length;
 
       let speedScore = Math.round(100 - (avgTimeMs - 2000) / 100);
       if (speedScore > 100) speedScore = 100;
       if (speedScore < 0) speedScore = 0;
 
-      const firstHalf = results.slice(0, Math.ceil(results.length / 2));
-      const secondHalf = results.slice(Math.ceil(results.length / 2));
-      
-      type ResultItem = { correct: boolean; time: number };
-      const firstHalfAccuracy = (firstHalf.filter((r: ResultItem) => r.correct).length / firstHalf.length) * 100;
-      const secondHalfAccuracy = (secondHalf.filter((r: ResultItem) => r.correct).length / secondHalf.length) * 100;
-      const firstHalfSpeed = firstHalf.reduce((acc: number, r: ResultItem) => acc + r.time, 0) / firstHalf.length;
-      const secondHalfSpeed = secondHalf.reduce((acc: number, r: ResultItem) => acc + r.time, 0) / secondHalf.length;
+      if (placementResults.length < 2) {
+        return NextResponse.json({ error: "En az 2 sonuc gerekli" }, { status: 400 });
+      }
+      const firstHalf = placementResults.slice(0, Math.ceil(placementResults.length / 2));
+      const secondHalf = placementResults.slice(Math.ceil(placementResults.length / 2));
+
+      const safeLen = (n: number) => (n > 0 ? n : 1);
+      const firstHalfAccuracy = (firstHalf.filter((r) => r.correct).length / safeLen(firstHalf.length)) * 100;
+      const secondHalfAccuracy = (secondHalf.filter((r) => r.correct).length / safeLen(secondHalf.length)) * 100;
+      const firstHalfSpeed = firstHalf.reduce((acc: number, r) => acc + (Number.isFinite(r.time) ? r.time : 0), 0) / safeLen(firstHalf.length);
+      const secondHalfSpeed = secondHalf.reduce((acc: number, r) => acc + (Number.isFinite(r.time) ? r.time : 0), 0) / safeLen(secondHalf.length);
+      const safeSpeedRatio = firstHalfSpeed > 0 ? secondHalfSpeed / firstHalfSpeed : 1;
 
       const concentrationScore = Math.round(
         (secondHalfAccuracy >= firstHalfAccuracy ? 100 : (secondHalfAccuracy / firstHalfAccuracy) * 100) * 0.7 +
         (secondHalfSpeed <= firstHalfSpeed * 1.2 ? 30 : 0)
       );
 
-      const times = results.map((r: ResultItem) => r.time);
-      const avgTime = timeT / results.length;
+      const times = placementResults.map((r) => r.time);
+      const avgTime = timeT / placementResults.length;
       const variance = times.reduce((acc: number, t: number) => acc + Math.pow(t - avgTime, 2), 0) / times.length;
       const perceptionScore = Math.max(0, Math.min(100, Math.round(100 - (Math.sqrt(variance) / 100))));
 
-      const l1State = HyperCognitiveEngine.processWorkingMemory(uid, { accuracy, frustrationLevel: 0, fatigueRatio: secondHalfSpeed / firstHalfSpeed });
+      const l1State = HyperCognitiveEngine.processWorkingMemory(uid, { accuracy, frustrationLevel: 0, fatigueRatio: safeSpeedRatio });
       const mentalState = await HyperCognitiveEngine.getCognitiveContext(uid, {
         accuracy,
-        fatigueRatio: secondHalfSpeed / firstHalfSpeed,
+        fatigueRatio: safeSpeedRatio,
         frustrationLevel: 0,
         currentFocus: addSubScore < mulDivScore ? "Toplama ve Cikarma" : "Carpma ve Bolme",
       });
@@ -204,7 +273,7 @@ export async function POST(req: Request) {
         mentalMathScore,
         concentrationScore,
         perceptionScore,
-        fatigueRatio: secondHalfSpeed / firstHalfSpeed,
+        fatigueRatio: safeSpeedRatio,
         frustrationLevel: l1State.currentAnxietyLevel,
         reflectionLevel: 0
       };
@@ -215,17 +284,21 @@ export async function POST(req: Request) {
       let aiError = false;
 
       try {
-        let apiKey = process.env.DEEPSEEK_API_KEY;
-        if (!apiKey) {
-          const settingsSnap = await db.doc("settings/deepseek_api_key").get();
-          if (settingsSnap.exists) apiKey = settingsSnap.data()?.value;
-        }
+        const apiKey = process.env.DEEPSEEK_API_KEY;
 
         if (apiKey) {
+          const ragContext = await loadPedagogicalRagContext(
+            `placement math route accuracy ${accuracy} add_sub ${addSubScore} mul_div ${mulDivScore} mental_math ${mentalMathScore} fatigue ${metrics.fatigueRatio.toFixed(2)}`,
+            800,
+          );
           const prompt = `
 SEN: ARF Quantum Rehberlik Sistemi.
 GOREV: Bilissel analiz yap ve gelisim planla.
-${buildPedagogicalPromptSection()}
+${buildLearningRoutePromptSection()}
+
+PEDAGOJIK BAGLAM:
+- Temel: ${PEDAGOGICAL_BASE.rag_index.learning_sources}
+${ragContext ? `- KISA RAG KAYNAKLARI: ${ragContext}` : "- KISA RAG KAYNAKLARI: Yok"}
 
 TELEMETRI:
 - Isabet: %${accuracy}
@@ -238,7 +311,7 @@ TELEMETRI:
 - Yorulma: ${metrics.fatigueRatio.toFixed(2)}x
 
 HAFIZA:
-${mentalState}
+${sanitizePromptInput(String(mentalState), 2000)}
 
 CIKTI KURALI:
 - Asla sert ya da yargilayici olma.
@@ -252,14 +325,20 @@ CIKTI KURALI:
   "learningPath": "konu listesi"
 }`;
 
-          const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-            body: JSON.stringify({
-              model: "deepseek-reasoner",
-              messages: [{ role: "user", content: prompt }]
-            })
-          });
+          const response = await fetch(
+            "https://api.deepseek.com/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model: "deepseek-v4-pro",
+                messages: [{ role: "user", content: prompt }],
+              }),
+            },
+          );
 
           if (response.ok) {
             const data = await response.json();
@@ -272,10 +351,10 @@ CIKTI KURALI:
               level = parsed.recommendedLevel || 1;
               actionPlan = parsed.actionPlan || "";
               learningPath = parsed.learningPath || "";
-            } catch (e) { aiError = true; }
+            } catch { aiError = true; }
           } else { aiError = true; }
         }
-      } catch (e) { aiError = true; }
+      } catch { aiError = true; }
 
       if (!actionPlan) {
         if (accuracy >= 80) level = 3;
@@ -284,7 +363,7 @@ CIKTI KURALI:
         learningPath = "Toplama -> Çıkarma -> Çarpma";
       }
 
-      const episodicOutcome = accuracy >= 75 ? "improved" : accuracy < 45 ? "failure" : "neutral";
+      const episodicOutcome = classifyOutcome(accuracy);
       await HyperCognitiveEngine.consolidateToEpisodic(uid, l1State, episodicOutcome);
       await userRef.set({
         level,
@@ -318,27 +397,39 @@ CIKTI KURALI:
       let aiError = false;
 
       try {
-        let apiKey = process.env.DEEPSEEK_API_KEY;
-        if (!apiKey) {
-          const settingsSnap = await db.doc("settings/deepseek_api_key").get();
-          if (settingsSnap.exists) apiKey = settingsSnap.data()?.value;
-        }
+        const apiKey = process.env.DEEPSEEK_API_KEY;
         if (apiKey) {
+          const safeMetrics = sanitizePromptValue(m, {
+            stringMaxLen: 128,
+            maxDepth: 3,
+            maxEntries: 30,
+          });
+          const safeActionPlan = sanitizePromptInput(u.actionPlan, 1000) || "Yok";
+          const safeLearningPath = sanitizePromptInput(u.learningPath, 1000) || "Yok";
+          const safeMentalState = sanitizePromptInput(String(mentalState), 2000);
+          const ragContext = await loadPedagogicalRagContext(
+            `reassess math route metrics ${JSON.stringify(safeMetrics)} action ${safeActionPlan} path ${safeLearningPath}`,
+            800,
+          );
           const prompt = `
-SEN: ${PEDAGOGICAL_BASE.persona.name}
+SEN: ARF Quantum Rehberlik Sistemi
 GOREV: Mevcut ogrenci planini yeniden degerlendir.
-${buildPedagogicalPromptSection()}
+${buildLearningRoutePromptSection()}
+
+PEDAGOJIK BAGLAM:
+- Temel: ${PEDAGOGICAL_BASE.rag_index.learning_sources}
+${ragContext ? `- KISA RAG KAYNAKLARI: ${ragContext}` : "- KISA RAG KAYNAKLARI: Yok"}
 
 MEVCUT METRIKLER:
-${JSON.stringify(m, null, 2)}
+${JSON.stringify(safeMetrics, null, 2)}
 
 ONCEKI PLAN:
-- Action plan: ${u.actionPlan || "Yok"}
-- Learning path: ${u.learningPath || "Yok"}
+- Action plan: ${safeActionPlan}
+- Learning path: ${safeLearningPath}
 - Version: ${currentVersion}
 
 HAFIZA:
-${mentalState}
+${safeMentalState}
 
 CIKTI KURALI:
 - actionPlan en fazla 2 cumle olsun
@@ -349,24 +440,38 @@ CIKTI KURALI:
   "actionPlan": "guncel tavsiye",
   "learningPath": "sirali konu listesi"
 }`;
-          const response = await fetch("https://api.deepseek.com/v1/chat/completions", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-            body: JSON.stringify({ model: "deepseek-reasoner", messages: [{ role: "user", content: prompt }] })
-          });
+          const response = await fetch(
+            "https://api.deepseek.com/v1/chat/completions",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${apiKey}`,
+              },
+              body: JSON.stringify({
+                model: "deepseek-v4-pro",
+                messages: [{ role: "user", content: prompt }],
+              }),
+            },
+          );
 
           if (response.ok) {
             const data = await response.json();
             let content = data.choices[0].message.content.trim();
             if (content.includes("```json")) content = content.split("```json")[1].split("```")[0].trim();
-            const parsed = JSON.parse(content);
-            newActionPlan = parsed.actionPlan;
-            newLearningPath = parsed.learningPath;
+            try {
+              const parsed = JSON.parse(content);
+              newActionPlan = parsed.actionPlan;
+              newLearningPath = parsed.learningPath;
+            } catch (e) {
+              logger.error("Reassess JSON parse failed", e);
+              aiError = true;
+            }
           } else { aiError = true; }
         }
-      } catch (e) { aiError = true; }
+      } catch { aiError = true; }
 
-      const reassessOutcome = (m.accuracy || 0) >= 75 ? "improved" : (m.accuracy || 0) < 45 ? "failure" : "neutral";
+      const reassessOutcome = classifyOutcome(m.accuracy || 0);
       await HyperCognitiveEngine.consolidateToEpisodic(uid, l1State, reassessOutcome);
       await userRef.set({
         actionPlan: newActionPlan,

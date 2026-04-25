@@ -42,8 +42,18 @@ ARF, matematik eğitimini **Türk Uzay Kuvvetleri (TUK)** temasıyla birleştire
 ├── components/           # UI Bileşenleri (ArfLogo, Stars, Chart vb.)
 ├── lib/                  # Çekirdek Mantık (Commander AI, Firebase, Missions)
 ├── hooks/                # Özel React Hook'ları
+├── research_lab/         # Uygulamadan bağımsız Deep Research ve belge toplama alanı
 └── public/               # Statik Varlıklar
 ```
+
+## Research Lab
+
+Pedagojik RAG, belge toplama ve Gemini Deep Research gorevleri icin uygulamadan ayri bir calisma alani:
+
+- [research_lab/README.md](/mnt/d/arf/research_lab/README.md)
+- `npm run research:ui`
+- `npm run research:plan`
+- `npm run research:run`
 
 ## 🧭 Uygulama Akışı
 
