@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { useState, useEffect, useCallback } from "react";
 import { auth, db } from "@/lib/firebase";
@@ -21,7 +21,10 @@ import {
   Cpu, 
   Scan,
   Zap,
-  Activity
+  Activity,
+  Terminal,
+  Wifi,
+  Radio
 } from "lucide-react";
 import { toast } from "sonner";
 import { handleSystemError } from "@/lib/errors";
@@ -68,6 +71,7 @@ export default function AuthPage() {
 
   const handleGoogleSignIn = async () => {
     const provider = new GoogleAuthProvider();
+    setIsSubmitting(true);
     try {
       const result = await signInWithPopup(auth, provider);
       setTempUser(result.user);
@@ -76,6 +80,8 @@ export default function AuthPage() {
       if (error instanceof FirebaseError && error.code !== 'auth/popup-closed-by-user') {
         handleSystemError(error, { title: "Giriş Hatası" });
       }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -101,6 +107,8 @@ export default function AuthPage() {
         createdAt: serverTimestamp(),
         pairingCode,
         isCompleted: true,
+        level: 1,
+        xp: 0,
       };
 
       await setDoc(doc(db, "users", activeUser.uid), userData);
@@ -115,251 +123,314 @@ export default function AuthPage() {
 
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center relative overflow-hidden">
-        <div className="hud-grid absolute inset-0 pointer-events-none" />
+      <div className="min-h-screen bg-[#040608] flex flex-col items-center justify-center relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10 bg-[linear-gradient(rgba(34,211,238,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.2)_1px,transparent_1px)] bg-[size:40px_40px]"></div>
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+          animate={{ rotate: [0, 90, 180, 270, 360], scale: [1, 1.1, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           className="relative z-10"
         >
-          <Cpu className="w-16 h-16 text-primary animate-pulse" />
+          <Cpu className="w-16 h-16 text-cyan-400 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]" />
         </motion.div>
-        <p className="mt-4 font-headline text-primary tracking-[0.3em] uppercase animate-pulse">Sistem Yükleniyor...</p>
+        <p className="mt-6 font-headline text-cyan-400 tracking-[0.5em] uppercase text-xs animate-pulse font-black">SİSTEM_YÜKLENİYOR...</p>
       </div>
     );
   }
 
   return (
-    <div className="command-backdrop min-h-screen text-white flex items-center justify-center p-4 relative overflow-hidden font-body">
-      {/* Background Effects */}
-      <div className="hud-scanline" />
-      <div className="absolute top-0 left-0 w-full h-1 bg-primary/20 shadow-[0_0_15px_rgba(47,217,244,0.3)]" />
-      <div className="absolute inset-x-6 top-6 h-px bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-      <div className="absolute inset-x-6 bottom-6 h-px bg-gradient-to-r from-transparent via-secondary/35 to-transparent" />
+    <div className="min-h-screen bg-[#040608] text-white flex items-center justify-center p-4 relative overflow-hidden font-sans selection:bg-cyan-400 selection:text-[#040608]">
+      {/* Premium HUD Background Effects */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute inset-0 opacity-[0.05] bg-[linear-gradient(rgba(34,211,238,0.2)_1px,transparent_1px),linear-gradient(90deg,rgba(34,211,238,0.2)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
+        <div className="absolute inset-0 bg-[linear-gradient(transparent_0%,rgba(34,211,238,0.03)_50%,transparent_100%)] bg-[size:100%_8px] animate-[scanline_12s_linear_infinite]"></div>
+        <div className="absolute -top-[10%] -left-[5%] w-[40%] h-[40%] bg-cyan-900/10 blur-[150px] rounded-full"></div>
+        <div className="absolute -bottom-[10%] -right-[5%] w-[40%] h-[40%] bg-red-900/10 blur-[150px] rounded-full"></div>
+      </div>
       
-      {/* Ambient Glows */}
-      <div className="absolute top-1/4 -left-20 w-72 h-72 bg-primary/10 blur-[120px]" />
-      <div className="absolute bottom-1/4 -right-20 w-72 h-72 bg-secondary/10 blur-[120px]" />
-      <div className="absolute left-1/2 top-1/2 h-[34rem] w-[34rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/10" />
-      <div className="absolute left-1/2 top-1/2 h-[22rem] w-[22rem] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/10" />
-
       <main className="relative z-10 w-full max-w-5xl">
         <AnimatePresence mode="wait">
           {!isRegistering ? (
             <motion.div
               key="login"
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              initial={{ opacity: 0, y: 30, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, scale: 1.05 }}
-              className="command-shell grid gap-8 p-6 md:grid-cols-[0.95fr_1.25fr] md:p-8 relative group"
+              exit={{ opacity: 0, scale: 1.05, filter: "blur(10px)" }}
+              className="hud-glass border border-white/5 grid gap-0 overflow-hidden md:grid-cols-[0.8fr_1.2fr] rounded-sm relative group"
             >
-              {/* Decorative Corners */}
-              <div className="corner-top-left" />
-              <div className="corner-top-right" />
-              <div className="corner-bottom-left" />
-              <div className="corner-bottom-right" />
+              {/* Corner Accents */}
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-cyan-400/40 m-2"></div>
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-cyan-400/40 m-2"></div>
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-cyan-400/40 m-2"></div>
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-cyan-400/40 m-2"></div>
 
-              <div className="flex flex-col justify-between gap-8 bg-[#05070A]/55 p-6 rounded-sm">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <Scan className="w-5 h-5 text-primary" />
-                    <span className="text-[10px] font-headline tracking-[0.2em] text-primary/60 uppercase">System Status: Active</span>
+              {/* Left Panel: Branding & Mission */}
+              <div className="flex flex-col justify-between gap-12 bg-white/[0.02] p-8 md:p-12 border-r border-white/5">
+                <div className="space-y-6">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-cyan-400/10 rounded-sm border border-cyan-400/20">
+                      <Scan className="w-5 h-5 text-cyan-400 animate-pulse" />
+                    </div>
+                    <span className="text-[10px] font-label tracking-[0.3em] text-cyan-400 uppercase font-black">NODE: ARF_OS_v4.0</span>
                   </div>
-                  <h1 className="text-4xl font-headline font-bold tracking-tight">
-                    ARF <span className="text-primary">PILOT</span>
-                  </h1>
-                  <p className="mt-4 max-w-xs text-sm leading-6 text-on-surface-variant">
-                    Türk Uzay Kuvvetleri Matematik Akademisi komuta konsoluna güvenli erişim.
+                  
+                  <div className="space-y-2">
+                    <h1 className="text-5xl font-headline font-black tracking-tighter italic">
+                      ARF <span className="text-cyan-400 not-italic">OS</span>
+                    </h1>
+                    <div className="h-1 w-24 bg-gradient-to-r from-cyan-400 to-transparent"></div>
+                  </div>
+                  
+                  <p className="text-sm leading-relaxed text-on-surface-variant font-medium tracking-wide">
+                    Türk Uzay Kuvvetleri Akademisi için geliştirilmiş, ileri düzey matematiksel eğitim ve operasyonel takip arayüzü.
                   </p>
                 </div>
-                <div className="space-y-4">
-                  <div className="h-px bg-gradient-to-r from-primary/50 to-transparent" />
-                  <div className="grid grid-cols-2 gap-3 text-[10px] font-headline uppercase tracking-widest text-white/45">
-                    <span>Orbit Sync</span>
-                    <span className="text-right text-primary">Online</span>
-                    <span>Academy Link</span>
-                    <span className="text-right text-secondary">Armed</span>
-                  </div>
-                </div>
-              </div>
 
-              <div className="space-y-6">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-headline text-[10px] uppercase tracking-[0.28em] text-primary/70">TUR_HQ Access Node</p>
-                    <h2 className="mt-2 font-headline text-2xl font-bold uppercase tracking-wider">Komuta Girişi</h2>
-                  </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <TurkishFlag className="w-10 h-7 shadow-lg" />
-                    <div className="flex items-center gap-1 text-[10px] font-headline text-white/40">
-                      <Globe className="w-3 h-3" />
-                      SECURE
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4 text-[9px] font-label uppercase tracking-[0.2em] text-on-surface-variant font-black">
+                    <div className="space-y-1">
+                      <p className="text-cyan-400/50">ORBİTAL SENKRON</p>
+                      <p className="text-white">AKTİF</p>
                     </div>
-                  </div>
-                </div>
-
-                <div className="hud-module p-4">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-sm bg-primary/10 flex items-center justify-center">
-                      <Shield className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="font-headline font-semibold text-sm">Güvenli Erişim</h2>
-                      <p className="text-xs text-white/40">Komuta merkezine giriş yapın</p>
+                    <div className="space-y-1">
+                      <p className="text-cyan-400/50">KOMUTA BAĞI</p>
+                      <p className="text-white">GÜVENLİ</p>
                     </div>
                   </div>
                   
-                  <button
-                    onClick={handleGoogleSignIn}
-                    disabled={isSubmitting}
-                    className="w-full cyber-button-primary group"
-                  >
-                    <span className="relative z-10 flex items-center justify-center gap-2">
-                      <Zap className="w-4 h-4 fill-background" />
-                      GOOGLE İLE BAĞLAN
-                    </span>
-                    <motion.div 
-                      className="absolute inset-0 bg-white/20 translate-x-[-100%]"
-                      whileHover={{ translateX: "100%" }}
-                      transition={{ duration: 0.5 }}
-                    />
-                  </button>
-                </div>
-
-                <div className="flex items-center gap-4 text-white/20 px-2">
-                  <div className="h-px flex-1 bg-current" />
-                  <span className="text-[10px] font-headline tracking-widest uppercase">System Logs</span>
-                  <div className="h-px flex-1 bg-current" />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="hud-module p-3 flex items-center gap-3">
-                    <Activity className="w-4 h-4 text-primary/60" />
-                    <div>
-                      <p className="text-[8px] text-white/40 font-headline uppercase">Latency</p>
-                      <p className="text-xs font-mono">12ms</p>
-                    </div>
-                  </div>
-                  <div className="hud-module p-3 flex items-center gap-3">
-                    <Lock className="w-4 h-4 text-primary/60" />
-                    <div>
-                      <p className="text-[8px] text-white/40 font-headline uppercase">Encryption</p>
-                      <p className="text-xs font-mono">AES-256</p>
-                    </div>
+                  <div className="flex items-center gap-3 p-3 bg-cyan-400/5 border border-cyan-400/10 rounded-sm">
+                    <Radio className="w-4 h-4 text-cyan-400 animate-pulse" />
+                    <span className="text-[10px] font-label tracking-widest text-cyan-400 uppercase font-black">CANLI_VERİ_AKIŞI_AÇIK</span>
                   </div>
                 </div>
               </div>
 
-              <div className="md:col-span-2 mt-2 pt-5 border-t border-primary/10 flex items-center justify-between text-[10px] text-white/30 font-headline">
-                <span>© 2026 ARF AEROSPACE</span>
-                <span className="flex items-center gap-1">
-                  <span className="w-1 h-1 bg-primary animate-ping" />
-                  SECURE CONNECTION
-                </span>
+              {/* Right Panel: Auth Actions */}
+              <div className="p-8 md:p-12 flex flex-col justify-center space-y-10">
+                <div className="flex items-start justify-between">
+                  <div className="space-y-2">
+                    <p className="font-label text-[10px] uppercase tracking-[0.4em] text-cyan-400/60 font-black">ERİŞİM_PROTOKOLÜ</p>
+                    <h2 className="text-3xl font-headline font-black uppercase tracking-wider italic">Giriş Yap</h2>
+                  </div>
+                  <div className="flex flex-col items-end gap-3">
+                    <div className="p-1 border border-white/10 rounded-sm">
+                      <TurkishFlag className="w-10 h-7 rounded-[1px]" />
+                    </div>
+                    <div className="flex items-center gap-1.5 text-[9px] font-label font-black text-cyan-400 uppercase tracking-widest">
+                      <Globe className="w-3 h-3" />
+                      HQ_LINK
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-6">
+                  <div className="p-6 rounded-sm border border-white/5 bg-white/[0.02] hud-glass group/btn transition-all duration-500 hover:border-cyan-400/30">
+                    <div className="flex items-center gap-4 mb-6">
+                      <div className="w-12 h-12 rounded-sm bg-cyan-400/10 border border-cyan-400/20 flex items-center justify-center transition-transform duration-500 group-hover/btn:scale-110">
+                        <Shield className="w-6 h-6 text-cyan-400" />
+                      </div>
+                      <div>
+                        <h3 className="font-headline font-black text-sm uppercase tracking-widest">GÜVENLİ BAĞLANTI</h3>
+                        <p className="text-[10px] text-on-surface-variant font-label font-bold uppercase tracking-wider">Tek tıkla akademiye erişin</p>
+                      </div>
+                    </div>
+                    
+                    <button
+                      onClick={handleGoogleSignIn}
+                      disabled={isSubmitting}
+                      className="w-full relative py-4 bg-cyan-400 text-[#040608] font-label font-black tracking-[0.2em] uppercase text-xs rounded-sm overflow-hidden transition-all hover:shadow-[0_0_30px_rgba(34,211,238,0.4)] disabled:opacity-50 disabled:cursor-not-allowed group/google"
+                    >
+                      <span className="relative z-10 flex items-center justify-center gap-3 transition-transform group-active/google:scale-95">
+                        {isSubmitting ? (
+                          <Activity className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Zap className="w-4 h-4 fill-current" />
+                        )}
+                        {isSubmitting ? "PROTOKOL İŞLENİYOR..." : "GOOGLE İLE BAĞLAN"}
+                      </span>
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                    <span className="text-[8px] font-label tracking-[0.5em] uppercase text-white/20 font-black">SİSTEM_GÜNLÜĞÜ</span>
+                    <div className="h-px flex-1 bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="p-4 rounded-sm border border-white/5 bg-white/[0.01] flex items-center gap-3">
+                      <Wifi className="w-4 h-4 text-cyan-400/40" />
+                      <div>
+                        <p className="text-[8px] text-on-surface-variant font-label font-black uppercase">Gecikme</p>
+                        <p className="text-xs font-mono font-bold text-cyan-400">0.02ms</p>
+                      </div>
+                    </div>
+                    <div className="p-4 rounded-sm border border-white/5 bg-white/[0.01] flex items-center gap-3">
+                      <Lock className="w-4 h-4 text-cyan-400/40" />
+                      <div>
+                        <p className="text-[8px] text-on-surface-variant font-label font-black uppercase">Şifreleme</p>
+                        <p className="text-xs font-mono font-bold text-cyan-400">RSA-4096</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <footer className="pt-6 border-t border-white/5 flex items-center justify-between">
+                  <span className="text-[9px] font-label font-black text-white/20 uppercase tracking-widest">© 2026 ARF_AEROSPACE</span>
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-ping"></div>
+                    <span className="text-[9px] font-label font-black text-cyan-400 uppercase tracking-widest">HQ_CONNECTED</span>
+                  </div>
+                </footer>
               </div>
             </motion.div>
           ) : (
             <motion.div
               key="register"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="hud-module p-8 relative"
+              initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
+              animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
+              className="hud-glass border border-white/5 p-8 md:p-12 relative max-w-2xl mx-auto rounded-sm"
             >
-              <div className="corner-top-left" />
-              <div className="corner-top-right" />
-              <div className="corner-bottom-left" />
-              <div className="corner-bottom-right" />
+              <div className="absolute top-0 left-0 w-8 h-8 border-t-2 border-l-2 border-red-400/40 m-2"></div>
+              <div className="absolute top-0 right-0 w-8 h-8 border-t-2 border-r-2 border-red-400/40 m-2"></div>
+              <div className="absolute bottom-0 left-0 w-8 h-8 border-b-2 border-l-2 border-red-400/40 m-2"></div>
+              <div className="absolute bottom-0 right-0 w-8 h-8 border-b-2 border-r-2 border-red-400/40 m-2"></div>
 
-              <div className="flex items-center gap-4 mb-8">
+              <div className="flex items-center gap-6 mb-12">
                 <button 
                   onClick={() => setIsRegistering(false)}
-                  className="p-2 hover:bg-white/5 rounded-sm transition-colors text-white/40 hover:text-white"
+                  className="p-3 bg-white/5 hover:bg-red-400/20 rounded-sm transition-all text-white/40 hover:text-red-400 group/back"
                 >
-                  <ChevronRight className="w-5 h-5 rotate-180" />
+                  <ChevronRight className="w-5 h-5 rotate-180 transition-transform group-hover/back:-translate-x-1" />
                 </button>
-                <div>
-                  <h2 className="text-2xl font-headline font-bold">Pilot Kayıt Protokolü</h2>
-                  <p className="text-xs text-white/40 uppercase tracking-widest">Adım {registrationStep} / 2</p>
+                <div className="space-y-1">
+                  <p className="text-[10px] font-label font-black text-red-400 uppercase tracking-[0.4em]">YENİ_KAYIT_PROTOKOLÜ</p>
+                  <h2 className="text-3xl font-headline font-black uppercase italic tracking-wider">Pilot Tanımlama</h2>
                 </div>
               </div>
 
               {registrationStep === 1 ? (
-                <div className="space-y-4">
-                  <p className="text-sm text-white/60 mb-6">Sistemdeki rütbenizi belirleyin. Bu ayar daha sonra komuta merkezi tarafından değiştirilebilir.</p>
+                <div className="space-y-8">
+                  <div className="p-4 bg-red-400/5 border-l-2 border-red-400/50">
+                    <p className="text-sm text-on-surface-variant font-medium leading-relaxed italic">
+                      "Akademiye katılım için rütbe ve görev alanınızı seçin. Bu seçim operasyonel yetkilerinizi belirleyecektir."
+                    </p>
+                  </div>
                   
-                  <div className="grid grid-cols-1 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <button
                       onClick={() => { setRole("student"); setRegistrationStep(2); }}
-                      className={`p-6 rounded-sm transition-all text-left relative group overflow-hidden ${
-                        role === "student" ? "bg-primary/10 shadow-[0_0_20px_rgba(47,217,244,0.1)]" : "bg-white/[0.02] hover:bg-white/[0.04]"
+                      className={`p-8 rounded-sm transition-all text-left relative group overflow-hidden border-2 ${
+                        role === "student" ? "bg-cyan-400/5 border-cyan-400/50 shadow-[0_0_30px_rgba(34,211,238,0.15)]" : "bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10"
                       }`}
                     >
-                      <UserIcon className={`w-8 h-8 mb-4 ${role === "student" ? "text-primary" : "text-white/40"}`} />
-                      <h3 className="font-headline font-bold text-lg">Öğrenci Pilot</h3>
-                      <p className="text-xs text-white/40">Eğitim simülasyonları ve görevlere erişim.</p>
-                      {role === "student" && <motion.div layoutId="active-role" className="absolute top-4 right-4 w-2 h-2 bg-primary shadow-[0_0_10px_rgba(47,217,244,1)]" />}
+                      <UserIcon className={`w-10 h-10 mb-6 transition-colors ${role === "student" ? "text-cyan-400" : "text-white/20"}`} />
+                      <h3 className="font-headline font-black text-xl uppercase italic mb-2 tracking-wide">PİLOT</h3>
+                      <p className="text-xs text-on-surface-variant font-medium leading-relaxed">Matematiksel simülasyonlar ve aktif saha görevleri.</p>
+                      {role === "student" && (
+                        <div className="absolute top-4 right-4">
+                          <div className="w-2 h-2 bg-cyan-400 rounded-full shadow-[0_0_10px_rgba(34,211,238,1)]"></div>
+                        </div>
+                      )}
                     </button>
 
                     <button
                       onClick={() => { setRole("parent"); setRegistrationStep(2); }}
-                      className={`p-6 rounded-sm transition-all text-left relative group overflow-hidden ${
-                        role === "parent" ? "bg-secondary/10 shadow-[0_0_20px_rgba(255,179,173,0.1)]" : "bg-white/[0.02] hover:bg-white/[0.04]"
+                      className={`p-8 rounded-sm transition-all text-left relative group overflow-hidden border-2 ${
+                        role === "parent" ? "bg-red-400/5 border-red-400/50 shadow-[0_0_30px_rgba(248,113,113,0.15)]" : "bg-white/[0.02] border-white/5 hover:bg-white/[0.04] hover:border-white/10"
                       }`}
                     >
-                      <Shield className={`w-8 h-8 mb-4 ${role === "parent" ? "text-secondary" : "text-white/40"}`} />
-                      <h3 className="font-headline font-bold text-lg">Veli / Gözlemci</h3>
-                      <p className="text-xs text-white/40">Pilot performans izleme ve raporlama yetkisi.</p>
-                      {role === "parent" && <motion.div layoutId="active-role" className="absolute top-4 right-4 w-2 h-2 bg-secondary shadow-[0_0_10px_rgba(255,179,173,1)]" />}
+                      <Shield className={`w-10 h-10 mb-6 transition-colors ${role === "parent" ? "text-red-400" : "text-white/20"}`} />
+                      <h3 className="font-headline font-black text-xl uppercase italic mb-2 tracking-wide">GÖZCÜ</h3>
+                      <p className="text-xs text-on-surface-variant font-medium leading-relaxed">Pilot performans analizi ve lojistik takip.</p>
+                      {role === "parent" && (
+                        <div className="absolute top-4 right-4">
+                          <div className="w-2 h-2 bg-red-400 rounded-full shadow-[0_0_10px_rgba(248,113,113,1)]"></div>
+                        </div>
+                      )}
                     </button>
+                  </div>
+                  
+                  <div className="flex items-center justify-between text-[10px] font-label font-black text-white/20 uppercase tracking-widest px-2">
+                    <span>STEP_01: ROL_SEÇİMİ</span>
+                    <div className="flex gap-1">
+                      <div className="w-4 h-1 bg-red-400"></div>
+                      <div className="w-4 h-1 bg-white/10"></div>
+                    </div>
                   </div>
                 </div>
               ) : (
-                <div className="space-y-6">
-                  <div className="p-4 bg-primary/5 rounded-sm flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 rounded-sm bg-primary/20 p-0.5">
-                      <img src={tempUser?.photoURL || ""} alt="" className="w-full h-full rounded-sm object-cover" />
+                <div className="space-y-8">
+                  <div className="p-6 bg-white/[0.03] border border-white/5 rounded-sm flex items-center gap-6">
+                    <div className="w-16 h-16 rounded-sm bg-white/5 p-1 border border-white/10 relative">
+                      <img src={tempUser?.photoURL || ""} alt="" className="w-full h-full rounded-sm object-cover opacity-80" />
+                      <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-cyan-400 rounded-sm flex items-center justify-center border border-[#040608]">
+                        <Scan className="w-2.5 h-2.5 text-[#040608]" />
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-[10px] font-headline text-primary uppercase">Tanımlanan Profil</p>
-                      <p className="text-sm font-semibold">{tempUser?.email}</p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-headline text-white/40 uppercase tracking-widest ml-1">İsim</label>
-                      <input
-                        type="text"
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Adınız"
-                        className="w-full cyber-input"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-[10px] font-headline text-white/40 uppercase tracking-widest ml-1">Soyisim</label>
-                      <input
-                        type="text"
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Soyadınız"
-                        className="w-full cyber-input"
-                      />
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-label font-black text-cyan-400/60 uppercase tracking-widest">AKADEMİ_KİMLİĞİ</p>
+                      <p className="text-sm font-mono font-bold">{tempUser?.email}</p>
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-3 p-4 bg-tertiary-container/10 rounded-sm text-tertiary-container/90">
-                    <AlertCircle className="w-5 h-5 shrink-0" />
-                    <p className="text-xs leading-relaxed">Bilgilerinizin doğruluğu sistem güvenliği ve sertifika süreçleri için kritiktir.</p>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-label font-black text-on-surface-variant uppercase tracking-[0.3em] ml-1">İSİM_BİLGİSİ</label>
+                      <div className="relative">
+                        <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-400/40" />
+                        <input
+                          type="text"
+                          value={firstName}
+                          onChange={(e) => setFirstName(e.target.value)}
+                          placeholder="ADINIZ"
+                          className="w-full bg-[#040608]/50 border border-white/10 rounded-sm py-4 pl-12 pr-4 font-headline text-sm uppercase tracking-widest focus:border-red-400/50 focus:ring-0 transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <label className="text-[10px] font-label font-black text-on-surface-variant uppercase tracking-[0.3em] ml-1">SOYİSİM_BİLGİSİ</label>
+                      <div className="relative">
+                        <Terminal className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-red-400/40" />
+                        <input
+                          type="text"
+                          value={lastName}
+                          onChange={(e) => setLastName(e.target.value)}
+                          placeholder="SOYADINIZ"
+                          className="w-full bg-[#040608]/50 border border-white/10 rounded-sm py-4 pl-12 pr-4 font-headline text-sm uppercase tracking-widest focus:border-red-400/50 focus:ring-0 transition-all outline-none"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="p-4 bg-red-400/5 border border-red-400/20 rounded-sm flex gap-4 items-start">
+                    <AlertCircle className="w-5 h-5 text-red-400 shrink-0 mt-0.5" />
+                    <p className="text-[11px] font-medium leading-relaxed text-red-400/80 tracking-wide uppercase">
+                      DİKKAT: Verilen bilgiler operasyonel sertifikalarınızda kullanılacaktır. Lütfen doğruluğundan emin olun.
+                    </p>
                   </div>
 
                   <button
                     onClick={finalizeRegistration}
                     disabled={isSubmitting || !firstName || !lastName}
-                    className="w-full cyber-button-primary"
+                    className="w-full relative py-5 bg-red-400 text-[#040608] font-label font-black tracking-[0.3em] uppercase text-xs rounded-sm overflow-hidden transition-all hover:shadow-[0_0_40px_rgba(248,113,113,0.3)] disabled:opacity-50 disabled:cursor-not-allowed group/finalize"
                   >
-                    {isSubmitting ? "PROTOKOL İŞLENİYOR..." : "KAYDI TAMAMLA"}
+                    <span className="relative z-10 flex items-center justify-center gap-3 transition-transform group-active/finalize:scale-95">
+                      {isSubmitting ? (
+                        <Activity className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Radio className="w-4 h-4" />
+                      )}
+                      {isSubmitting ? "PROTOKOL İŞLENİYOR..." : "KAYDI TAMAMLA"}
+                    </span>
                   </button>
+                  
+                  <div className="flex items-center justify-between text-[10px] font-label font-black text-white/20 uppercase tracking-widest px-2">
+                    <span>STEP_02: VERİ_GİRİŞİ</span>
+                    <div className="flex gap-1">
+                      <div className="w-4 h-1 bg-red-400"></div>
+                      <div className="w-4 h-1 bg-red-400"></div>
+                    </div>
+                  </div>
                 </div>
               )}
             </motion.div>
@@ -367,21 +438,16 @@ export default function AuthPage() {
         </AnimatePresence>
       </main>
 
-      {/* Side HUD Elements (Visible on larger screens) */}
-      <div className="hidden xl:block absolute left-10 top-1/2 -translate-y-1/2 space-y-8 pointer-events-none">
-        <div className="space-y-2">
-          <div className="h-0.5 w-12 bg-primary/40" />
-          <p className="text-[10px] font-headline text-primary/40 rotate-90 origin-left mt-10 tracking-[0.5em] uppercase">Navigation_Matrix</p>
+      {/* Decorative Floating Data */}
+      <div className="hidden lg:block fixed left-12 bottom-12 space-y-4 opacity-20 pointer-events-none">
+        <div className="font-mono text-[8px] space-y-1">
+          <p className="text-cyan-400 tracking-[0.3em]">SECURE_TUNNEL: ESTABLISHED</p>
+          <p className="text-white tracking-[0.3em]">IP_REMOTE: 192.168.1.104</p>
+          <p className="text-white tracking-[0.3em]">CRYPT_MODE: RSA_4096_CHACHA20</p>
         </div>
-      </div>
-
-      <div className="hidden xl:block absolute right-10 top-1/2 -translate-y-1/2 space-y-8 pointer-events-none text-right">
-        <div className="space-y-1">
-          <p className="text-[10px] font-headline text-white/20 uppercase tracking-widest">Protocol_V.2.4.0</p>
-          <div className="h-0.5 w-32 bg-white/10 ml-auto" />
-          <div className="h-0.5 w-16 bg-primary/20 ml-auto" />
-        </div>
+        <div className="h-px w-32 bg-gradient-to-r from-cyan-400 to-transparent"></div>
       </div>
     </div>
   );
 }
+

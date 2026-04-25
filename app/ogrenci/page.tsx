@@ -1,52 +1,24 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import StatusCard from './_components/StatusCard';
 import MissionGrid from './_components/MissionGrid';
 import { Terminal, Shield, Activity, Wifi, Battery, Menu } from 'lucide-react';
-import { onAuthStateChanged } from 'firebase/auth';
-import { doc, getDoc, type DocumentData } from 'firebase/firestore';
-import { auth, db } from '@/lib/firebase';
-import type { UserData } from '@/lib/types';
-
-function normalizeStudentData(d: DocumentData): UserData {
-  return {
-    username: typeof d.username === 'string' ? d.username : undefined,
-    firstName: typeof d.firstName === 'string' ? d.firstName : undefined,
-    lastName: typeof d.lastName === 'string' ? d.lastName : undefined,
-    nickname: typeof d.nickname === 'string' ? d.nickname : undefined,
-    gradeLevel: typeof d.gradeLevel === 'string' ? d.gradeLevel : undefined,
-    role: d.role === 'parent' ? 'parent' : 'student',
-    pairingCode: typeof d.pairingCode === 'string' ? d.pairingCode : undefined,
-    level: typeof d.level === 'number' ? d.level : 1,
-    xp: typeof d.xp === 'number' ? d.xp : 0,
-    shipColor: typeof d.shipColor === 'string' ? d.shipColor : undefined,
-    onboardingSeen: d.onboardingSeen === true,
-    metrics: typeof d.metrics === 'object' && d.metrics !== null ? d.metrics : undefined,
-    actionPlan: typeof d.actionPlan === 'string' ? d.actionPlan : undefined,
-    learningPath: typeof d.learningPath === 'string' ? d.learningPath : undefined,
-    dailyTasks: typeof d.dailyTasks === 'object' && d.dailyTasks !== null ? d.dailyTasks : undefined,
-    dailyMissionReport: typeof d.dailyMissionReport === 'object' && d.dailyMissionReport !== null ? d.dailyMissionReport : undefined,
-    commanderMessage: typeof d.commanderMessage === 'object' && d.commanderMessage !== null ? d.commanderMessage : undefined,
-  } as UserData;
-}
+import { useUserData } from '@/hooks/useUserData';
 
 export default function OgrenciPage() {
-  const [studentData, setStudentData] = useState<UserData | null>(null);
+  const { userData: studentData, loading } = useUserData();
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
-      if (!currentUser) return;
-
-      const userDoc = await getDoc(doc(db, 'users', currentUser.uid));
-      if (!userDoc.exists()) return;
-
-      const normalizedStudent = normalizeStudentData(userDoc.data());
-      setStudentData(normalizedStudent);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#040608] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+          <Shield className="w-12 h-12 text-cyan-400 animate-pulse" />
+          <p className="font-label text-xs tracking-[0.3em] text-cyan-400 uppercase font-black">SİSTEM YÜKLENİYOR...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <main className="min-h-screen bg-[#040608] text-on-surface font-sans selection:bg-cyan-400 selection:text-[#040608] relative overflow-hidden">
@@ -100,7 +72,7 @@ export default function OgrenciPage() {
                 {studentData?.firstName ? `${studentData.firstName}_PROFİL` : 'PROFİL_MODÜLÜ'}
               </span>
             </div>
-            <StatusCard />
+            <StatusCard data={studentData} />
             
             {/* Quick Stats or Activity Log can go here */}
             <div className="hidden lg:block p-6 rounded-sm border border-white/5 bg-white/[0.02] hud-glass">
@@ -122,7 +94,7 @@ export default function OgrenciPage() {
               <Activity className="w-4 h-4 text-cyan-400" />
               <span className="font-label text-[10px] tracking-[0.5em] text-cyan-400 uppercase font-black">OPERASYON_MERKEZİ</span>
             </div>
-            <MissionGrid />
+            <MissionGrid studentData={studentData} />
           </div>
         </div>
       </div>
@@ -135,3 +107,4 @@ export default function OgrenciPage() {
     </main>
   );
 }
+

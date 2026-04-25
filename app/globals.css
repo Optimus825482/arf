@@ -5,7 +5,7 @@
   --color-on-surface: #e1e2e7;
   --color-on-surface-variant: #bbc9cd;
   --color-primary: #2fd9f4;
-  --color-primary-fixed-dim: #2fd9f4;
+  --color-primary-fixed-dim: #1ba8bf;
   --color-surface-container-low: #191c1f;
   --color-surface-container-high: #282a2e;
   --color-surface-container-highest: #323539;
@@ -22,37 +22,42 @@
   --animate-scanline: scanline 4s linear infinite;
   --animate-spin-slow: spin 3s linear infinite;
   --animate-spin-reverse: spin-reverse 2s linear infinite;
+}
 
-  @keyframes scan {
-    0% { top: 0; opacity: 0; }
-    5% { opacity: 1; }
-    95% { opacity: 1; }
-    100% { top: 100%; opacity: 0; }
-  }
+@keyframes scan {
+  0% { top: 0; opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
 
-  @keyframes scanline {
-    0% { transform: translateY(-100vh); opacity: 0; }
-    5% { opacity: 1; }
-    95% { opacity: 1; }
-    100% { transform: translateY(0); opacity: 0; }
-  }
+@keyframes scanline {
+  0% { transform: translateY(-100vh); opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 1; }
+  100% { transform: translateY(0); opacity: 0; }
+}
 
-  @keyframes spin {
-    from { transform: translate(-50%, -50%) rotate(0deg); }
-    to { transform: translate(-50%, -50%) rotate(360deg); }
-  }
+@keyframes spin {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
 
-  @keyframes spin-reverse {
-    from { transform: translate(-50%, -50%) rotate(360deg); }
-    to { transform: translate(-50%, -50%) rotate(0deg); }
-  }
+@keyframes spin-reverse {
+  from { transform: translate(-50%, -50%) rotate(360deg); }
+  to { transform: translate(-50%, -50%) rotate(0deg); }
+}
+
+@keyframes hud-scan {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
 }
 
 @layer base {
   body {
     @apply bg-background text-on-surface font-body overflow-x-hidden;
     background-image: 
-      radial-gradient(circle at 50% 50%, rgba(34, 211, 238, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 50% 50%, rgba(47, 217, 244, 0.03) 0%, transparent 50%),
       radial-gradient(circle at 80% 20%, rgba(255, 179, 173, 0.02) 0%, transparent 40%);
     background-attachment: fixed;
   }
@@ -77,11 +82,11 @@
   }
 
   .neon-glow {
-    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+    box-shadow: 0 0 15px rgba(47, 217, 244, 0.2);
   }
 
   .neon-text-primary {
-    text-shadow: 0 0 8px rgba(34, 211, 238, 0.5);
+    text-shadow: 0 0 8px rgba(47, 217, 244, 0.5);
   }
 
   .glass-card {
@@ -110,7 +115,7 @@
 
   .hud-module {
     @apply bg-surface-container-low/70 backdrop-blur-xl rounded-sm relative;
-    background-image: linear-gradient(180deg, rgba(34, 211, 238, 0.05) 0%, rgba(5, 7, 10, 0) 100%);
+    background-image: linear-gradient(180deg, rgba(47, 217, 244, 0.05) 0%, rgba(5, 7, 10, 0) 100%);
     box-shadow:
       inset 0 1px 0 rgba(47, 217, 244, 0.08),
       0 0 28px rgba(47, 217, 244, 0.05);
@@ -135,7 +140,7 @@
 
   .command-shell {
     @apply bg-surface-container-low/70 backdrop-blur-xl rounded-sm relative;
-    background-image: linear-gradient(180deg, rgba(34, 211, 238, 0.05) 0%, rgba(5, 7, 10, 0) 100%);
+    background-image: linear-gradient(180deg, rgba(47, 217, 244, 0.05) 0%, rgba(5, 7, 10, 0) 100%);
     box-shadow:
       0 0 0 1px rgba(47, 217, 244, 0.22),
       0 0 48px rgba(47, 217, 244, 0.16),
@@ -167,11 +172,6 @@
     z-index: 1;
     pointer-events: none;
     animation: hud-scan 8s linear infinite;
-  }
-
-  @keyframes hud-scan {
-    0% { transform: translateY(-100%); }
-    100% { transform: translateY(100vh); }
   }
 
   .cyber-input {

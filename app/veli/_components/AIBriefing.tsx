@@ -1,14 +1,24 @@
-import React from 'react';
+import { UserData } from '@/lib/types';
 
 interface AIBriefingProps {
-  analysisReady?: boolean;
-  message?: string;
+  studentData: UserData | null;
 }
 
-export default function AIBriefing({ 
-  analysisReady = true, 
-  message = "Pilot çarpma işlemlerinde %23 gelişim gösterdi. Bölme konusunda ek görev öneriliyor." 
-}: AIBriefingProps) {
+export default function AIBriefing({ studentData }: AIBriefingProps) {
+  if (!studentData) return null;
+
+  const analysisReady = !!studentData;
+  const accuracy = studentData.metrics?.accuracy || 0;
+  const pilotName = studentData.username || 'Pilot';
+  
+  // Basit bir kural tabanlı mesaj (İleride DeepSeek API'den gelebilir)
+  const getMessage = () => {
+    if (accuracy > 90) return `${pilotName} üstün performans sergiliyor (%${accuracy} doğruluk). Yeni zorluk seviyeleri ve ileri düzey modüller için operasyonel olarak hazır.`;
+    if (accuracy > 70) return `${pilotName} istikrarlı bir gelişim gösteriyor (%${accuracy} doğruluk). Günlük görevlerini aksatmaması ve zayıf olduğu alt modüllere odaklanması kritik.`;
+    if (accuracy > 0) return `${pilotName} bazı temel modüllerde zorlanıyor (%${accuracy} doğruluk). Ek pratik, video rehberliği ve doğrudan eğitmen desteği öneriliyor.`;
+    return "Analiz için yeterli veri henüz toplanmadı. Pilotun daha fazla görev tamamlaması gerekiyor.";
+  };
+
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center gap-3 px-2">
@@ -18,11 +28,9 @@ export default function AIBriefing({
       </div>
       
       <div className="relative rounded-sm overflow-hidden border border-cyan-500/20 bg-white/[0.02] hud-glass group shadow-[0_0_30px_rgba(34,211,238,0.08)]">
-        {/* Animated background effect */}
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 to-transparent pointer-events-none"></div>
         <div className="absolute -right-10 -top-10 w-40 h-40 bg-cyan-500/10 rounded-sm blur-[80px] pointer-events-none"></div>
         
-        {/* HUD Elements */}
         <div className="absolute top-0 right-0 p-2 opacity-30 pointer-events-none">
           <span className="font-label text-[8px] tracking-[0.2em] text-cyan-400 uppercase">ANALYSIS_CORE // v.1.0</span>
         </div>
@@ -40,7 +48,7 @@ export default function AIBriefing({
                   {analysisReady && <span className="w-2 h-2 bg-cyan-400 rounded-sm animate-pulse shadow-[0_0_8px_rgba(34,211,238,0.6)]"></span>}
                 </h3>
                 <p className="text-on-surface-variant text-sm font-body leading-relaxed max-w-3xl italic opacity-90 border-l-2 border-cyan-500/30 pl-4 py-1">
-                  &ldquo;{message}&rdquo;
+                  &ldquo;{getMessage()}&rdquo;
                 </p>
               </div>
 
@@ -58,7 +66,6 @@ export default function AIBriefing({
           </div>
         </div>
         
-        {/* Scanning line for AI effect */}
         <div className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent animate-[scan_3s_linear_infinite]"></div>
       </div>
     </section>

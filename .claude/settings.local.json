@@ -28,7 +28,8 @@
       "Bash(time node *)",
       "Bash(export RAG_EMBEDDING_MODEL_PATH=\"D:\\\\arf\\\\research_lab\\\\models\\\\hf_ggml-org_embeddinggemma-300M-Q8_0.gguf\" RAG_EMBED_DIM=768)",
       "Bash(ps -W)",
-      "Bash(markitdown --version)"
+      "Bash(markitdown --version)",
+      "Bash(tee /tmp/tsc.log)"
     ]
   }
 }

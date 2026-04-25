@@ -55,7 +55,7 @@ async function loadPedagogicalRagContext(query: string, maxLen = 800) {
       }).filter(Boolean).join(" | "),
       maxLen,
     );
-  } catch (error) {
+  } catch {
     return "";
   }
 }

@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({ baseDirectory: __dirname });
 
 const config = [
-  { ignores: ["dist/**/*", ".next/**/*", "node_modules/**/*", "next-env.d.ts", "public/**/*"] },
+  { ignores: ["dist/**/*", ".next/**/*", ".tmp/**/*", "node_modules/**/*", "next-env.d.ts", "public/**/*"] },
   ...compat.extends("next/core-web-vitals", "next/typescript"),
   firebaseRulesPlugin.configs["flat/recommended"],
   {

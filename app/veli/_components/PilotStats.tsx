@@ -1,24 +1,35 @@
-import React from 'react';
+import { UserData } from '@/lib/types';
 
 interface PilotStatsProps {
-  name: string;
-  code: string;
-  status: string;
-  lastSeen: string;
-  streak: string;
-  successRate: string;
-  todayMinutes: string;
+  studentData: UserData | null;
 }
 
-export default function PilotStats({
-  name = "Ahmet Yılmaz",
-  code = "MÜR-7429",
-  status = "Aktif",
-  lastSeen = "2 saat önce",
-  streak = "7 gün",
-  successRate = "87%",
-  todayMinutes = "45 dk"
-}: PilotStatsProps) {
+export default function PilotStats({ studentData }: PilotStatsProps) {
+  if (!studentData) return null;
+
+  const name = `${studentData.firstName || ''} ${studentData.lastName || ''}`.trim() || studentData.username || "Bilinmeyen Pilot";
+  const level = studentData.level || 1;
+  const xp = studentData.xp || 0;
+  const nextLevelXp = level * 1000;
+  const xpProgress = Math.min((xp / nextLevelXp) * 100, 100);
+  
+  // Başarı oranı ve diğer metrikler
+  const successRate = studentData.metrics?.accuracy 
+    ? `${Math.round(studentData.metrics.accuracy * 100)}%` 
+    : "87%"; // Fallback
+  
+  const streak = "7 GÜN"; // Bu veri henüz DB'de yok, şimdilik statik
+  const todayMinutes = studentData.dailyTasks?.count 
+    ? `${studentData.dailyTasks.count * 2} DK` // Örnek hesaplama
+    : "0 DK";
+
+  // Rütbe belirleme
+  const getRank = (lvl: number) => {
+    if (lvl < 5) return "KADET";
+    if (lvl < 15) return "PİLOT";
+    return "YILDIZ ÇAVUŞU";
+  };
+
   return (
     <section className="flex flex-col gap-4">
       <div className="flex items-center gap-3 px-2">
@@ -28,16 +39,12 @@ export default function PilotStats({
       </div>
       
       <div className="relative rounded-sm overflow-hidden border border-white/5 bg-white/[0.02] hud-glass group">
-        {/* HUD Decoration */}
         <div className="absolute top-0 right-0 p-3 opacity-20 pointer-events-none">
           <span className="font-label text-[9px] tracking-[0.2em] text-cyan-400 font-bold uppercase">
             {'SEC-02 // BIO_DATA'}
           </span>
         </div>
-        <div className="absolute bottom-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity pointer-events-none">
-          <span className="material-symbols-outlined text-8xl text-primary transform rotate-12">flight_takeoff</span>
-        </div>
-
+        
         <div className="p-4 sm:p-6 md:p-8 relative z-10">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-8">
             <div className="flex min-w-0 items-center gap-4 sm:gap-5">
@@ -49,12 +56,10 @@ export default function PilotStats({
                 <div className="flex flex-wrap items-center gap-2 mb-1">
                   <span className="bg-surface-container-highest border border-primary/20 text-primary font-label text-[10px] tracking-widest uppercase px-2 py-0.5 rounded-sm flex shrink-0 items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-sm bg-primary animate-pulse"></span>
-                    {code}
+                    SEVİYE {level}
                   </span>
                   <span className="text-on-surface-variant text-[10px] font-label uppercase tracking-wider opacity-70">
-                    {status}
-                    {' // SON GİRİŞ: '}
-                    {lastSeen}
+                    AKTİF // {studentData.gradeLevel || 'GÖREV_BELİRSİZ'}
                   </span>
                 </div>
                 <h2 className="font-headline text-2xl sm:text-3xl font-bold text-on-surface uppercase tracking-normal sm:tracking-wide neon-text-primary break-words">
@@ -65,7 +70,7 @@ export default function PilotStats({
             
             <div className="flex flex-col items-start md:items-end gap-1">
               <span className="font-label text-[10px] tracking-[0.1em] text-on-surface-variant uppercase">RÜTBE SEVİYESİ</span>
-              <span className="font-headline text-xl font-bold text-tertiary-container uppercase tracking-widest">YILDIZ ÇAVUŞU</span>
+              <span className="font-headline text-xl font-bold text-tertiary-container uppercase tracking-widest">{getRank(level)}</span>
             </div>
           </div>
 
@@ -74,11 +79,14 @@ export default function PilotStats({
             <div className="flex justify-between items-end mb-2">
               <span className="font-label text-[10px] tracking-[0.2em] text-primary uppercase font-bold">Deneyim Puanı (XP)</span>
               <span className="font-mono text-xs text-on-surface-variant">
-                <span className="text-primary font-bold">2,340</span> / 3,000
+                <span className="text-primary font-bold">{xp.toLocaleString()}</span> / {nextLevelXp.toLocaleString()}
               </span>
             </div>
             <div className="h-2 w-full bg-surface-container-highest rounded-sm overflow-hidden cyber-border">
-              <div className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-sm relative w-[78%] transition-all duration-1000 ease-out">
+              <div 
+                className="h-full bg-gradient-to-r from-primary/50 to-primary rounded-sm relative transition-all duration-1000 ease-out"
+                style={{ width: `${xpProgress}%` }}
+              >
                 <div className="absolute top-0 right-0 bottom-0 w-8 bg-white/30 animate-pulse"></div>
               </div>
             </div>

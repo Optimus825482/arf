@@ -8,8 +8,24 @@ import PerformanceChart from './_components/PerformanceChart';
 import ActionRow from './_components/ActionRow';
 import GuardianBottomNav from './_components/GuardianBottomNav';
 import LoadingAnimation from '@/components/ui/LoadingAnimation';
+import { useUserData } from '@/hooks/useUserData';
+import { PairingSection } from './_components/PairingSection';
+import { Loader2 } from 'lucide-react';
 
 export default function GuardianDashboard() {
+  const { userData, studentData, loading } = useUserData();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#040608] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-cyan-400 animate-spin" />
+      </div>
+    );
+  }
+
+  // Eğer veli henüz bir öğrenciye bağlı değilse eşleştirme ekranını göster
+  const showPairing = userData?.role === 'parent' && !userData.linkedStudentId;
+
   return (
     <>
       <LoadingAnimation />
@@ -27,24 +43,19 @@ export default function GuardianDashboard() {
           <div className="absolute top-[40%] -right-[10%] w-[50%] h-[50%] bg-cyan-900/10 blur-[120px] rounded-sm"></div>
         </div>
 
-        <GuardianHeader />
+        <GuardianHeader studentData={studentData} />
         
         <main className="flex-1 w-full max-w-5xl mx-auto px-4 md:px-6 pt-24 pb-8 flex flex-col gap-8 relative z-10">
-          <PilotStats 
-            name="Ahmet Yılmaz"
-            code="MÜR-7429"
-            status="Aktif"
-            lastSeen="2 saat önce"
-            streak="7 gün"
-            successRate="87%"
-            todayMinutes="45 dk"
-          />
-          
-          <AIBriefing />
-          
-          <PerformanceChart />
-          
-          <ActionRow />
+          {showPairing ? (
+            <PairingSection />
+          ) : (
+            <>
+              <PilotStats studentData={studentData} />
+              <AIBriefing studentData={studentData} />
+              <PerformanceChart studentData={studentData} />
+              <ActionRow studentData={studentData} />
+            </>
+          )}
         </main>
 
         <GuardianBottomNav />

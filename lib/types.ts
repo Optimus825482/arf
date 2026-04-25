@@ -43,4 +43,5 @@ export interface UserData {
     read: boolean;
     fromName: string;
   };
+  linkedStudentId?: string; // Veli tarafından takip edilen öğrencinin UID'si
 }
